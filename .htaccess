@@ -1,0 +1,25 @@
+ErrorDocument 404 /404.php
+
+<IfModule mod_suphp.c> 
+suPHP_ConfigPath /public_html/dashboard.wedoinc.ph
+<Files php.ini> order allow,deny
+deny from all
+</Files>
+</IfModule>
+
+<IfModule mod_speling.c>
+    CheckCaseOnly on
+    CheckSpelling on
+</IfModule>
+
+RewriteEngine on 
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteCond %{REQUEST_FILENAME}.php -f 
+RewriteRule ^(.*)$ $1.php
+RewriteEngine on 
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteCond %{REQUEST_FILENAME}.html -f 
+RewriteRule ^(.*)$ $1.html
+
+
+
