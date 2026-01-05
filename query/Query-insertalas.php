@@ -22,20 +22,20 @@
   }
 
   //admin time validation
-  {   
-     $datenow = date("Y-m-d");
-     $datenow1 = date("Y-m-d H:i");
-     $timenow = strtotime($datenow1);
-     $startTime = strtotime($datenow ." 8:30:00");
-     $id=$_SESSION['id'];
-     if($id=="WeDoinc-012"){
-     }else{
-         if($timenow > $startTime){
-            echo "The leave application must be completed on or before 8:30 AM.";
-            return;
-        }
-     }
-  }
+  // {   
+  //    $datenow = date("Y-m-d");
+  //    $datenow1 = date("Y-m-d H:i");
+  //    $timenow = strtotime($datenow1);
+  //    $startTime = strtotime($datenow ." 8:30:00");
+  //    $id=$_SESSION['id'];
+  //    if($id=="WeDoinc-012"){
+  //    }else{
+  //        if($timenow > $startTime){
+  //           echo "The leave application must be completed on or before 8:30 AM.";
+  //           return;
+  //       }
+  //    }
+  // }
    
   #declaration
   {
@@ -59,6 +59,10 @@
     $numdays = ($dteDiff->format("%D")) + 1;
     $ltype = $_POST['leavetype'];
 
+    if($_POST['leavetype']==22){
+       $_POST['leavetype'] = $_POST['leave_subcategory'];
+    }
+     
     $filingTOstart  = $lfdate->diff($dteStart); 
     $numdays_frm_fdate_sdate = $filingTOstart->format("%D");
     
@@ -111,25 +115,25 @@
 
   //if applying leave without attendance
   {
-  //  $dy=date("d"); 
-  //  $yr=date("Y"); 
-  //  $mnth=date("m"); 
-  //  $sql = "SELECT * FROM attendancelog WHERE EmpID=:id AND day(TimeIn)=:dy AND year(TimeIn)=:yr AND month(TimeIn)=:mnth ORDER BY TimeIn DESC";
-  //  $stmt = $pdo->prepare($sql);
-  //  $stmt->bindParam(':id' , $id);
-  //  $stmt->bindParam(':dy' , $dy);
-  //  $stmt->bindParam(':mnth' , $mnth);
-  //  $stmt->bindParam(':yr' , $yr);
-  //  $stmt->execute(); 
-  //  $rowcenar=$stmt->fetch();
+      //  $dy=date("d"); 
+      //  $yr=date("Y"); 
+      //  $mnth=date("m"); 
+      //  $sql = "SELECT * FROM attendancelog WHERE EmpID=:id AND day(TimeIn)=:dy AND year(TimeIn)=:yr AND month(TimeIn)=:mnth ORDER BY TimeIn DESC";
+      //  $stmt = $pdo->prepare($sql);
+      //  $stmt->bindParam(':id' , $id);
+      //  $stmt->bindParam(':dy' , $dy);
+      //  $stmt->bindParam(':mnth' , $mnth);
+      //  $stmt->bindParam(':yr' , $yr);
+      //  $stmt->execute(); 
+      //  $rowcenar=$stmt->fetch();
 
 
-  //  if ($stmt->rowCount()>0 and $rowcenar['TimeOut']==NULL){
+      //  if ($stmt->rowCount()>0 and $rowcenar['TimeOut']==NULL){
 
-  //  }else{
-  //    echo "You cant apply you have no Attendance";
-  //    return;
-  //  }
+      //  }else{
+      //    echo "You cant apply you have no Attendance";
+      //    return;
+      //  }
   }
 
   //if employee is regular but no Date of Regularization
@@ -231,88 +235,88 @@
      #2024 script ---------------------------------
     {   
       $id=$_SESSION['id'];
-      $varTH=0;
+      // $varTH=0;
       //get the total credit threshold
-      {
-        $getTH = "select * from credit where EmpID = :id";
-        $stmtTH = $pdo->prepare($getTH);
-        $stmtTH->bindParam(':id', $id);
-        $stmtTH->execute();
-        $crdetailTH = $stmtTH->fetch();
-        $crcntTH = $stmtTH->rowCount();
+      // {
+      //   $getTH = "select * from credit where EmpID = :id";
+      //   $stmtTH = $pdo->prepare($getTH);
+      //   $stmtTH->bindParam(':id', $id);
+      //   $stmtTH->execute();
+      //   $crdetailTH = $stmtTH->fetch();
+      //   $crcntTH = $stmtTH->rowCount();
 
-        if ($crcntTH > 0) {
-          if( $crdetailTH['CTH']==15){
-            $varTH=15;
-          }
-        }    
-      }
+      //   if ($crcntTH > 0) {
+      //     if( $crdetailTH['CTH']==15){
+      //       $varTH=15;
+      //     }
+      //   }    
+      // }
 
       //validate total credit per type
-      {
-        $yr=date("Y");
+      // {
+      //   $yr=date("Y");
   
-        if(($ltype!='27') && ($ltype!='29')){//skip the maternity,paternity validation
+      //   if(($ltype!='27') && ($ltype!='29')){//skip the maternity,paternity validation
        
-          if($varTH==15){//for 15 credits
+      //     if($varTH==15){//for 15 credits
             
-            $sql="select LDuration as duration from hleavesbd 
-            where (EmpID=:id and year(LStart) =$yr and LStatus=4 and LType= $ltype)";
-            $stmt2 = $pdo->prepare($sql);
-            $stmt2->bindParam(':id' ,$id);
-            $stmt2->execute();
-            $crcnt = $stmt2->rowCount();
+      //       $sql="select LDuration as duration from hleavesbd 
+      //       where (EmpID=:id and year(LStart) =$yr and LStatus=4 and LType= $ltype)";
+      //       $stmt2 = $pdo->prepare($sql);
+      //       $stmt2->bindParam(':id' ,$id);
+      //       $stmt2->execute();
+      //       $crcnt = $stmt2->rowCount();
             
-              if($crcnt > 0){ //return false if validation meet true
+      //         if($crcnt > 0){ //return false if validation meet true
                   
-                  //sumup the duration
-                  $durData=0;
-                while ($getDuration = $stmt2->fetch()) {
-                      $durData=$durData + $getDuration['duration'];
-                  }
+      //             //sumup the duration
+      //             $durData=0;
+      //           while ($getDuration = $stmt2->fetch()) {
+      //                 $durData=$durData + $getDuration['duration'];
+      //             }
     
-                if((($durData/ 600 ) + $_POST['leavedur']) > 5 ){
-                  echo "Overfilling the allotted leave credits for this leave type. <br> <br> Used Credit " . $durData/ 600 . " days";
-                  return;
-                }
-              }else{
-                if(($_POST['leavedur']) > 5 ){
-                  echo "Overfilling the allotted leave 5 credits for this leave type.";
-                  return;
-                }
+      //           if((($durData/ 600 ) + $_POST['leavedur']) > 5 ){
+      //             echo "Overfilling the allotted leave credits for this leave type. <br> <br> Used Credit " . $durData/ 600 . " days";
+      //             return;
+      //           }
+      //         }else{
+      //           if(($_POST['leavedur']) > 5 ){
+      //             echo "Overfilling the allotted leave 5 credits for this leave type.";
+      //             return;
+      //           }
 
-              }
+      //         }
               
-          }else{//for 10 cridets 
+      //     }else{//for 10 cridets 
 
-            $sql="select LDuration as duration from hleavesbd 
-            where (EmpID=:id and year(LStart) =$yr and LStatus=4 and LType= $ltype)";
-            $stmt2 = $pdo->prepare($sql);
-            $stmt2->bindParam(':id' ,$id);
-            $stmt2->execute();
-            $crcnt = $stmt2->rowCount();
+      //       $sql="select LDuration as duration from hleavesbd 
+      //       where (EmpID=:id and year(LStart) =$yr and LStatus=4 and LType= $ltype)";
+      //       $stmt2 = $pdo->prepare($sql);
+      //       $stmt2->bindParam(':id' ,$id);
+      //       $stmt2->execute();
+      //       $crcnt = $stmt2->rowCount();
 
-            if($crcnt > 0){ //return false if validation meet true
-              //sumup the duration
-              $durData=0;
-            while ($getDuration = $stmt2->fetch()) {
-                  $durData=$durData + $getDuration['duration'];
-              }
+      //       if($crcnt > 0){ //return false if validation meet true
+      //         //sumup the duration
+      //         $durData=0;
+      //       while ($getDuration = $stmt2->fetch()) {
+      //             $durData=$durData + $getDuration['duration'];
+      //         }
 
-              if((($durData/ 600 ) + $_POST['leavedur']) >5 ){
-                echo "Overfilling the allotted leave credits for this leave type. <br> <br>Used Credit " . $durData/ 600  ." days";
-                return;
-              }
-            }else{
-              if(($_POST['leavedur']) > 5 ){
-                echo "Overfilling the allotted leave 5 credits for this leave type.";
-                return;
-              }
+      //         if((($durData/ 600 ) + $_POST['leavedur']) >5 ){
+      //           echo "Overfilling the allotted leave credits for this leave type. <br> <br>Used Credit " . $durData/ 600  ." days";
+      //           return;
+      //         }
+      //       }else{
+      //         if(($_POST['leavedur']) > 5 ){
+      //           echo "Overfilling the allotted leave 5 credits for this leave type.";
+      //           return;
+      //         }
 
-            }
-          }
-        }
-      }
+      //       }
+      //     }
+      //   }
+      // }
 
     }
 
@@ -757,9 +761,7 @@
       }
     }
   
-     
-
-
+  
   } catch(Exception $e) {
     echo 'Message: ' .$e->getMessage();
   }
