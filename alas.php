@@ -95,6 +95,24 @@
         var x = document.getElementById("lstarts").min = n + "-01-01";
         var x = document.getElementById("lenddate").min = n + "-01-01";
     }
+
+    function checkSubCategory(selectElement) {
+    const subCategoryArea = document.getElementById('sub_category_area');
+    const subCategorySelect = document.getElementById('leave_subcategory');
+    
+    // Get the text of the selected option
+    const selectedText = selectElement.options[selectElement.selectedIndex].text.toUpperCase();
+
+    // If the selection contains the word "VACATION", show the second tier
+    if (selectedText.includes("VACATION")) {
+        subCategoryArea.style.display = 'block';
+        subCategorySelect.setAttribute('required', 'required');
+    } else {
+        subCategoryArea.style.display = 'none';
+        subCategorySelect.removeAttribute('required');
+        subCategorySelect.value = ""; // Clear selection if hidden
+    }
+}
     </script>
 </head>
 
@@ -196,14 +214,13 @@ html body {
                                                     <div class="form-group">
                                                         <label>Leave Type:</label>
                                                         <select class="form-control" id="leavetype" required="required"
-                                                            name="leavetype">
+                                                            name="leavetype" onchange="checkSubCategory(this);">
 
                                                             <?php
                                                                 include 'w_conn.php';
                                                                 #2024 new script
 
                                                                 $id = $_SESSION['id'];
-
                                                                 $sql25  = "select * from credit where EmpID = :id";
                                                                 $stmt25 = $pdo->prepare($sql25);
                                                                 $stmt25->bindParam(':id', $id);
@@ -212,72 +229,16 @@ html body {
                                                                 $crcnt25    = $stmt25->rowCount();
 
                                                                 if ($crcnt25 > 0) {
-                                                                    // if( $crdetail25['CTH']==15){
-                                                                    //     if ($_SESSION['gender'] == "Male") {
-                                                                    //         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','35','33','30','22') order by LeaveDesc asc");
+                                                                    
+                                                                    //2026 new code for gender validation and leave type
+                                                                    if ($_SESSION['gender'] == "Male") {
+                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','33','30','22') order by LeaveDesc asc");
 
-                                                                    //     } else if ($_SESSION['gender'] == "Female") {
-                                                                    //         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('35','27','33','30','22') order by LeaveDesc asc");
-
-                                                                    //     } else {
-                                                                    //         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','35','27','36','37','33','30','22') order by LeaveDesc asc");
-                                                                    //     }
-                                                                    // }else{
-                                                                    //     if ($_SESSION['gender'] == "Male") {
-                                                                    //         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','30','22','33') order by LeaveDesc asc");
-
-                                                                    //     } else if ($_SESSION['gender'] == "Female") {
-                                                                    //         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('27','30','22','33') order by LeaveDesc asc");
-                                                                    //     } else {
-                                                                    //         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','27','36','37','33','30','22') order by LeaveDesc asc");
-                                                                    //     }
-                                                                    // }
-                                                                    if ($crdetail25['CTH'] == 0 && $crdetail25['CTH'] == 0) {
-                                                                        if (($id == "WeDoinc-002") || ($id == "WeDoinc-006") || ($id == "WeDoinc-009") || ($id == "WeDoinc-0010") || ($id == "WeDoinc-012") || ($id == "WeDoinc-013")) {
-                                                                            if ($_SESSION['gender'] == "Male") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','35','33','30','22') order by LeaveDesc asc");
-
-                                                                            } else if ($_SESSION['gender'] == "Female") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('35','27','33','30','22') order by LeaveDesc asc");
-
-                                                                            } else {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','35','27','36','37','33','30','22') order by LeaveDesc asc");
-                                                                            }
-                                                                        } else {
-                                                                            if ($_SESSION['gender'] == "Male") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','30','22','33') order by LeaveDesc asc");
-
-                                                                            } else if ($_SESSION['gender'] == "Female") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('27','30','22','33') order by LeaveDesc asc");
-
-                                                                            } else {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','27','36','37','33','30','22') order by LeaveDesc asc");
-                                                                            }
-                                                                        }
+                                                                    } else if ($_SESSION['gender'] == "Female") {
+                                                                        $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('27','33','30','22') order by LeaveDesc asc");
 
                                                                     } else {
-                                                                        if ($crdetail25['CTH'] == 15) {
-                                                                            if ($_SESSION['gender'] == "Male") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','35','33','30','22') order by LeaveDesc asc");
-
-                                                                            } else if ($_SESSION['gender'] == "Female") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('35','27','33','30','22') order by LeaveDesc asc");
-
-                                                                            } else {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','35','27','36','37','33','30','22') order by LeaveDesc asc");
-                                                                            }
-                                                                        } else {
-                                                                            if ($_SESSION['gender'] == "Male") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','30','22','33') order by LeaveDesc asc");
-
-                                                                            } else if ($_SESSION['gender'] == "Female") {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('27','30','22','33') order by LeaveDesc asc");
-
-                                                                            } else {
-                                                                                $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','27','36','37','33','30','22') order by LeaveDesc asc");
-                                                                            }
-
-                                                                        }
+                                                                        $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','27','36','37','33','30','22') order by LeaveDesc asc");
                                                                     }
 
                                                                     while ($res = mysqli_fetch_array($sql)) {
@@ -288,17 +249,27 @@ html body {
                                                                                 <?php echo $res['LeaveDesc']; ?> </option>
                                                                             <?php
                                                                                 }
-                        }
+                                                                    }
 
-                    } else {
-                    ?>
-        <option value="33">Unpaid</option>
-        <?php
+                                                                } else {
+                                                                    ?>
+                                                                    <option value="33">Unpaid</option>
+                                                                    <?php
 
-            }
-        ?>
+                                                                    }
+                                                                ?>
                                                         </select>
 
+                                                    </div>
+
+                                                    <div class="form-group" id="sub_category_area" style="display:none; background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                                                        <label>Select Vacation Detail:</label>
+                                                        <select class="form-control" id="leave_subcategory" name="leave_subcategory">
+                                                            <option value="VACATION">VACATION (Standard Setup)</option>
+                                                            <option value="FORCE MAJEURE">FORCE MAJEURE (Inclement weather, nature, etc.)</option>
+                                                            <option value="EMERGENCY">EMERGENCY (Emergencies)</option>
+                                                        </select>
+                                                        <small class="text-muted">Note: Force Majeure and Emergency can be filed upon reporting back for work.</small>
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Explanation/ Purpose of Leave:</label>

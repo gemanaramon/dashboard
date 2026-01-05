@@ -470,58 +470,133 @@ $(document).ready(function(){
         }
     });
 
-    $("#alassave").click(function(){
+    // $("#alassave").click(function(){
         
-        if ($("#exampleCheck1").is(':checked')){
-            if ($("#Ltimefrom").val()>$("#Ltimeto").val()){
-                $('#modalWarning').modal('toggle');
-                $('#modalWarning .alert').html("Invalid Inclusive Time");
-                return;
-            }else{}
-        }
-        if (!$("#leavetype").val()){
-            $('#modalWarning').modal('toggle');
-            $('#modalWarning .alert').html(" Please select Leave Type");
-        }else if($("#lstarts").val()>$("#lenddate").val()){
-            $('#modalWarning').modal('toggle');
-            $('#modalWarning .alert').html("Invalid Inclusive Dates");
-        }else if(!$("#purposeofleave").val()){
-            $('#modalWarning').modal('toggle');
-            $('#modalWarning .alert').html("  Please Input Purpose");
-        }else if($("#leavedur").val()=="0"){
-            $('#modalWarning').modal('toggle');
-            $('#modalWarning .alert').html("You cant leave with 0 Duration.");
-        }else{
-            var data=$("#alas_data").serialize();
-            $.ajax({
-                url:'query/Query-insertalas.php', 
-                type:'post',
-                data:data,
+    //     if ($("#exampleCheck1").is(':checked')){
+    //         if ($("#Ltimefrom").val()>$("#Ltimeto").val()){
+    //             $('#modalWarning').modal('toggle');
+    //             $('#modalWarning .alert').html("Invalid Inclusive Time");
+    //             return;
+    //         }else{}
+    //     }
+    //     if (!$("#leavetype").val()){
+    //         $('#modalWarning').modal('toggle');
+    //         $('#modalWarning .alert').html(" Please select Leave Type");
+    //     }else if($("#lstarts").val()>$("#lenddate").val()){
+    //         $('#modalWarning').modal('toggle');
+    //         $('#modalWarning .alert').html("Invalid Inclusive Dates");
+    //     }else if(!$("#purposeofleave").val()){
+    //         $('#modalWarning').modal('toggle');
+    //         $('#modalWarning .alert').html("  Please Input Purpose");
+    //     }else if($("#leavedur").val()=="0"){
+    //         $('#modalWarning').modal('toggle');
+    //         $('#modalWarning .alert').html("You cant leave with 0 Duration.");
+    //     }else{
+    //         var data=$("#alas_data").serialize();
+    //         $.ajax({
+    //             url:'query/Query-insertalas.php', 
+    //             type:'post',
+    //             data:data,
                 
-                success:function(data){
+    //             success:function(data){
                 
-                    if (data==1){
-                        $("#newform").modal('hide');
-                        var xmlhttp = new XMLHttpRequest();
-                        $("#tbalas").empty();
-                        xmlhttp.onreadystatechange = function() {
-                            if (this.readyState == 4 && this.status == 200) {
-                                document.getElementById("tbalas").innerHTML = this.responseText;
-                            }
-                        };
-                        xmlhttp.open("GET", "query/Query-Viewalas.php", true);
-                        xmlhttp.send();
-                        $('#modalSuccess').modal('toggle');
-                        $('#modalSuccess .alert').html("Succesfully Saved");  
-                    }else{
-                        $('#modalWarning').modal('toggle');
-                        $('#modalWarning .alert').html(data);
-                    }
-                }
-            });
-        }
+    //                 if (data==1){
+    //                     $("#newform").modal('hide');
+    //                     var xmlhttp = new XMLHttpRequest();
+    //                     $("#tbalas").empty();
+    //                     xmlhttp.onreadystatechange = function() {
+    //                         if (this.readyState == 4 && this.status == 200) {
+    //                             document.getElementById("tbalas").innerHTML = this.responseText;
+    //                         }
+    //                     };
+    //                     xmlhttp.open("GET", "query/Query-Viewalas.php", true);
+    //                     xmlhttp.send();
+    //                     $('#modalSuccess').modal('toggle');
+    //                     $('#modalSuccess .alert').html("Succesfully Saved");  
+    //                 }else{
+    //                     $('#modalWarning').modal('toggle');
+    //                     $('#modalWarning .alert').html(data);
+    //                 }
+    //             }
+    //         });
+    //     }
     
-    });
+    // });
+
+$("#alassave").click(function(){
+     
+    // 1. Time Validation
+    if ($("#exampleCheck1").is(':checked')){
+        if ($("#Ltimefrom").val() > $("#Ltimeto").val()){
+            $('#modalWarning').modal('toggle');
+            $('#modalWarning .alert').html("Invalid Inclusive Time");
+            return;
+        }
+    }
+
+    // 2. Leave Type Validation
+    if (!$("#leavetype").val()){
+        $('#modalWarning').modal('toggle');
+        $('#modalWarning .alert').html(" Please select Leave Type");
+        return;
+    }
+
+    // --- NEW: Sub-category Validation (Tier 2) ---
+    var selectedLeaveText = $("#leavetype option:selected").text().toUpperCase();
+
+    
+    if ($("#leavetype").val() == 22 || selectedLeaveText.includes("VACATION")) {
+        if (!$("#leave_subcategory").val()) {
+            $('#modalWarning').modal('toggle');
+            $('#modalWarning .alert').html("Please select a Vacation Sub-category (Standard, Emergency, or Force Majeure)");
+            return;
+        }
+    }
+    // ---------------------------------------------
+
+    // 3. Inclusive Dates Validation
+    if($("#lstarts").val() > $("#lenddate").val()){
+        $('#modalWarning').modal('toggle');
+        $('#modalWarning .alert').html("Invalid Inclusive Dates");
+    }
+    // 4. Purpose Validation
+    else if(!$("#purposeofleave").val()){
+        $('#modalWarning').modal('toggle');
+        $('#modalWarning .alert').html("  Please Input Purpose");
+    }
+    // 5. Duration Validation
+    else if($("#leavedur").val() == "0"){
+        $('#modalWarning').modal('toggle');
+        $('#modalWarning .alert').html("You cant leave with 0 Duration.");
+    }
+    // 6. Final Submission
+    else {
+        var data = $("#alas_data").serialize();
+        $.ajax({
+            url:'query/Query-insertalas.php', 
+            type:'post',
+            data:data,
+            success:function(data){
+                if (data == 1){
+                    $("#newform").modal('hide');
+                    $("#tbalas").empty();
+                    
+                    // Refresh table
+                    $.get("query/Query-Viewalas.php", function(response){
+                        $("#tbalas").html(response);
+                    });
+
+                    $('#modalSuccess').modal('toggle');
+                    $('#modalSuccess .alert').html("Succesfully Saved");  
+                } else {
+                    $('#modalWarning').modal('toggle');
+                    $('#modalWarning .alert').html(data);
+                }
+            }
+        });
+    }
+});
+
 });
 $(document).ready(function(){
     $(document).on("click", ".ys_ot", function(){
