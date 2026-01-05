@@ -103,8 +103,10 @@
     // Get the text of the selected option
     const selectedText = selectElement.options[selectElement.selectedIndex].text.toUpperCase();
 
+    alert(selectedText);
+
     // If the selection contains the word "VACATION", show the second tier
-    if (selectedText.includes("VACATION")) {
+    if (selectedText.includes("SIL VACATION") || selectedText.includes("VACATION")) {
         subCategoryArea.style.display = 'block';
         subCategorySelect.setAttribute('required', 'required');
     } else {
@@ -265,9 +267,10 @@ html body {
                                                     <div class="form-group" id="sub_category_area" style="display:none; background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
                                                         <label>Select Vacation Detail:</label>
                                                         <select class="form-control" id="leave_subcategory" name="leave_subcategory">
-                                                            <option value="VACATION">VACATION (Standard Setup)</option>
-                                                            <option value="FORCE MAJEURE">FORCE MAJEURE (Inclement weather, nature, etc.)</option>
-                                                            <option value="EMERGENCY">EMERGENCY (Emergencies)</option>
+                                                            <option value="22">VACATION (Standard Setup)</option>
+                                                            <option value="38">FORCE MAJEURE (Inclement weather, nature, etc.)</option>
+                                                            <option value="24">EMERGENCY (Emergencies)</option>
+                                                            
                                                         </select>
                                                         <small class="text-muted">Note: Force Majeure and Emergency can be filed upon reporting back for work.</small>
                                                     </div>
