@@ -150,11 +150,11 @@ html body {
                                         $id        = $_SESSION['id'];
                                         $isid      = $_SESSION['EmpISID'];
                                         $statement = $pdo->prepare("SELECT *
-                              FROM employees
-                              INNER JOIN empdetails ON employees.EmpID=empdetails.EmpID
-                              INNER JOIN companies ON empdetails.EmpCompID=companies.CompanyID
-                              INNER JOIN departments ON empdetails.EmpdepID=departments.DepartmentID
-                              INNER JOIN positions ON positions.PSID=employees.PosID where employees.EmpID=:id order by employees.EmpLN ASC ");
+                                        FROM employees
+                                        INNER JOIN empdetails ON employees.EmpID=empdetails.EmpID
+                                        INNER JOIN companies ON empdetails.EmpCompID=companies.CompanyID
+                                        INNER JOIN departments ON empdetails.EmpdepID=departments.DepartmentID
+                                        INNER JOIN positions ON positions.PSID=employees.PosID where employees.EmpID=:id order by employees.EmpLN ASC ");
                                         $statement->bindParam(':id', $id);
                                         $statement->execute();
                                         $row = $statement->fetch();
@@ -284,10 +284,10 @@ html body {
                                                                         if ($_SESSION['id'] != "WeDoinc-003" and $res['LeaveID'] == 34) {
                                                                         } else {
                                                                         ?>
-                <option value="<?php echo $res['LeaveID']; ?>">
-                    <?php echo $res['LeaveDesc']; ?> </option>
-                <?php
-                    }
+                                                                            <option value="<?php echo $res['LeaveID']; ?>">
+                                                                                <?php echo $res['LeaveDesc']; ?> </option>
+                                                                            <?php
+                                                                                }
                         }
 
                     } else {
@@ -351,100 +351,105 @@ html body {
                                                                     $crdetail24 = $stmt24->fetch();
                                                                     $crcnt24    = $stmt24->rowCount();
 
-                                                                    if ($crcnt24 > 0) {
-                                                                        #if credit is 15 set all credit without earning
-                                                                        if ($crdetail24['CTH'] == 15) {
-                                                                            $creditEarned = $crdetail24['CT'];
-                                                                        } else {
-                                                                            #if credit is 10 then set system to earning mode
-                                                                            if ($yr < $cyr) {
-                                                                                $sql  = "select * from credit where EmpID = :id";
-                                                                                $stmt = $pdo->prepare($sql);
-                                                                                $stmt->bindParam(':id', $id);
-                                                                                $stmt->execute();
-                                                                                $crdetail = $stmt->fetch();
-                                                                                $crcnt    = $stmt->rowCount();
-                                                                                if ($crcnt > 0) {
-                                                                                    $crh  = $crdetail['CTH'];
-                                                                                    $crth = $crdetail['CT'];
+                                                                    //2026 set default credit earned
+                                                                   $creditEarned = $crdetail24['CT'] ?? 0;
 
-                                                                                    $tdy   = date("Y");
-                                                                                    $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
-                                                                                    $date1 = date_create("1/1/" . $tdy);
-                                                                                    $date2 = date_create("1/1/" . $tdy1);
-                                                                                    $diff  = date_diff($date1, $date2);
-                                                                                    //output data
-                                                                                    $noOfDays = $diff->format("%a") / 12;
 
-                                                                                    //credit per month earning
-                                                                                    $cdPerMonth = $crh / 12;
+                                                                    //this is disabled for 2024 credit system
+                                                                    // if ($crcnt24 > 0) {
+                                                                    //     #if credit is 15 set all credit without earning
+                                                                    //     if ($crdetail24['CTH'] == 15) {
+                                                                    //         $creditEarned = $crdetail24['CT'];
+                                                                    //     } else {
+                                                                    //         #if credit is 10 then set system to earning mode
+                                                                    //         if ($yr < $cyr) {
+                                                                    //             $sql  = "select * from credit where EmpID = :id";
+                                                                    //             $stmt = $pdo->prepare($sql);
+                                                                    //             $stmt->bindParam(':id', $id);
+                                                                    //             $stmt->execute();
+                                                                    //             $crdetail = $stmt->fetch();
+                                                                    //             $crcnt    = $stmt->rowCount();
+                                                                    //             if ($crcnt > 0) {
+                                                                    //                 $crh  = $crdetail['CTH'];
+                                                                    //                 $crth = $crdetail['CT'];
 
-                                                                                    //credit per day earning
-                                                                                    $cdPerDay = $cdPerMonth / $noOfDays;
+                                                                    //                 $tdy   = date("Y");
+                                                                    //                 $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
+                                                                    //                 $date1 = date_create("1/1/" . $tdy);
+                                                                    //                 $date2 = date_create("1/1/" . $tdy1);
+                                                                    //                 $diff  = date_diff($date1, $date2);
+                                                                    //                 //output data
+                                                                    //                 $noOfDays = $diff->format("%a") / 12;
 
-                                                                                    //get no of days from jan to present
-                                                                                    $todaydate  = date("Y");
-                                                                                    $todaydate1 = date("m/d/Y");
-                                                                                    $gnOfdJan   = date_create("01/01/" . $todaydate);
-                                                                                    // $gnOfdCur = date_create("11/01/2024" );
-                                                                                    $gnOfdCur = date_create($todaydate1);
-                                                                                    //$gnOfdCur=date_create("01/01/2021");
-                                                                                    $diff2 = date_diff($gnOfdJan, $gnOfdCur);
-                                                                                    //output data
-                                                                                    $gnOfdJanCur = $diff2->format("%r%a");
-                                                                                    //get use credits and subtract to total earned credits ramon
-                                                                                    $useCredit = $crh - $crth;
-                                                                                    //get total earned creidit
-                                                                                    $creditEarned = ($cdPerDay * ($gnOfdJanCur + 1)) - $useCredit;
-                                                                                    // print $gnOfdJanCur + 1;
+                                                                    //                 //credit per month earning
+                                                                    //                 $cdPerMonth = $crh / 12;
 
-                                                                                } else {
-                                                                                    $creditEarned = "Missing credit logs";
-                                                                                    //return;
-                                                                                }
-                                                                            } else {
+                                                                    //                 //credit per day earning
+                                                                    //                 $cdPerDay = $cdPerMonth / $noOfDays;
 
-                                                                                $sql  = "select * from credit where EmpID = :id";
-                                                                                $stmt = $pdo->prepare($sql);
-                                                                                $stmt->bindParam(':id', $id);
-                                                                                $stmt->execute();
-                                                                                $crdetail = $stmt->fetch();
-                                                                                $crcnt    = $stmt->rowCount();
-                                                                                if ($crcnt > 0) {
-                                                                                    $crh   = $crdetail['CTH'];
-                                                                                    $crth  = $crdetail['CT'];
-                                                                                    $tdy   = date("Y");
-                                                                                    $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
-                                                                                    $date1 = date_create("1/1/" . $tdy);
-                                                                                    $date2 = date_create("1/1/" . $tdy1);
-                                                                                    $diff  = date_diff($date1, $date2);
-                                                                                    //output data
-                                                                                    $noOfDays = $diff->format("%a") / 12;
-                                                                                    //credit per month earning
-                                                                                    $cdPerMonth = $crh / 12;
-                                                                                    //credit per day earning
-                                                                                    $cdPerDay = $cdPerMonth / $noOfDays;
-                                                                                    //get no of days from jan to present
-                                                                                    $todaydate  = date("Y");
-                                                                                    $todaydate1 = date("m/d/Y");
-                                                                                    $gnOfdJan   = date_create($dth);
-                                                                                    $gnOfdCur   = date_create($todaydate1);
-                                                                                    //$gnOfdCur=date_create("01/01/2021");
-                                                                                    $diff2 = date_diff($gnOfdJan, $gnOfdCur);
-                                                                                    //output data
-                                                                                    $gnOfdJanCur = $diff2->format("%a");
-                                                                                    //get use credits and subtract to total earned credits ramon
-                                                                                    $useCredit = $crh - $crth;
-                                                                                    //get total earned creidit
+                                                                    //                 //get no of days from jan to present
+                                                                    //                 $todaydate  = date("Y");
+                                                                    //                 $todaydate1 = date("m/d/Y");
+                                                                    //                 $gnOfdJan   = date_create("01/01/" . $todaydate);
+                                                                    //                 // $gnOfdCur = date_create("11/01/2024" );
+                                                                    //                 $gnOfdCur = date_create($todaydate1);
+                                                                    //                 //$gnOfdCur=date_create("01/01/2021");
+                                                                    //                 $diff2 = date_diff($gnOfdJan, $gnOfdCur);
+                                                                    //                 //output data
+                                                                    //                 $gnOfdJanCur = $diff2->format("%r%a");
+                                                                    //                 //get use credits and subtract to total earned credits ramon
+                                                                    //                 $useCredit = $crh - $crth;
+                                                                    //                 //get total earned creidit
+                                                                    //                 $creditEarned = ($cdPerDay * ($gnOfdJanCur + 1)) - $useCredit;
+                                                                    //                 // print $gnOfdJanCur + 1;
 
-                                                                                    $creditEarned = ($cdPerDay * $gnOfdJanCur) - $useCredit;
+                                                                    //             } else {
+                                                                    //                 $creditEarned = "Missing credit logs";
+                                                                    //                 //return;
+                                                                    //             }
+                                                                    //         } else {
 
-                                                                                    //if greater than
-                                                                                    //return;
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
+                                                                    //             $sql  = "select * from credit where EmpID = :id";
+                                                                    //             $stmt = $pdo->prepare($sql);
+                                                                    //             $stmt->bindParam(':id', $id);
+                                                                    //             $stmt->execute();
+                                                                    //             $crdetail = $stmt->fetch();
+                                                                    //             $crcnt    = $stmt->rowCount();
+                                                                    //             if ($crcnt > 0) {
+                                                                    //                 $crh   = $crdetail['CTH'];
+                                                                    //                 $crth  = $crdetail['CT'];
+                                                                    //                 $tdy   = date("Y");
+                                                                    //                 $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
+                                                                    //                 $date1 = date_create("1/1/" . $tdy);
+                                                                    //                 $date2 = date_create("1/1/" . $tdy1);
+                                                                    //                 $diff  = date_diff($date1, $date2);
+                                                                    //                 //output data
+                                                                    //                 $noOfDays = $diff->format("%a") / 12;
+                                                                    //                 //credit per month earning
+                                                                    //                 $cdPerMonth = $crh / 12;
+                                                                    //                 //credit per day earning
+                                                                    //                 $cdPerDay = $cdPerMonth / $noOfDays;
+                                                                    //                 //get no of days from jan to present
+                                                                    //                 $todaydate  = date("Y");
+                                                                    //                 $todaydate1 = date("m/d/Y");
+                                                                    //                 $gnOfdJan   = date_create($dth);
+                                                                    //                 $gnOfdCur   = date_create($todaydate1);
+                                                                    //                 //$gnOfdCur=date_create("01/01/2021");
+                                                                    //                 $diff2 = date_diff($gnOfdJan, $gnOfdCur);
+                                                                    //                 //output data
+                                                                    //                 $gnOfdJanCur = $diff2->format("%a");
+                                                                    //                 //get use credits and subtract to total earned credits ramon
+                                                                    //                 $useCredit = $crh - $crth;
+                                                                    //                 //get total earned creidit
+
+                                                                    //                 $creditEarned = ($cdPerDay * $gnOfdJanCur) - $useCredit;
+
+                                                                    //                 //if greater than
+                                                                    //                 //return;
+                                                                    //             }
+                                                                    //         }
+                                                                    //     }
+                                                                    // }
                                                                 }
                                                             }
                                                         } else {
@@ -477,12 +482,9 @@ html body {
                                                             value="<?php echo date('Y-m-d'); ?>" class="form-control">
                                                     </div>
                                                     <!-- <div class="form-group row">
-
-												<div class="col-lg-6" style="padding-left: 0px;"><label>Time From:</label><input readonly="readonly" class="form-control"  value="08:00"type="time" name="Ltimefrom" id="Ltimefrom"></div>
-
-
-												<div class="col-lg-6" style="padding-right: 0px;"> <label>Time To:</label><input class="form-control" readonly="readonly" value="19:00" type="time" name="Ltimeto" id="Ltimeto"></div>
-											</div> -->
+                                                        <div class="col-lg-6" style="padding-left: 0px;"><label>Time From:</label><input readonly="readonly" class="form-control"  value="08:00"type="time" name="Ltimefrom" id="Ltimefrom"></div>
+                                                        <div class="col-lg-6" style="padding-right: 0px;"> <label>Time To:</label><input class="form-control" readonly="readonly" value="19:00" type="time" name="Ltimeto" id="Ltimeto"></div>
+                                                    </div> -->
                                                     <div class="form-group">
                                                         <!--   -->
                                                         <div class="ihd-dis" style="float: right;">
@@ -495,32 +497,24 @@ html body {
                                                         <input type="text" readonly="readonly" value="1" id="leavedur"
                                                             name="leavedur" class="form-control dura">
                                                     </div>
-
                                                     <button type="button" id="alassave"
                                                         class="btn btn-success btn-block">Submit</button>
                                                 </div>
-
                                             </div>
-
                                         </form>
                                     </div>
-
                                     <!-- Modal footer -->
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
-
-
 
                         <br>
                         <div class="dtpar">
                             <h5>Date Parameters:</h5>
                             <label>From:</label>
-
                             <input type="date" class="form-control" id="dtp1"
                                 value="<?php echo date('Y-m-d', strtotime(date("Y-m-d") . ' - 15 days')); ?>">
                             <label>To:</label>
@@ -593,14 +587,12 @@ html body {
                                 <div class="modal ob-viewdel" id="myModalob<?php echo $row21['IDL']; ?>">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-
                                             <!-- Modal Header -->
                                             <div class="modal-header">
                                                 <h4 class="modal-title">Are you sure you want to remove this ??</h4>
                                                 <button type="button" class="close"
                                                     data-dismiss="modal">&times;</button>
                                             </div>
-
                                             <!-- Modal body -->
                                             <div class="modal-body">
                                                 <button type="button" id="<?php echo $row21['IDL']; ?>"
@@ -608,16 +600,12 @@ html body {
                                                 <button type="button" class="btn btn-danger"
                                                     data-dismiss="modal">No</button>
                                             </div>
-
                                             <!-- Modal footer -->
-
-
                                         </div>
                                     </div>
                                 </div>
                                 <?php
                                     }
-
                                 ?>
                             </tbody>
                         </table>
@@ -629,24 +617,18 @@ html body {
                 <div class="modal" id="modalSuccess">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
-
                             <!-- Modal Header -->
                             <div class="modal-header" style="padding: 7px 8px;">
                                 <h1 style="font-size: 25px; padding-left: 10px;color:green;"><i class="fa fa-check"
                                         aria-hidden="true"></i></h1>
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                             </div>
-
                             <!-- Modal body -->
                             <div class="modal-body">
                                 <div class="alert alert-success">
-
                                 </div>
                             </div>
-
                             <!-- Modal footer -->
-
-
                         </div>
                     </div>
                 </div>
@@ -656,27 +638,19 @@ html body {
                 <div class="modal" id="modalWarning">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
-
                             <!-- Modal Header -->
                             <div class="modal-header" style="padding: 7px 8px;">
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                             </div>
-
                             <!-- Modal body -->
                             <div class="modal-body">
                                 <div class="alert alert-danger">
-
                                 </div>
                             </div>
-
                             <!-- Modal footer -->
-
-
                         </div>
                     </div>
                 </div>
-
-
                 <!-- end of website content -->
             </div>
         </div>
