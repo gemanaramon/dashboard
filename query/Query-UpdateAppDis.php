@@ -1,4 +1,6 @@
 <?php
+
+//disapprove application
 include 'w_conn.php';
 session_start();
 if (isset($_SESSION['id']) && $_SESSION['id'] != "0") {} else {header('location: login.php');}
@@ -20,6 +22,8 @@ if ($_SESSION['UserType'] == 3) {
 } else {
     $stat = 5;
 }
+
+
 if (isset($_GET['ntype'])) {
     if ($_GET['ntype'] == "EO") {
 

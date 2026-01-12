@@ -157,7 +157,8 @@
         $cnt=0; $DaysLogin=0;
         while ($today>$dateend){
           $day_desc = date ("l", strtotime($dateend));
-          $statement = $pdo->prepare("SELECT * FROM workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID INNER JOIN schedeffectivity AS c ON workdays.EFID=c.efids WHERE (workdays.empid='$id') AND (workdays.Day_s='$day_desc') AND ('$today' >= dfrom) AND ('$today' <= dto) AND SchedTime <> 0 ");
+          $statement = $pdo->prepare("SELECT * FROM workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID INNER JOIN 
+          schedeffectivity AS c ON workdays.EFID=c.efids WHERE (workdays.empid='$id') AND (workdays.Day_s='$day_desc') AND ('$today' >= dfrom) AND ('$today' <= dto) AND SchedTime <> 0 ");
           $statement->execute();
           $dateend = date ("Y-m-d", strtotime($dateend. "+1 day"));
           if ($statement->rowCount()>0 && $today>=$dateend){

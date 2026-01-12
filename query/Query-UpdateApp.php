@@ -1,4 +1,5 @@
 <?php
+// approve application
   include 'w_conn.php';session_start();
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
@@ -21,6 +22,9 @@
     }else{
         $stat = 4;
     }
+
+    echo   'b';
+    return;
    if (isset($_GET['ntype'])){
       if ($_GET['ntype']=="EO"){
           $sql = "UPDATE earlyout SET Status=:st,DateTimeUpdated=:dtu where SID=".$_GET['id'];
