@@ -23,8 +23,7 @@
     }else{
         $stat = 4;
     }
-    echo 'b';
-    return 2;
+     
    if (isset($_GET['ntype'])){
       if ($_GET['ntype']=="EO"){
           $sql = "UPDATE earlyout SET Status=:st,DateTimeUpdated=:dtu where SID=".$_GET['id'];
