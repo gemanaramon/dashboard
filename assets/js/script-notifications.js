@@ -94,13 +94,35 @@ $(document).ready(function () {
         if (res[0] == "HL") {
           $.ajax({
             url: "query/Query-UpdateAppDis.php?ntype=HL&id=" + res[1],
-            type: "post",
+       type: "post",
             data: { reas: reason },
             success: function (data) {
-              // $('#modalWarning').modal('toggle');
-              //         $('#modalWarning .alert').html("Successfully DisApproved");
-              //     location.reload(true);
-              $("#modalWarning").modal("toggle");
+                console.log(data);
+            //   var text = "";
+
+            //   if (data.uid == 1) {
+            //     if (data.dd == "35") {
+            //       text =
+            //         "Successfully approved leave application!.\\n \\n Note!\\n \\n System will automatically over-ride status \\n once it detects the lack of leave credits for the specific employee.";
+            //     } else {
+            //       text = "Successfully approved leave application!";
+            //     }
+
+            //     $("#modalWarning").modal("toggle");
+            //     $(this).css("background-color", "green");
+            //     $("#modalWarning .alert").html(text.replace(/\\n/g, "<br>"));
+            //     window.setTimeout(function () {
+            //       location.reload(true);
+            //     }, 6000);
+            //   } else {
+            //     $("#modalWarning").modal("toggle");
+            //     $("#modalWarning .alert").html("Successfully Approved. ");
+            //     window.setTimeout(function () {
+            //       location.reload(true);
+            //     }, 6000);
+            //   }
+            
+             $("#modalWarning").modal("toggle");
               $("#modalWarning .alert").html("Successfully DisApproved");
               window.setTimeout(function () {
                 location.reload(true);
@@ -157,7 +179,7 @@ $(document).ready(function () {
         },
       });
     }
-    if (res[0] == "HL") {
+     if (res[0] == "HL") {
       $(this).prop("disabled", true);
       $.ajax({
         url: "query/Query-UpdateApp.php?ntype=HL&id=" + res[1],
@@ -165,9 +187,10 @@ $(document).ready(function () {
         cache: false,
         dataType: 'json',
         success: function (data) {
+            // alert(data);
+            // return false;
+            
           var text = "";
-          alert (data);
-          return false;
           if (data.uid == 1) {
             if (data.dd == "35") {
               text =
@@ -187,7 +210,7 @@ $(document).ready(function () {
             $("#modalWarning .alert").html("Successfully Approved. ");
             window.setTimeout(function () {
               location.reload(true);
-            }, 1000);
+            }, 6000);
           }
         },
       });
