@@ -85,7 +85,7 @@
                 $nameE=$row['FN'] . " " . $row['LN'];
             }
 
-            if ($_SESSION['UserType']==200){//this is for IS function
+            if ($_SESSION['UserType']==202){//this is for IS function
                 //if immedaite
                 $sql = "UPDATE hleaves set LStatus=:st,LDateTimeUpdated=:ldtup  where LeaveID=:lid";
                 $stmt = $pdo->prepare($sql);
