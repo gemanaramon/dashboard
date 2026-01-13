@@ -85,7 +85,7 @@
                 $nameE=$row['FN'] . " " . $row['LN'];
             }
 
-            if ($_SESSION['UserType']==2){//this is for IS function
+            if ($_SESSION['UserType']==200){//this is for IS function
                 //if immedaite
                 $sql = "UPDATE hleaves set LStatus=:st,LDateTimeUpdated=:ldtup  where LeaveID=:lid";
                 $stmt = $pdo->prepare($sql);
@@ -143,11 +143,11 @@
                             }
                             
                             if ($EmplID=="WeDoinc-0003" and $leaveType == 34){//for terminal leave function
-                            $sql="select SUM(LDuration) as SumOfDur from hleavesbd where LType=12 and Lstatus=4";
-                            $stmt = $pdo->prepare($sql);
-                            $stmt->execute();
-                            $leaveterminal = $stmt->fetch();
-                            if ((($leaveterminal['SumOfDur']/60) /10) < 8){
+                                $sql="select SUM(LDuration) as SumOfDur from hleavesbd where LType=12 and Lstatus=4";
+                                $stmt = $pdo->prepare($sql);
+                                $stmt->execute();
+                                $leaveterminal = $stmt->fetch();
+                                if ((($leaveterminal['SumOfDur']/60) /10) < 8){
                                         // $sql = "UPDATE hleaves SET LStatus=9,LDateTimeUpdated=:dtu where LeaveID=:idd";
                                         // $stmt = $pdo->prepare($sql);                       
                                         // $stmt->bindParam(':dtu' ,$tdy);
@@ -219,7 +219,17 @@
                                     }
                                 }    
                             }
+                                        // $varCT= $crdetailTH['CT'];
+        echo  $crdetailTH['CT'];
+        return;
+                            {//no earning
+                                if (in_array($leaveType, [22, 30, 38, 24])) {// vacation medical Force Emergency 
+                                        
+                                }
+
+                            }
                          
+                            //start p1 for earning credit process and treshhold clsssifcation
                             if($varTH==15){
                               
                                 if ( $leaveType == 22 || $leaveType == 30 || $leaveType == 35 ){//if leave type is medical and sil
@@ -616,6 +626,8 @@
                                     echo json_encode(array("uid" =>0, "dd" => '0')); 
                                 }
                             }
+
+                            //end p1
                             
                         }else{//nothing here
                             print 1;
