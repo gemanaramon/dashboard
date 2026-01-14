@@ -267,7 +267,7 @@ html body {
                                                     <div class="form-group" id="sub_category_area" style="display:none; background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
                                                         <label>Select Vacation Detail:</label>
                                                         <select class="form-control" id="leave_subcategory" name="leave_subcategory">
-                                                            <option value="22">VACATION (Standard Setup)</option>
+                                                            <option value="22">VACATION </option>
                                                             <option value="38">FORCE MAJEURE (Inclement weather, nature, etc.)</option>
                                                             <option value="24">EMERGENCY (Emergencies)</option>
                                                             
