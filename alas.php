@@ -103,7 +103,7 @@
     // Get the text of the selected option
     const selectedText = selectElement.options[selectElement.selectedIndex].text.toUpperCase();
 
-    alert(selectedText);
+    
 
     // If the selection contains the word "VACATION", show the second tier
     if (selectedText.includes("SIL VACATION") || selectedText.includes("VACATION")) {
