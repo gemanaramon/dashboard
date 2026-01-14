@@ -231,7 +231,20 @@ html body {
                                                                 $crcnt25    = $stmt25->rowCount();
 
                                                                 if ($crcnt25 > 0) {
-                                                                    
+
+                                                                        if (!isset($_SESSION['gender']) || !isset($_SESSION['id'])) {
+                                                                            // 1. Clear any accidental output
+                                                                            ob_end_clean(); 
+                                                                            
+                                                                            // 2. Force the redirect header
+                                                                            header('Location: login.php');
+                                                                            
+                                                                            // 3. Fallback: If headers are already sent, use HTML to push the reload
+                                                                            echo '<meta http-equiv="refresh" content="0;url=login.php">';
+                                                                            echo '<script>window.location.href="login.php";</script>';
+                                                                            
+                                                                            exit(); 
+                                                                        }
                                                                     //2026 new code for gender validation and leave type
                                                                     if ($_SESSION['gender'] == "Male") {
                                                                                 $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','33','30','22') order by LeaveDesc asc");
