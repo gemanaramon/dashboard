@@ -214,8 +214,6 @@ $(document).ready(function(){
             });
         }
     });
-});
-$(document).ready(function(){
 
     $("#empname").change(function(){
         var idemp = $(this).val();
@@ -347,70 +345,71 @@ $(document).ready(function(){
             // $('#leavetype').attr('disabled', false);
         }
     });
-      //9-11
-  $("#lenddate").change(function () {
-    var d = new Date();
-    var month = d.getMonth() + 1;
-    var day = d.getDate();
 
-    if ($("#lstarts").val() > $("#lenddate").val()) {
-      $("#modalWarning").modal("toggle");
-      $("#modalWarning .alert").html("Invalid Inclusive Dates");
-      // $("#lenddate").val($("#lstarts").val());
-      $(".dura").val("0");
-      $("#exampleCheck1").prop("checked", false);
-      $("#Ltimefrom").attr("readonly", true);
-      $("#Ltimeto").attr("readonly", true);
-    } else {
-      $("#exampleCheck1").prop("checked", false);
-      $("#Ltimefrom").attr("readonly", true);
-      $("#Ltimeto").attr("readonly", true);
-      var ds = $("#lstarts").val();
-      var de = $(this).val();
-      var ltype = $("#leavetype").val(); //2-12-2024
-      if (!ds) {
-        $(".dura").val("0");
-      } else {
-        $.ajax({
-          url: "query/Query-alascalculateduration.php",
-          type: "post",
-          data: { dtst: ds, dtend: de, ltype: ltype }, //2-12-2024
-          success: function (data) {
-            $(".dura").val(data);
-          },
-        });
-      }
-    }
-  });
+    //9-11
+    $("#lenddate").change(function () {
+        var d = new Date();
+        var month = d.getMonth() + 1;
+        var day = d.getDate();
 
-  $("#lstarts").change(function () {
-    $("#exampleCheck1").prop("checked", false);
-    $("#Ltimefrom").attr("readonly", true);
-    $("#Ltimeto").attr("readonly", true);
-    if (
-      $("#lstarts").val() > $("#lenddate").val() &&
-      $("#lenddate").val() !== ""
-    ) {
-      // $("#lenddate").val($("#lstarts").val());
-      $(".dura").val("0");
-    } else {
-      var ds = $(this).val();
-      var de = $("#lenddate").val();
-      var ltype = $("#leavetype").val(); //2-12-2024
-      if (!de) {
+        if ($("#lstarts").val() > $("#lenddate").val()) {
+        $("#modalWarning").modal("toggle");
+        $("#modalWarning .alert").html("Invalid Inclusive Dates");
+        // $("#lenddate").val($("#lstarts").val());
         $(".dura").val("0");
-      } else {
-        $.ajax({
-          url: "query/Query-alascalculateduration.php",
-          type: "post",
-          data: { dtst: ds, dtend: de, ltype: ltype }, //2-12-2024
-          success: function (data) {
-            $(".dura").val(data);
-          },
-        });
-      }
-    }
-  });
+        $("#exampleCheck1").prop("checked", false);
+        $("#Ltimefrom").attr("readonly", true);
+        $("#Ltimeto").attr("readonly", true);
+        } else {
+        $("#exampleCheck1").prop("checked", false);
+        $("#Ltimefrom").attr("readonly", true);
+        $("#Ltimeto").attr("readonly", true);
+        var ds = $("#lstarts").val();
+        var de = $(this).val();
+        var ltype = $("#leavetype").val(); //2-12-2024
+        if (!ds) {
+            $(".dura").val("0");
+        } else {
+            $.ajax({
+            url: "query/Query-alascalculateduration.php",
+            type: "post",
+            data: { dtst: ds, dtend: de, ltype: ltype }, //2-12-2024
+            success: function (data) {
+                $(".dura").val(data);
+            },
+            });
+        }
+        }
+    });
+
+    $("#lstarts").change(function () {
+        $("#exampleCheck1").prop("checked", false);
+        $("#Ltimefrom").attr("readonly", true);
+        $("#Ltimeto").attr("readonly", true);
+        if (
+        $("#lstarts").val() > $("#lenddate").val() &&
+        $("#lenddate").val() !== ""
+        ) {
+        // $("#lenddate").val($("#lstarts").val());
+        $(".dura").val("0");
+        } else {
+        var ds = $(this).val();
+        var de = $("#lenddate").val();
+        var ltype = $("#leavetype").val(); //2-12-2024
+        if (!de) {
+            $(".dura").val("0");
+        } else {
+            $.ajax({
+            url: "query/Query-alascalculateduration.php",
+            type: "post",
+            data: { dtst: ds, dtend: de, ltype: ltype }, //2-12-2024
+            success: function (data) {
+                $(".dura").val(data);
+            },
+            });
+        }
+        }
+    });
     
     $("#Ltimeto").change(function(){
         var diff = ( new Date("1970-1-1 " + $("#Ltimeto").val()) - new Date("1970-1-1 " + $("#Ltimefrom").val()) ) / 1000 / 60 / 60;
@@ -525,8 +524,7 @@ $(document).ready(function(){
         }
     
     });
-});
-$(document).ready(function(){
+
     $(document).on("click", ".ys_ot", function(){
         var data = $(this).attr("id");
     
