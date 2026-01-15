@@ -245,8 +245,6 @@
           }    
     }
 
-   
-
     // --- START TRANSACTION ---
     try {
       $pdo->beginTransaction();
