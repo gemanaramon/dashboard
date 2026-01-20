@@ -216,7 +216,7 @@
                                 $stmtTH->execute();
                                 $crdetailTH = $stmtTH->fetch();
                                 $crcntTH = $stmtTH->rowCount();
-
+                                
                                 if ($crcntTH > 0) {
 
                                     if($EmplID!="WeDoinc-0145"){
@@ -252,10 +252,10 @@
                                             $usedCredit = $cth - $ct;
 
                                             // 4. Set $varCT to the LIVE earned value for the approval loop
-                                            $calculatedEarnings = ($cdPerDay * $daysActive) +4 - $usedCredit;
+                                            $calculatedEarnings = ($cdPerDay * $daysActive) - $usedCredit;
                                             
                                             // We use floor() to ensure we only approve full days earned
-                                            $varCT = floor($calculatedEarnings); 
+                                            $varCT = round($calculatedEarnings, 2); // Rounds to 2 decimal places
                                             $varTH = $cth;
                                         } else {
                                             // Fallback if no DOR found
@@ -267,8 +267,6 @@
                                 }    
                             }
 
-    echo $varCT;
-    return false;
                             {//no earning
                                     
                                try {
@@ -311,8 +309,11 @@
                                                 $stmtCount = $pdo->prepare($sqlCount);
                                                 $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
                                                 $totalApprovedCount = (int)$stmtCount->fetchColumn();
+                                                // $varCT = $emergencyTH - $totalApprovedCount;
+
                                             }
-                                        
+                                        // echo $durData;
+                                        // return;
                                             while ($DayDur >= 0) {
                                                 // 1. Determine the status based on current count + historical approved
                                                 if ($leaveType == 24) {
@@ -322,7 +323,7 @@
                                                         $statusFiD = 4; // Under threshold -> With Pay
                                                     }
                                                 } else {
-                                                    if ($durData > 0) {
+                                                    if ($durData > 0.5) {
                                                         $statusFiD = 4; // With Pay
                                                         $durData--;
                                                     } else {
@@ -360,11 +361,21 @@
                                             $stmtHLeaves->execute([':dtu' => $todaydt, ':idd' => $_GET['id']]);
 
                                             // 5. Deduct only the credits that were marked as 'With Pay' (LStatus 4)
-                                            $xcrd = $varCT - $localCount;
+                                            // if ($statusFiD == 4) {
 
-                                            $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
-                                            $stmtCredit = $pdo->prepare($sqlCredit);
-                                            $stmtCredit->execute([':ncrd' => $xcrd, ':idd' => $EmplID]);
+                                                if($EmplID == "WeDoinc-0145" && $leaveType == 24){
+  
+                                                    //do nothing 
+                                                }else{
+                                                    $xcrd = $varCT - $localCount;
+                                                    $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
+                                                    $stmtCredit = $pdo->prepare($sqlCredit);
+                                                    $stmtCredit->execute([':ncrd' => $xcrd, ':idd' => $EmplID]);
+                                                }
+                                               
+                                            // } 
+
+                                          
                                                 echo json_encode(array("uid" => $_SESSION['UserType'], "dd" => 35, "lc" => $localCount)); 
                                         } else {
                                             // Logic for other leave types

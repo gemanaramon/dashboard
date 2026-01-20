@@ -544,7 +544,7 @@ html body {
                                                         <?php 
                                                             // Determine the display value
                                                             if (is_numeric($creditEarned)) {
-                                                                $displayValue = number_format((float) $creditEarned, 2, '.', '');
+                                                                $displayValue = number_format((float) $creditEarned, 2 , '.', '');
                                                             } else {
                                                                 // It's already a string message, so keep it as is
                                                                 $displayValue = $creditEarned;
