@@ -206,21 +206,69 @@
                                 $varTH=0;
                                 $varCT=0;
                              
-                                $getTH = "select * from credit where EmpID = :id";
-                                $stmtTH = $pdo->prepare($getTH);
+                                // $getTH = "select * from credit where EmpID = :id";
+                                $sqlEmp = "SELECT a.EmpDOR, c.CT, c.CTH 
+                                FROM empdetails as a 
+                                INNER JOIN credit as c ON a.EmpID = c.EmpID 
+                                WHERE a.EmpID = :id";
+                                $stmtTH = $pdo->prepare($sqlEmp);
                                 $stmtTH->bindParam(':id',$EmplID );
                                 $stmtTH->execute();
                                 $crdetailTH = $stmtTH->fetch();
                                 $crcntTH = $stmtTH->rowCount();
 
                                 if ($crcntTH > 0) {
-                                    // if( $crdetailTH['CTH']==15){
-                                        $varTH= $crdetailTH['CTH'];
-                                        $varCT= $crdetailTH['CT'];
-                                    // }
+
+                                    if($EmplID!="WeDoinc-0145"){
+                                        // if( $crdetailTH['CTH']==10){
+                                            $varTH= $crdetailTH['CTH'];
+                                            $varCT= $crdetailTH['CT'];
+                                        //
+                                    }else{
+                                        //special case for WeDoinc-0145
+                                        $cth = $crdetailTH['CTH'];
+                                        $ct  = $crdetailTH['CT'];
+                                        $dor = $crdetailTH['EmpDOR']; // Ensure EmpDOR is available in your scope
+                                        
+                                        if (!empty($dor)) {
+                                            $currentYear = date("Y");
+                                            $hireYear    = date("Y", strtotime($dor));
+                                            
+                                            // 1. Set start date: Jan 1 or Date of Regularization
+                                            $calcStart = ($hireYear < $currentYear) 
+                                                ? date_create("1/1/" . $currentYear) 
+                                                : date_create($dor);
+                                            
+                                            $dateNow = date_create(date("Y-m-d"));
+
+                                            // 2. Calculate days in the current year
+                                            $dateJan1     = date_create("1/1/" . $currentYear);
+                                            $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
+                                            $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
+
+                                            // 3. Pro-rated math
+                                            $cdPerDay   = $cth / $daysInYear;
+                                            $daysActive = date_diff($calcStart, $dateNow)->format("%a");
+                                            $usedCredit = $cth - $ct;
+
+                                            // 4. Set $varCT to the LIVE earned value for the approval loop
+                                            $calculatedEarnings = ($cdPerDay * $daysActive) +4 - $usedCredit;
+                                            
+                                            // We use floor() to ensure we only approve full days earned
+                                            $varCT = floor($calculatedEarnings); 
+                                            $varTH = $cth;
+                                        } else {
+                                            // Fallback if no DOR found
+                                            $varCT = $ct;
+                                            $varTH = $cth;
+                                        }
+                                    }
+                                    
                                 }    
                             }
 
+    echo $varCT;
+    return false;
                             {//no earning
                                     
                                try {
@@ -248,99 +296,99 @@
                                         }
 
                                         if (in_array($leaveType, $medicalSilTypes)) {
-                                                $currentYear = date('Y');
-                                                $localCount = 0;
-                                                
-                                                // 1. Get how many days have ALREADY been used this year before this loop
-                                                $totalApprovedCount = 0;
+                                            $currentYear = date('Y');
+                                            $localCount = 0;
+                                            
+                                            // 1. Get how many days have ALREADY been used this year before this loop
+                                            $totalApprovedCount = 0;
+                                            if ($leaveType == 24) {
+                                                $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
+                                                            JOIN hleaves h ON hb.FID = h.LeaveID 
+                                                            WHERE h.EmpID = :empid 
+                                                            AND h.LType = 24 
+                                                            AND hb.LStatus = 4 
+                                                            AND YEAR(hb.LStart) = :year";
+                                                $stmtCount = $pdo->prepare($sqlCount);
+                                                $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
+                                                $totalApprovedCount = (int)$stmtCount->fetchColumn();
+                                            }
+                                        
+                                            while ($DayDur >= 0) {
+                                                // 1. Determine the status based on current count + historical approved
                                                 if ($leaveType == 24) {
-                                                    $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
-                                                                JOIN hleaves h ON hb.FID = h.LeaveID 
-                                                                WHERE h.EmpID = :empid 
-                                                                AND h.LType = 24 
-                                                                AND hb.LStatus = 4 
-                                                                AND YEAR(hb.LStart) = :year";
-                                                    $stmtCount = $pdo->prepare($sqlCount);
-                                                    $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
-                                                    $totalApprovedCount = (int)$stmtCount->fetchColumn();
-                                                }
-                                           
-                                                while ($DayDur >= 0) {
-                                                    // 1. Determine the status based on current count + historical approved
-                                                    if ($leaveType == 24) {
-                                                        if ($leaveType == 24 && ($totalApprovedCount + $localCount) >= $emergencyTH) {
-                                                            $statusFiD = 6; // Excess threshold -> Without Pay
-                                                        } else {
-                                                            $statusFiD = 4; // Under threshold -> With Pay
-                                                        }
+                                                    if ($leaveType == 24 && ($totalApprovedCount + $localCount) >= $emergencyTH) {
+                                                        $statusFiD = 6; // Excess threshold -> Without Pay
                                                     } else {
-                                                        if ($durData > 0) {
-                                                            $statusFiD = 4; // With Pay
-                                                            $durData--;
-                                                        } else {
-                                                            $statusFiD = 6; // Without Pay
-                                                        }
+                                                        $statusFiD = 4; // Under threshold -> With Pay
                                                     }
-
-                                                    // 2. Attempt the Update
-                                                    $sql = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu 
-                                                            WHERE FID=:idd AND LStart=:dtstart";
-                                                    $stmt = $pdo->prepare($sql);
-                                                    $stmt->execute([
-                                                        ':st'      => $statusFiD,
-                                                        ':dtu'     => $todaydt,
-                                                        ':idd'     => $_GET['id'],
-                                                        ':dtstart' => $datestart
-                                                    ]);
-
-                                                    // 3. VALIDATION: Only increment counters if a row was actually updated
-                                                    // This ensures Rest Days or days without schedules don't consume your threshold/credits
-                                                    if ($stmt->rowCount() > 0) {
-                                                        if ($statusFiD == 4) {
-                                                            $localCount++; 
-                                                        }
+                                                } else {
+                                                    if ($durData > 0) {
+                                                        $statusFiD = 4; // With Pay
+                                                        $durData--;
+                                                    } else {
+                                                        $statusFiD = 6; // Without Pay
                                                     }
-
-                                                    // Advance date and decrement duration regardless of update success
-                                                    $datestart = date('Y-m-d', strtotime($datestart . ' + 1 days'));
-                                                    $DayDur--;
                                                 }
 
-                                                // 4. Update the main leave header status
-                                                $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
-                                                $stmtHLeaves = $pdo->prepare($sqlHLeaves);
-                                                $stmtHLeaves->execute([':dtu' => $todaydt, ':idd' => $_GET['id']]);
-
-                                                // 5. Deduct only the credits that were marked as 'With Pay' (LStatus 4)
-                                                $xcrd = $varCT - $localCount;
-
-                                                $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
-                                                $stmtCredit = $pdo->prepare($sqlCredit);
-                                                $stmtCredit->execute([':ncrd' => $xcrd, ':idd' => $EmplID]);
-                                                 echo json_encode(array("uid" => $_SESSION['UserType'], "dd" => 35, "lc" => $localCount)); 
-                                            } else {
-                                                // Logic for other leave types
-                                                $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
-                                                $stmtHLeaves = $pdo->prepare($sqlHLeaves);
-                                                $stmtHLeaves->execute([':dtu' => $tdy, ':idd' => $_GET['id']]);
-
-                                                // Insert into DARS (Activity Log)
-                                                $ch = "Approved Leaves of " . $nameE;
-                                                $sqlDar = "INSERT INTO dars (EmpID, EmpActivity, DarDateTime) VALUES (:id, :empact, :ddt)";
-                                                $stmtDar = $pdo->prepare($sqlDar);
-                                                $stmtDar->execute([
-                                                    ':id'     => $_SESSION['id'],
-                                                    ':empact' => $ch,
-                                                    ':ddt'    => $todaydt
+                                                // 2. Attempt the Update
+                                                $sql = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu 
+                                                        WHERE FID=:idd AND LStart=:dtstart";
+                                                $stmt = $pdo->prepare($sql);
+                                                $stmt->execute([
+                                                    ':st'      => $statusFiD,
+                                                    ':dtu'     => $todaydt,
+                                                    ':idd'     => $_GET['id'],
+                                                    ':dtstart' => $datestart
                                                 ]);
 
-                                                // Update hleavesbd status
-                                                $sqlBd = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu WHERE FID=:idd";
-                                                $stmtBd = $pdo->prepare($sqlBd);
-                                                $stmtBd->execute([':st' => $stat, ':dtu' => $tdy, ':idd' => $_GET['id']]);
+                                                // 3. VALIDATION: Only increment counters if a row was actually updated
+                                                // This ensures Rest Days or days without schedules don't consume your threshold/credits
+                                                if ($stmt->rowCount() > 0) {
+                                                    if ($statusFiD == 4) {
+                                                        $localCount++; 
+                                                    }
+                                                }
 
-                                                echo json_encode(array("uid" => 0, "dd" => '0'));
+                                                // Advance date and decrement duration regardless of update success
+                                                $datestart = date('Y-m-d', strtotime($datestart . ' + 1 days'));
+                                                $DayDur--;
                                             }
+
+                                            // 4. Update the main leave header status
+                                            $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
+                                            $stmtHLeaves = $pdo->prepare($sqlHLeaves);
+                                            $stmtHLeaves->execute([':dtu' => $todaydt, ':idd' => $_GET['id']]);
+
+                                            // 5. Deduct only the credits that were marked as 'With Pay' (LStatus 4)
+                                            $xcrd = $varCT - $localCount;
+
+                                            $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
+                                            $stmtCredit = $pdo->prepare($sqlCredit);
+                                            $stmtCredit->execute([':ncrd' => $xcrd, ':idd' => $EmplID]);
+                                                echo json_encode(array("uid" => $_SESSION['UserType'], "dd" => 35, "lc" => $localCount)); 
+                                        } else {
+                                            // Logic for other leave types
+                                            $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
+                                            $stmtHLeaves = $pdo->prepare($sqlHLeaves);
+                                            $stmtHLeaves->execute([':dtu' => $tdy, ':idd' => $_GET['id']]);
+
+                                            // Insert into DARS (Activity Log)
+                                            $ch = "Approved Leaves of " . $nameE;
+                                            $sqlDar = "INSERT INTO dars (EmpID, EmpActivity, DarDateTime) VALUES (:id, :empact, :ddt)";
+                                            $stmtDar = $pdo->prepare($sqlDar);
+                                            $stmtDar->execute([
+                                                ':id'     => $_SESSION['id'],
+                                                ':empact' => $ch,
+                                                ':ddt'    => $todaydt
+                                            ]);
+
+                                            // Update hleavesbd status
+                                            $sqlBd = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu WHERE FID=:idd";
+                                            $stmtBd = $pdo->prepare($sqlBd);
+                                            $stmtBd->execute([':st' => $stat, ':dtu' => $tdy, ':idd' => $_GET['id']]);
+
+                                            echo json_encode(array("uid" => 0, "dd" => '0'));
+                                        }
                                  
 
                                     // 2. Commit the transaction if everything is successful
