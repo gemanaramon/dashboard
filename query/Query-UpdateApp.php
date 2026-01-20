@@ -85,7 +85,7 @@
                 $nameE=$row['FN'] . " " . $row['LN'];
             }
 
-            if ($_SESSION['UserType']==202){//this is for IS function
+            if ($_SESSION['UserType']==200){//this is for IS function
                 //if immedaite
                 $sql = "UPDATE hleaves set LStatus=:st,LDateTimeUpdated=:ldtup  where LeaveID=:lid";
                 $stmt = $pdo->prepare($sql);
@@ -139,7 +139,7 @@
                                 $diff=date_diff($date1,$date2);
                                 $DayDur= $diff->format("%a");
                                 
-                             
+
                             }
                             
                             if ($EmplID=="WeDoinc-0003" and $leaveType == 34){//for terminal leave function
@@ -220,10 +220,9 @@
                                     // }
                                 }    
                             }
-  
+
                             {//no earning
                                     
-
                                try {
                                 $durData = $varCT;
                                     // 1. Start the transaction
@@ -231,81 +230,117 @@
                                     
                                         // Define leave types for better readability
                                         $medicalSilTypes = [22, 30, 38, 24]; // Vacation, Medical, Force, Emergency
+                                        $emergencyTH = 0;
+
+                                        // Fetch the employee's role
+                                        $getRoleSql = "SELECT EmpRoleID FROM empdetails WHERE EmpID = :id";
+                                        $stmtRole = $pdo->prepare($getRoleSql);
+                                        $stmtRole->execute([':id' => $EmplID]);
+                                        $empData = $stmtRole->fetch();
+
+                                        $emergencyTH = 0; 
+                                        if ($empData && $leaveType == 24) { // Emergency Leave
+                                            $role = $empData['EmpRoleID'];
+                                            // Setting thresholds based on your requirements
+                                            if ($role == 1)     { $emergencyTH = 15; }
+                                            elseif ($role == 2) { $emergencyTH = 5; }
+                                            elseif ($role == 3) { $emergencyTH = 4; }
+                                        }
 
                                         if (in_array($leaveType, $medicalSilTypes)) {
-                                            $statusFiD = 0;
-                                            $newdur = 0;
-
-                                            while ($DayDur >= 0) {
-                                                $statusFiD = ($durData != 0) ? 4 : 6;
-
-                                                $sql = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu WHERE FID=:idd AND LStart=:dtstart";
-                                                $stmt = $pdo->prepare($sql);
-                                                $stmt->execute([
-                                                    ':st'      => $statusFiD,
-                                                    ':dtu'     => $todaydt,
-                                                    ':idd'     => $_GET['id'],
-                                                    ':dtstart' => $datestart
-                                                ]);
-
-                                                if ($stmt->rowCount() > 0) {
-                                                    if ($durData != 0) {
-                                                        $durData--;
-                                                        
-                                                        // Get the duration of the updated leave
-                                                        $sqlGetDuration = "SELECT LDuration FROM hleavesbd WHERE FID=:idd AND LStart=:dtstart ORDER BY LStart LIMIT 1";
-                                                        $stmtGetDuration = $pdo->prepare($sqlGetDuration);
-                                                        $stmtGetDuration->execute([':idd' => $_GET['id'], ':dtstart' => $datestart]);
-                                                        $rowhGetDuration = $stmtGetDuration->fetch();
-                                                        
-                                                        if ($rowhGetDuration) {
-                                                            $newdur += $rowhGetDuration['LDuration'] / 60 / 10;
+                                                $currentYear = date('Y');
+                                                $localCount = 0;
+                                                
+                                                // 1. Get how many days have ALREADY been used this year before this loop
+                                                $totalApprovedCount = 0;
+                                                if ($leaveType == 24) {
+                                                    $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
+                                                                JOIN hleaves h ON hb.FID = h.LeaveID 
+                                                                WHERE h.EmpID = :empid 
+                                                                AND h.LType = 24 
+                                                                AND hb.LStatus = 4 
+                                                                AND YEAR(hb.LStart) = :year";
+                                                    $stmtCount = $pdo->prepare($sqlCount);
+                                                    $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
+                                                    $totalApprovedCount = (int)$stmtCount->fetchColumn();
+                                                }
+                                           
+                                                while ($DayDur >= 0) {
+                                                    // 1. Determine the status based on current count + historical approved
+                                                    if ($leaveType == 24) {
+                                                        if ($leaveType == 24 && ($totalApprovedCount + $localCount) >= $emergencyTH) {
+                                                            $statusFiD = 6; // Excess threshold -> Without Pay
+                                                        } else {
+                                                            $statusFiD = 4; // Under threshold -> With Pay
                                                         }
                                                     } else {
-                                                        $durData = 0;
+                                                        if ($durData > 0) {
+                                                            $statusFiD = 4; // With Pay
+                                                            $durData--;
+                                                        } else {
+                                                            $statusFiD = 6; // Without Pay
+                                                        }
                                                     }
+
+                                                    // 2. Attempt the Update
+                                                    $sql = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu 
+                                                            WHERE FID=:idd AND LStart=:dtstart";
+                                                    $stmt = $pdo->prepare($sql);
+                                                    $stmt->execute([
+                                                        ':st'      => $statusFiD,
+                                                        ':dtu'     => $todaydt,
+                                                        ':idd'     => $_GET['id'],
+                                                        ':dtstart' => $datestart
+                                                    ]);
+
+                                                    // 3. VALIDATION: Only increment counters if a row was actually updated
+                                                    // This ensures Rest Days or days without schedules don't consume your threshold/credits
+                                                    if ($stmt->rowCount() > 0) {
+                                                        if ($statusFiD == 4) {
+                                                            $localCount++; 
+                                                        }
+                                                    }
+
+                                                    // Advance date and decrement duration regardless of update success
+                                                    $datestart = date('Y-m-d', strtotime($datestart . ' + 1 days'));
+                                                    $DayDur--;
                                                 }
-                                                $datestart = date('Y-m-d', strtotime($datestart . ' + 1 days'));
-                                                $DayDur--;
+
+                                                // 4. Update the main leave header status
+                                                $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
+                                                $stmtHLeaves = $pdo->prepare($sqlHLeaves);
+                                                $stmtHLeaves->execute([':dtu' => $todaydt, ':idd' => $_GET['id']]);
+
+                                                // 5. Deduct only the credits that were marked as 'With Pay' (LStatus 4)
+                                                $xcrd = $varCT - $localCount;
+
+                                                $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
+                                                $stmtCredit = $pdo->prepare($sqlCredit);
+                                                $stmtCredit->execute([':ncrd' => $xcrd, ':idd' => $EmplID]);
+                                                 echo json_encode(array("uid" => $_SESSION['UserType'], "dd" => 35, "lc" => $localCount)); 
+                                            } else {
+                                                // Logic for other leave types
+                                                $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
+                                                $stmtHLeaves = $pdo->prepare($sqlHLeaves);
+                                                $stmtHLeaves->execute([':dtu' => $tdy, ':idd' => $_GET['id']]);
+
+                                                // Insert into DARS (Activity Log)
+                                                $ch = "Approved Leaves of " . $nameE;
+                                                $sqlDar = "INSERT INTO dars (EmpID, EmpActivity, DarDateTime) VALUES (:id, :empact, :ddt)";
+                                                $stmtDar = $pdo->prepare($sqlDar);
+                                                $stmtDar->execute([
+                                                    ':id'     => $_SESSION['id'],
+                                                    ':empact' => $ch,
+                                                    ':ddt'    => $todaydt
+                                                ]);
+
+                                                // Update hleavesbd status
+                                                $sqlBd = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu WHERE FID=:idd";
+                                                $stmtBd = $pdo->prepare($sqlBd);
+                                                $stmtBd->execute([':st' => $stat, ':dtu' => $tdy, ':idd' => $_GET['id']]);
+
+                                                echo json_encode(array("uid" => 0, "dd" => '0'));
                                             }
-
-                                            // Update hleaves status
-                                            $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
-                                            $stmtHLeaves = $pdo->prepare($sqlHLeaves);
-                                            $stmtHLeaves->execute([':dtu' => $todaydt, ':idd' => $_GET['id']]);
-
-                                            // Update credits
-                                            $xcrd = $varCT - $newdur;
-                                            $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
-                                            $stmtCredit = $pdo->prepare($sqlCredit);
-                                            $stmtCredit->execute([':ncrd' => $xcrd, ':idd' => $EmplID]);
-
-                                            echo json_encode(array("uid" => $_SESSION['UserType'], "dd" => 35)); 
-
-
-                                        } else {
-                                            // Logic for other leave types
-                                            $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
-                                            $stmtHLeaves = $pdo->prepare($sqlHLeaves);
-                                            $stmtHLeaves->execute([':dtu' => $tdy, ':idd' => $_GET['id']]);
-
-                                            // Insert into DARS (Activity Log)
-                                            $ch = "Approved Leaves of " . $nameE;
-                                            $sqlDar = "INSERT INTO dars (EmpID, EmpActivity, DarDateTime) VALUES (:id, :empact, :ddt)";
-                                            $stmtDar = $pdo->prepare($sqlDar);
-                                            $stmtDar->execute([
-                                                ':id'     => $_SESSION['id'],
-                                                ':empact' => $ch,
-                                                ':ddt'    => $todaydt
-                                            ]);
-
-                                            // Update hleavesbd status
-                                            $sqlBd = "UPDATE hleavesbd SET LStatus=:st, LDateTimeUpdated=:dtu WHERE FID=:idd";
-                                            $stmtBd = $pdo->prepare($sqlBd);
-                                            $stmtBd->execute([':st' => $stat, ':dtu' => $tdy, ':idd' => $_GET['id']]);
-
-                                            echo json_encode(array("uid" => 0, "dd" => '0'));
-                                        }
                                  
 
                                     // 2. Commit the transaction if everything is successful

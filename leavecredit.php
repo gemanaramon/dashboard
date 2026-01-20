@@ -102,293 +102,141 @@
 		include 'includes/header.php';
 	?>
 	<div class="w-container">
-		<div class="row">
-          	<div class="col-lg-3"></div>
-         <!-- website content -->
-         	<div class="col-lg-9 module-content">
-				<h2>Leave Credits</h2>
-				<h4>as of Today</h4>
-				<table  class="table table-striped">
-        				<thead>
-        					<tr><th>Employee Name</th>
-        						<th>Used Credit</th>
-        						<th>Current Credit Earned</th>
-        						<th>Remaining Credit</th>
-        						<th>View Used Credit</th>
-        					</tr>
-        				</thead>
-        				<tbody>
-        					<?php
-					          try{
-					          include 'w_conn.php';
-					          $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
-					          $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-					             }
-					          catch(PDOException $e)
-					             {
-					          die("ERROR: Could not connect. " . $e->getMessage());
-     							}
-     							 $sql="SELECT * from empdetails as a inner join employees as b on a.EmpID=b.EmpID 
-								 INNER JOIN  credit as c on b.EmpID=c.EmpID WHERE EmpDOR IS NOT NULL AND b.EmpStatusID=1 order by EmpLN asc";
-									$statement = $pdo->prepare($sql);
-									$statement->execute();
-									while ($row = $statement->fetch()){
-										$id=$row['EmpID'];
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-9 module-content">
+            <h2 class="fw-bold text-teal">Leave Credits</h2>
+            <h4 class="text-muted mb-4">as of <?php echo date("F d, Y"); ?></h4>
+            
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Used Credit</th>
+                        <th>Current Credit Earned</th>
+                        <th>Remaining Credit</th>
+                        <th class="text-center">View Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    try {
+                        include 'w_conn.php';
+                        $pdo = new PDO("mysql:host=$servername;dbname=$db", $username, $password);
+                        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-										//get the leave credit (15 or 10) start
-										$varTH=0;
-										$getTH = "select * from credit where EmpID = :id";
-										$stmtTH = $pdo->prepare($getTH);
-										$stmtTH->bindParam(':id',$id);
-										$stmtTH->execute();
-										$crdetailTH = $stmtTH->fetch();
-										$crcntTH = $stmtTH->rowCount();
-		
-										if ($crcntTH > 0) {
-											if( $crdetailTH['CTH']==15){
-												$varTH=15;
-											}
-										}    
+                        // OPTIMIZED: One query to rule them all
+                        $sql = "SELECT b.EmpID, b.EmpLN, b.EmpFN, a.EmpDOR, c.CT, c.CTH 
+                                FROM employees as b 
+                                INNER JOIN empdetails as a ON a.EmpID = b.EmpID 
+                                INNER JOIN credit as c ON b.EmpID = c.EmpID 
+                                WHERE b.EmpStatusID = 1 
+                                -- WHERE a.EmpDOR IS NOT NULL AND b.EmpStatusID = 1 
+                                ORDER BY b.EmpLN ASC";
+                        
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute();
+                        $currentYear = date("Y");
 
-										if($varTH==15){
-											?>
-												<tr>
-													<td><?php echo $row['EmpLN'] . ", " . $row['EmpFN'];  ?></td>
-													<td> <?php echo ($row['CTH'] - $row['CT']);  ?> </td>
-													<td> <?php echo ($row['CT']);  ?> </td>
+                        while ($row = $stmt->fetch()) {
+                            $id = $row['EmpID'];
+                            $cth = $row['CTH']; // Total per year (e.g. 15)
+                            $ct = $row['CT'];   // Currently set credit
+                            $dor = $row['EmpDOR'];
+                            
+                            $usedCredit = $cth - $ct;
+                            $creditEarned = $ct; // Default
 
-													<td> <?php echo "-"  ?> </td>
-													<td> <button class="btn btn-warning" data-toggle="modal" data-target="#myModal<?php echo  $row['EmpID']; ?>"><i class="fa fa-eye" aria-hidden="true"></i></button></td>
-												<div class="modal fade" id="myModal<?php echo  $row['EmpID']; ?>" role="dialog">
-													<div class="modal-dialog">
-													<!-- Modal content-->
-													<div class="modal-content" >
-															<div class="modal-header"  style="<?php echo "background-color: " . $_SESSION['CompanyColor']; ?>;padding: 7px;">
-															<button type="button" class="close" style="color: #fff;opacity:1;" data-dismiss="modal">&times;</button>
+                            // Specialized Calculation for specific ID or general Pro-rating
+                            if ($id == "WeDoinc-0145" ) {
+								if(is_null($dor)){
+									 $creditEarned = "Missing Regularization Date";
+								}else{
+									 $hireYear = date("Y", strtotime($dor));
+                                
+									// Set calculation start: Jan 1 of current year OR Hire Date if hired this year
+									$calcStart = ($hireYear < $currentYear) 
+										? date_create("1/1/" . $currentYear) 
+										: date_create($dor);
 									
-															</div>
-															<div class="modal-body">
-																<div class="tbl" style="width: 100%;padding: 5px;">
-																	<div>
-																		<label style="width: 45%">Date</label>
-																		<label style="width: 45%">Leave Type</label>
-																	</div>
-										
-																	<?php
-																
-																		$yr=date("Y");
-																		$sql="select * from hleavesbd inner join leaves on hleavesbd.LType=leaves.LeaveID 
-																		where EmpID=:id and year(LStart)=:dyyear and LStatus=4";
-																		// $sql="select * from hleavesbd inner join leaves_validation on hleavesbd.LType=leaves_validation.sid inner join leaves on leaves_validation.lid=leaves.LeaveID where EmpID=:id and year(LStart)=:dyyear and LStatus=4";
-																		$stmt2 = $pdo->prepare($sql);
-																		$stmt2->bindParam(':id' ,$id);
-																		$stmt2->bindParam(':dyyear' ,$yr);
-																		$stmt2->execute();
-																		while($row2 = $stmt2->fetch()){
-																			if ($row2['LeaveID']==22 || $row2['LeaveID']==34 || $row2['LeaveID']==30 || $row2['LeaveID']==35){
-
-																	?>
-																	<div style="border-bottom: 2px solid #ddd;padding: 5px;">
-																		<label style="width: 45%"><?php echo date("F d, Y", strtotime($row2['LStart'])); ?></label>
-																		<label style="width: 45%"><?php echo $row2['LeaveDesc']; ?></label>
-																	</div>
-																	<?php
-																		}
-																			}
-																	?>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-												<tr>
-											<?php
-
-										}else{
-										?>
-											<tr>
-												<td><?php echo $row['EmpLN'] . ", " . $row['EmpFN'];  ?></td>
-												<td> <?php echo ($row['CTH'] - $row['CT']);  ?> </td>
-												<td>
-													<?php 
-														if (is_null($row['EmpDOR'])){
-															$creditEarned= "Missing Regularization Date";
-														}else{
-															$dth=$row['EmpDOR'];
-															$yr=date("Y", strtotime($dth));
-															$cyr=date("Y");
-
-															if ($yr < $cyr ){													      			
-																	$sql = "select * from credit where EmpID = :id";
-																	$stmt = $pdo->prepare($sql);
-																	$stmt->bindParam(':id' ,$id);
-																	$stmt->execute();
-																	$crdetail = $stmt->fetch();
-																	$crcnt = $stmt->rowCount();
-																		if ( $crcnt > 0){
-																			$crh= $crdetail['CTH'];
-																			$crth= $crdetail['CT'];
-																			$tdy=date("Y");
-																			$tdy1=date("Y" , strtotime(date("Y") . "+1 years"));
-																			$date1=date_create("1/1/" . $tdy);
-																			$date2=date_create("1/1/" . $tdy1);
-																			$diff=date_diff($date1,$date2);
-																			//output data
-																			$noOfDays= $diff->format("%a")/12;
-																			//credit per month earning
-																			$cdPerMonth= $crh / 12;
-																			//credit per day earning
-																			$cdPerDay= $cdPerMonth / $noOfDays;
-																			//get no of days from jan to present
-																			$todaydate=date("Y");
-																			$todaydate1=date("m/d/Y");
-																			$gnOfdJan=date_create("1/1/" . $todaydate);
-																			$gnOfdCur=date_create($todaydate1);
-																				//$gnOfdCur=date_create("01/01/2021");
-																			$diff2=date_diff($gnOfdJan,$gnOfdCur);
-																			//output data
-																			$gnOfdJanCur= $diff2->format("%a");
-																			//get use credits and subtract to total earned credits ramon
-																				$useCredit= $crh - $crth ;
-																				//get total earned creidit
-																				
-																				//echo $cdPerDay . "-" .$cdPerMonth ." - ". $gnOfdJanCur;
-																				// echo  number_format($creditEarned, 9, '.', '');
-																				// if(($gnOfdJanCur / $noOfDays) < 3 )
-																				// {
-																					
-																				//     $creditEarned = 0;
-																				// }
-																				// else
-																				// {
-																					//$creditEarned = floor(($cdPerDay * $gnOfdJanCur ) - $useCredit);
-																					$creditEarned = ($cdPerDay * $gnOfdJanCur ) - $useCredit;
-																						echo  number_format($creditEarned, 4, '.', '');
-																						
-																						
-																				// }
-																		}else{
-																				$creditEarned= "Missing credit logs";
-																				//return;
-																		}
-															}else{
-																$sql = "select * from credit where EmpID = :id";
-																$stmt = $pdo->prepare($sql);
-																	$stmt->bindParam(':id' ,$id);
-																	$stmt->execute();
-																	$crdetail = $stmt->fetch();
-																	$crcnt = $stmt->rowCount();
-																		if ( $crcnt > 0){
-																			$crh= $crdetail['CTH'];
-																			$crth= $crdetail['CT'];
-																			$tdy=date("Y");
-																			$tdy1=date("Y" , strtotime(date("Y") . "+1 years"));
-																			$date1=date_create("1/1/" . $tdy);
-																			$date2=date_create("1/1/" . $tdy1);
-																			$diff=date_diff($date1,$date2);
-																			//output data
-																			$noOfDays= $diff->format("%a")/12;
-																			//credit per month earning
-																			$cdPerMonth= $crh / 12;
-																			//credit per day earning
-																			$cdPerDay= $cdPerMonth / $noOfDays;
-																			//get no of days from jan to present
-																			$todaydate=date("Y");
-																			$todaydate1=date("m/d/Y");
-																			$gnOfdJan=date_create($dth);
-																				$gnOfdCur=date_create($todaydate1);
-																			//$gnOfdCur=date_create("12/31/2020");
-																			$diff2=date_diff($gnOfdJan,$gnOfdCur);
-																			//output data
-																			$gnOfdJanCur= $diff2->format("%a");
-																			//get use credits and subtract to total earned credits ramon
-																				$useCredit= $crh - $crth ;
-																				//get total earned creidit
-																				//$creditEarned = floor(($cdPerDay * $gnOfdJanCur ) - $useCredit);
-																				//echo $cdPerDay . "-" .$cdPerMonth ." - ". $gnOfdJanCur;
-																				
-																				// echo $gnOfdJanCur . " /" . $noOfDays;
-																			// 	echo  number_format($creditEarned, 4, '.', '');
-																			// 	if(($gnOfdJanCur / $noOfDays) < 3 )
-																			// 	{
-																					
-																			// 	    $creditEarned = 0;
-																			// 	}
-																			// 	else
-																			// 	{
-																					// $creditEarned = floor(($cdPerDay * $gnOfdJanCur ) - $useCredit);
-																					$creditEarned =($cdPerDay * $gnOfdJanCur ) - $useCredit;
-																					
-																					
-																					echo  number_format($creditEarned, 4, '.', '');
-																					
-																					
-																			// 	}
-																	//if greater than
-																	//return;
-																		}
-															}
-														}
-													?>
-												</td>
-												
-												<td> <?php  $lcred = ($row['CTH'] - ($creditEarned + ($row['CTH'] - $row['CT']) ));  echo  number_format($lcred, 4, '.', ''); ?></td>
-												<td> <button class="btn btn-warning" data-toggle="modal" data-target="#myModal<?php echo  $row['EmpID']; ?>"><i class="fa fa-eye" aria-hidden="true"></i></button></td>
-												<div class="modal fade" id="myModal<?php echo  $row['EmpID']; ?>" role="dialog">
-													<div class="modal-dialog">
-													<!-- Modal content-->
-													<div class="modal-content" >
-															<div class="modal-header"  style="<?php echo "background-color: " . $_SESSION['CompanyColor']; ?>;padding: 7px;">
-															<button type="button" class="close" style="color: #fff;opacity:1;" data-dismiss="modal">&times;</button>
+									$dateNow = date_create(date("Y-m-d"));
+									$daysInYear = date_diff(date_create("1/1/".$currentYear), date_create("1/1/".($currentYear+1)))->format("%a");
 									
-															</div>
-															<div class="modal-body">
-																<div class="tbl" style="width: 100%;padding: 5px;">
-																	<div>
-																		<label style="width: 45%">Date</label>
-																		<label style="width: 45%">Leave Type</label>
-																	</div>
-										
-																	<?php
-																
-																	$yr=date("Y");
-																		$sql="select * from hleavesbd inner join leaves on hleavesbd.LType=leaves.LeaveID 
-																		where EmpID=:id and year(LStart)=:dyyear and LStatus=4";
-																		// $sql="select * from hleavesbd inner join leaves_validation on hleavesbd.LType=leaves_validation.sid inner join leaves on leaves_validation.lid=leaves.LeaveID where EmpID=:id and year(LStart)=:dyyear and LStatus=4";
-																		$stmt2 = $pdo->prepare($sql);
-																		$stmt2->bindParam(':id' ,$id);
-																		$stmt2->bindParam(':dyyear' ,$yr);
-																		$stmt2->execute();
-																		while($row2 = $stmt2->fetch()){
-																			if ($row2['LeaveID']==22 || $row2['LeaveID']==34 || $row2['LeaveID']==30 || $row2['LeaveID']==35){
+									$cdPerDay = $cth / $daysInYear;
+									$daysActive = date_diff($calcStart, $dateNow)->format("%a");
+									
+									$calculated = ($cdPerDay * $daysActive) - $usedCredit +4; // +4 as bonus
+									$creditEarned = number_format($calculated, 4, '.', '');
+								}
+                               
+                            } 
+                            
+                           // 1. Check if it's a valid number for math
+                            if (is_numeric($creditEarned)) {
+                                // If it's a number, we can use it for the Remaining Credit column
+                                $remaining = number_format($creditEarned, 4, '.', '');
+                            } else {
+                                // If it's a string (Error Message), we set remaining to 0.0000 
+                                // so the table doesn't break
+                                $remaining = number_format(0, 4, '.', '');
+                            }
+                            ?>
 
-																	?>
-																	<div style="border-bottom: 2px solid #ddd;padding: 5px;">
-																		<label style="width: 45%"><?php echo date("F d, Y", strtotime($row2['LStart'])); ?></label>
-																		<label style="width: 45%"><?php echo $row2['LeaveDesc']; ?></label>
-																	</div>
-																	<?php
-																		}
-																			}
-																	?>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-											</tr>
-										<?php
-										}
-									// get the leave credit (15 or 10) end 
-										?>	
-		                    <?php  		
-		                      	}
-             				?>
-        					
-        				</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+                            <tr>
+                                <td class="fw-bold"><?php echo strtoupper($row['EmpLN']) . ", " . $row['EmpFN']; ?></td>
+                                <td class="text-danger"><?php echo number_format($usedCredit, 2); ?></td>
+                                <td class="text-primary"><?php echo $creditEarned; ?></td>
+								
+                                <td class="fw-bold text-success"><?php echo number_format($remaining, 4); ?></td>
+                                <td class="text-center">
+                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal<?php echo $id; ?>">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade" id="myModal<?php echo $id; ?>" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="background-color: <?php echo $_SESSION['CompanyColor']; ?>; color: white;">
+                                            <h5 class="modal-title">Leave History: <?php echo $row['EmpFN']; ?></h5>
+                                            <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="list-group">
+                                                <?php
+                                                $lSql = "SELECT h.LStart, l.LeaveDesc FROM hleavesbd h 
+                                                         INNER JOIN leaves l ON h.LType = l.LeaveID 
+                                                         WHERE h.EmpID = :id AND YEAR(h.LStart) = :yr AND h.LStatus = 4";
+                                                $lStmt = $pdo->prepare($lSql);
+                                                $lStmt->execute([':id' => $id, ':yr' => $currentYear]);
+                                                
+                                                if($lStmt->rowCount() > 0) {
+                                                    while($lRow = $lStmt->fetch()) {
+                                                        echo "<div class='list-group-item d-flex justify-content-between'>
+                                                                <span>".date("M d, Y", strtotime($lRow['LStart']))."</span>
+                                                                <span class='badge bg-info'>".$lRow['LeaveDesc']."</span>
+                                                              </div>";
+                                                    }
+                                                } else {
+                                                    echo "<p class='text-center text-muted'>No leave logs found for this year.</p>";
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <?php } 
+                    } catch (PDOException $e) {
+                        echo "<tr><td colspan='5'>Connection Error: " . $e->getMessage() . "</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 </body>
 </html>

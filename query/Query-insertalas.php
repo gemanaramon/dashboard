@@ -75,12 +75,19 @@
     }
     //validate if leave type is maternity or paternity
     {
-      if (in_array($_POST['leavetype'], [22, 38, 24, 30])) {
+      
+       if($id=="WeDoinc-0145"){
+          
+       }else{
+          if (in_array($_POST['leavetype'], [22, 38, 24, 30])) {
             if ($varCT < $newdurationleave && $_POST['leavepay']==1) {
                 echo "You don't have enough leave credits.";
                 return;
-        }
-      }
+            }
+          }
+       }
+
+
     }
     //validate if schedule is not correct
     {    

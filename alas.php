@@ -2,11 +2,11 @@
     if (isset($_SESSION['id']) && $_SESSION['id'] != "0") {
 
     } else {
-        if (! isset($_COOKIE["WeDoID"])) {
+        if (!isset($_COOKIE["WeDoID"])) {
 
             header('location: login');
         } else {
-            if (! isset($_COOKIE["WeDoID"])) {
+            if (!isset($_COOKIE["WeDoID"])) {
                 session_destroy();
                 header('location: login');
             } else {
@@ -82,7 +82,7 @@
     <script type="text/javascript" src="assets/js/script.js"></script>
     <script src="assets/js/script-reports.js"></script>
     <script type="text/javascript" src="assets/js/script-modules.js"></script>
-        <script type="text/javascript" src="assets/js/administrative.js"></script>
+        <!-- <script type="text/javascript" src="assets/js/administrative.js"></script> -->
 
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
@@ -188,7 +188,7 @@ html body {
                                                     <div class="form-group">
                                                         <label>Personnel Name:</label>
                                                         <input type="text" disabled class="form-control"
-                                                            value="<?php echo $row['EmpLN'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN'] ?>">
+                                                            value="<?php echo $_SESSION['UserType'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN'] ?>">
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Company Name:</label>
@@ -342,7 +342,7 @@ html body {
                                                                         $creditEarned = $crdetail24['CT'] ?? 0;
 
                                                                         if($id=="WeDoinc-0145"){
-                                                                            $creditEarned = 50;
+                                                                            
                                                                             #if credit is 10 then set system to earning mode
                                                                             if ($yr < $cyr) {
                                                                                 $sql  = "select * from credit where EmpID = :id";
@@ -424,12 +424,14 @@ html body {
                                                                                     $useCredit = $crh - $crth;
                                                                                     //get total earned creidit
 
-                                                                                    $creditEarned = ($cdPerDay * $gnOfdJanCur) - $useCredit;
+                                                                                    $creditEarned = ($cdPerDay * $gnOfdJanCur) - $useCredit  ;
 
                                                                                     //if greater than
                                                                                     //return;
                                                                                 }
                                                                             }
+
+
                                                                         }       
                                                                     
 
@@ -538,9 +540,20 @@ html body {
                                                     <div class="form-group"
                                                         style="border: 1px solid red;background-color: #bc0c0c;padding: 5px;border-radius: 10px;color: #fff;">
                                                         <label>Leave Credits:</label>
+
+                                                        <?php 
+                                                            // Determine the display value
+                                                            if (is_numeric($creditEarned)) {
+                                                                $displayValue = number_format((float) $creditEarned, 2, '.', '');
+                                                            } else {
+                                                                // It's already a string message, so keep it as is
+                                                                $displayValue = $creditEarned;
+                                                            }
+                                                        ?>
                                                         <input name="lcredit" type="text" id="lcredit"
                                                             style="color:red;" readonly="readonly"
-                                                            value="<?php echo number_format((float) $creditEarned, 2, '.', ''); ?>" class="form-control">
+                                                            value="<?php echo htmlspecialchars($displayValue); ?>" class="form-control">
+
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Filing Date:</label>

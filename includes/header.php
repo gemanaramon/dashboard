@@ -1,5 +1,5 @@
 <?php
-    if (! isset($_SESSION['gender']) || ! isset($_SESSION['id'])) {
+    if (!isset($_SESSION['id'])) {
         // 1. Clear any accidental output
         ob_end_clean();
 
