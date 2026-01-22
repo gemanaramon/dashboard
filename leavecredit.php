@@ -165,19 +165,37 @@
 									$cdPerDay = $cth / $daysInYear;
 									$daysActive = date_diff($calcStart, $dateNow)->format("%a");
 									
-									$calculated = ($cdPerDay * $daysActive) - $usedCredit +4; // +4 as bonus
+									$calculated = ($cdPerDay * $daysActive) - $usedCredit + 4; // +4 as bonus
 									$creditEarned = number_format($calculated, 4, '.', '');
+
+                                    //get here the total use credits for emergency leave this year
+                                    $currentYear = date('Y');
+                                        $localCount = 0;
+                                        
+                                    // 1. Get how many days have ALREADY been used this year before this loop
+                                    $totalApprovedCount = 0;
+                                    // if ($leaveType == 24) {
+                                        $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
+                                                    JOIN hleaves h ON hb.FID = h.LeaveID 
+                                                    WHERE h.EmpID = :empid 
+                                                    AND h.LType = 24 
+                                                    AND hb.LStatus = 4 
+                                                    AND YEAR(hb.LStart) = :year";
+                                        $stmtCount = $pdo->prepare($sqlCount);
+                                        $stmtCount->execute([':empid' => $id, ':year' => $currentYear]);
+                                        $totalApprovedCount = (int)$stmtCount->fetchColumn();
+
+                                         $usedCredit += $totalApprovedCount;
+                                         $creditEarned -= $totalApprovedCount;
+                                    // }
 								}
                                
                             } 
                             
-                           // 1. Check if it's a valid number for math
                             if (is_numeric($creditEarned)) {
-                                // If it's a number, we can use it for the Remaining Credit column
                                 $remaining = number_format($creditEarned, 4, '.', '');
                             } else {
-                                // If it's a string (Error Message), we set remaining to 0.0000 
-                                // so the table doesn't break
+                              
                                 $remaining = number_format(0, 4, '.', '');
                             }
                             ?>
