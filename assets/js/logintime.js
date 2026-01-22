@@ -1,157 +1,107 @@
+// 1. Digital Clock Logic
 function startTime() {
-  var today = new Date();
-  var h = today.getHours();
-  var m = today.getMinutes();
-  var s = today.getSeconds();
-  var am_pm = today.getHours() >= 12 ? "PM" : "AM";
-  h = h % 12;
-  h = h ? h : 12;
-  m = checkTime(m);
-  s = checkTime(s);
-  document.getElementById("sec").innerHTML = ":" + s + " " + am_pm;
-  document.getElementById("hr-mn").innerHTML = h + ":" + m;
-  var t = setTimeout(startTime, 500);
-  var d = new Date();
-  var months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  document.getElementById("dtnow").innerHTML =
-    months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+    var today = new Date();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    var s = today.getSeconds();
+    var am_pm = today.getHours() >= 12 ? "PM" : "AM";
+    
+    // Convert to 12-hour format
+    h = h % 12;
+    h = h ? h : 12; 
+    
+    m = checkTime(m);
+    s = checkTime(s);
+    
+    // Target the IDs in your new modern layout
+    if(document.getElementById("sec")) {
+        document.getElementById("sec").innerHTML = ":" + s + " " + am_pm;
+    }
+    if(document.getElementById("hr-mn")) {
+        document.getElementById("hr-mn").innerHTML = h + ":" + m;
+    }
+    
+    // Set Date
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    if(document.getElementById("dtnow")) {
+        document.getElementById("dtnow").innerHTML = months[today.getMonth()] + " " + today.getDate() + ", " + today.getFullYear();
+    }
+    
+    setTimeout(startTime, 1000);
 }
+
 function checkTime(i) {
-  if (i < 10) {
-    i = "0" + i;
-  } // add zero in front of numbers < 10
-  return i;
+    if (i < 10) { i = "0" + i; }
+    return i;
 }
 
-//ajax for login
-$(document).ready(function () {
-  $(".lg-button").click(function () {
-    var uname = $("#uname").val();
-    var pass = $("#pass").val();
-  });
-});
-function fnct() {
-  window.location.href = "index.php";
+// 2. Toggle Password Visibility
+function myFunction() {
+    var x = document.getElementById("pass");
+    if (x.type === "password") {
+        x.type = "text";
+    } else {
+        x.type = "password";
+    }
 }
+
+// 3. Login Ajax Logic
 $(document).ready(function () {
-  // var ips="sd";
-
-  //   $.getJSON('https://json.geoiplookup.io/?callback=?', function(data) {
-  //     ips=data.ip;
-
-  //   });
-
-  //question answer js
-  $("#YS_ANS").click(function () {
-    $(this).prop("disabled", true);
-    $("#modalSuccess").modal("toggle");
-    var data = $(this).val();
-    var ip = "";
-    $.ajax({
-      url: "query/Query-queslogin.php",
-      data: data,
-      type: "POST",
-
-      success: function (data) {
-        $(this).prop("disabled", false);
-        location.replace("http://dashboard.wedoinc.ph/index.php");
-      },
+    // Trigger login on button click
+    $(".btnsubmit").click(function () {
+        performLogin();
     });
-  });
 
-  $("#uname").focus(function () {
-    //tmdate-display
-    // $(".tmdate-display").hide();
-  });
-  $("#pass").focus(function () {
-    //tmdate-display
-    // $(".tmdate-display").hide();
-  });
+    // Trigger login on "Enter" key
+    $("#uname, #pass").keypress(function (event) {
+        if (event.keyCode == 13) {
+            performLogin();
+        }
+    });
 
-  // $("#pass").keypress(function (event) {
-  //   var keycode = event.keyCode ? event.keyCode : event.which;
-  //   if (keycode == "13") {
-  //     var uname = $("#uname").val();
-  //     var pass = $("#pass").val();
-  //     if (uname == "" || pass == "") {
-  //       $(".lg-warning").text("Unknown Username or Password !");
-  //       $(".lg-warning").css("display", "block");
-  //       return false;
-  //     } else {
-  //       var data = $(".loginform").serialize();
-  //       $.ajax({
-  //         url: "query/query-login.php",
-  //         data: data,
-  //         type: "POST",
+    function performLogin() {
+        var uname = $("#uname").val();
+        var pass = $("#pass").val();
+        var errorMsg = $("#error-msg");
 
-  //         success: function (data) {
-  //           // if (data=="false"){
-  //           //   alert("IC");
-  //           // }
+        if (uname == "" || pass == "") {
+            errorMsg.text("Please enter both username and password.");
+            errorMsg.fadeIn();
+            return false;
+        }
 
-  //           if (data == 0) {
-  //             $(".lg-warning").text("Incorrect Username !");
-  //             $(".lg-warning").css("display", "block");
-  //           } else if (data == 7) {
-  //             location.replace("http://dashboard.wedoinc.ph/questionnaire.php");
-  //           } else if (data == 1) {
-  //             $(".lg-warning").text("Incorrect Password !");
-  //             $(".lg-warning").css("display", "block");
-  //           } else {
-  //             location.reload(true);
-  //           }
-  //         },
-  //       });
-  //     }
-  //   }
-  // });
+        // Use the serialized form data
+        var data = $(".loginform").serialize();
 
-  // $("#uname").keypress(function (event) {
-  //   var keycode = event.keyCode ? event.keyCode : event.which;
-  //   if (keycode == "13") {
-  //     var uname = $("#uname").val();
-  //     var pass = $("#pass").val();
-  //     if (uname == "" || pass == "") {
-  //       $(".lg-warning").text("Unknown Username or Password !");
-  //       $(".lg-warning").css("display", "block");
-  //       return false;
-  //     } else {
-  //       var data = $(".loginform").serialize();
-  //       $.ajax({
-  //         url: "query/query-login.php",
-  //         data: data,
-  //         type: "POST",
+        $.ajax({
+            url: "query/query-login.php",
+            data: data,
+            type: "POST",
+            beforeSend: function() {
+                $(".btnsubmit").text("Verifying...").prop("disabled", true);
+            },
+            success: function (data) {
+                $(".btnsubmit").text("Sign In").prop("disabled", false);
+                
+                if (data == 0) {
+                    errorMsg.text("Incorrect Username!");
+                    errorMsg.fadeIn();
+                } else if (data == 1) {
+                    errorMsg.text("Incorrect Password!");
+                    errorMsg.fadeIn();
+                } else if (data == 7) {
+                    location.replace("http://dashboard.wedoinc.ph/questionnaire.php");
+                } else {
+                    // Success - reload to go to index.php
+                     location.reload(true);
 
-  //         success: function (data) {
-  //           if (data == 0) {
-  //             $(".lg-warning").text("Incorrect Username !");
-  //             $(".lg-warning").css("display", "block");
-  //           } else if (data == 7) {
-  //             location.replace("http://localhost/weodo/questionnaire.php");
-  //           } else if (data == 1) {
-  //             $(".lg-warning").text("Incorrect Password !");
-  //             $(".lg-warning").css("display", "block");
-  //           } else {
-  //             location.reload(true);
-  //           }
-  //         },
-  //       });
-  //     }
-  //   }
-  // });
-
-  $(".btn-success").click(function () {});
+                }
+            },
+            error: function() {
+                $(".btnsubmit").text("Sign In").prop("disabled", false);
+                errorMsg.text("Server Error. Please try again.");
+                errorMsg.fadeIn();
+            }
+        });
+    }
 });
