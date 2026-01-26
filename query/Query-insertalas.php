@@ -20,6 +20,22 @@
       }
     }
 
+     //admin time validation
+    {   
+      $datenow = date("Y-m-d");
+      $datenow1 = date("Y-m-d H:i");
+      $timenow = strtotime($datenow1);
+      $startTime = strtotime($datenow ." 8:30:00");
+      $id=$_SESSION['id'];
+      if($id=="WeDoinc-012"){
+      }else{
+          if($timenow > $startTime){
+              echo "The leave application must be completed on or before 8:30 AM.";
+              return;
+          }
+      }
+    }
+
     #declaration
     {
       global $ifPayroll;
@@ -55,7 +71,7 @@
       $ifLacking=0;
     }
 
-       {//get the leave credit (15 or 10)
+    {//get the leave credit (15 or 10)
           $varTH=0;
           $varCT=0;
         
@@ -73,6 +89,7 @@
             // }
           }    
     }
+
     //validate if leave type is maternity or paternity
     {
       
@@ -89,6 +106,30 @@
 
 
     }
+
+    //if applying leave without attendance
+    {
+    //  $dy=date("d"); 
+    //  $yr=date("Y"); 
+    //  $mnth=date("m"); 
+    //  $sql = "SELECT * FROM attendancelog WHERE EmpID=:id AND day(TimeIn)=:dy AND year(TimeIn)=:yr AND month(TimeIn)=:mnth ORDER BY TimeIn DESC";
+    //  $stmt = $pdo->prepare($sql);
+    //  $stmt->bindParam(':id' , $id);
+    //  $stmt->bindParam(':dy' , $dy);
+    //  $stmt->bindParam(':mnth' , $mnth);
+    //  $stmt->bindParam(':yr' , $yr);
+    //  $stmt->execute(); 
+    //  $rowcenar=$stmt->fetch();
+
+
+    //  if ($stmt->rowCount()>0 and $rowcenar['TimeOut']==NULL){
+
+    //  }else{
+    //    echo "You cant apply you have no Attendance";
+    //    return;
+    //  }
+    }
+
     //validate if schedule is not correct
     {    
       while ($dteEndValid>=$dteStartValid){
@@ -144,6 +185,10 @@
       }
     }
 
+    if (empty($_POST['leavepay']) || $_POST['leavepay'] == 0) {
+        echo "Missing Schedule. Please contact your systems administrator.";
+        return;
+    }
     // if leave kind is paid 
     if ($_POST['leavepay']==1){
       $statement = $pdo->prepare(" SELECT * FROM leaves INNER JOIN leaves_validation ON leaves.LeaveID=leaves_validation.lid WHERE leaves_validation.lid=:lid AND compid=:id");

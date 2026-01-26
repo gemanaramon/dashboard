@@ -1,71 +1,103 @@
-<?php     
-  // // server should keep session data for AT LEAST 1 hour
-  // ini_set('session.gc_maxlifetime', 3600);
+  <?php
+    // --- 1. SESSION & TIMEZONE INITIALIZATION ---
+    session_start();
+    date_default_timezone_set("Asia/Manila");
+    include 'w_conn.php';
 
-  // // each client should remember their session id for EXACTLY 1 hour
-  // session_set_cookie_params(3600);
-  session_start();
-  if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
-  else{ 
-    if(!isset($_COOKIE["WeDoID"])) {
-        header ('location: login'); 
-    }else{
-        if(!isset($_COOKIE["WeDoID"])) {
-          session_destroy();
-          header ('location: login'); 
-        }else{
-              try{
-              include 'w_conn.php';
-              $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
-              $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                 }
-              catch(PDOException $e)
-                 {
-              die("ERROR: Could not connect. " . $e->getMessage());
-                 }
-              $statement = $pdo->prepare("select * from empdetails");
-              $statement->execute();    
-
-              while ($row=$statement->fetch()) {
-                if (password_verify($row['EmpID'], $_COOKIE["WeDoID"])){
-                        $_SESSION['id']=$row['EmpID'];
+    // If session is NOT set, try to recover from Cookie
+    if (!isset($_SESSION['id']) || $_SESSION['id'] == "0") {
+        
+        if (isset($_COOKIE["WeDoID"])) {
+            try {
+                $pdo = new PDO("mysql:host=$servername;dbname=$db", $username, $password);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 
-                        $statement = $pdo->prepare("select * from empdetails where EmpID = :un");
-                        $statement->bindParam(':un' , $_SESSION['id']);
-                        $statement->execute(); 
-                        $count=$statement->rowCount();
-                        $row=$statement->fetch();
-                        $hash = $row['EmpPW'];
-                        $_SESSION['UserType']=$row['EmpRoleID'];
-                        $cid=$row['EmpCompID'];
-                        $_SESSION['CompID']=$row['EmpCompID'];
-                        $_SESSION['EmpISID']=$row['EmpISID'];
-                        $statement = $pdo->prepare("select * from companies where CompanyID = :pw");
-                        $statement->bindParam(':pw' , $cid);
-                        $statement->execute(); 
-                        $comcount=$statement->rowCount();
-                        $row=$statement->fetch();
-                        if ($comcount>0){
-                          $_SESSION['CompanyName']=$row['CompanyDesc'];
-                          $_SESSION['CompanyLogo']=$row['logopath'];
-                          $_SESSION['CompanyColor']=$row['comcolor'];
-                        }else{
-                          $_SESSION['CompanyName']="ADMIN";
-                          $_SESSION['CompanyLogo']="";
-                          $_SESSION['CompanyColor']="red";
+                // Validate Cookie against Employee Records
+                $statement = $pdo->prepare("SELECT * FROM empdetails");
+                $statement->execute();    
+
+                while ($row = $statement->fetch()) {
+                    if (password_verify($row['EmpID'], $_COOKIE["WeDoID"])) {
+                        
+                        // Set Core Session Variables
+                        $_SESSION['id'] = $row['EmpID'];
+                        $_SESSION['UserType'] = $row['EmpRoleID'];
+                        $_SESSION['CompID'] = $row['EmpCompID'];
+                        $_SESSION['EmpISID'] = $row['EmpISID'];
+                        $_SESSION['PassHash'] = $row['EmpPW'];
+                        $cid = $row['EmpCompID'];
+
+                        // Fetch Company Specific Details
+                        $stmt_comp = $pdo->prepare("SELECT * FROM companies WHERE CompanyID = :pw");
+                        $stmt_comp->bindParam(':pw', $cid);
+                        $stmt_comp->execute(); 
+                        
+                        if ($stmt_comp->rowCount() > 0) {
+                            $row_comp = $stmt_comp->fetch();
+                            $_SESSION['CompanyName'] = $row_comp['CompanyDesc'];
+                            $_SESSION['CompanyLogo'] = $row_comp['logopath'];
+                            $_SESSION['CompanyColor'] = $row_comp['comcolor'];
+                        } else {
+                            $_SESSION['CompanyName'] = "ADMIN";
+                            $_SESSION['CompanyLogo'] = "";
+                            $_SESSION['CompanyColor'] = "red";
                         }
-                         $_SESSION['PassHash']=$hash;
-
+                        
+                        // Break the loop once match is found
+                        break; 
+                    }
                 }
-                else{
-
-                }
-              }
+            } catch(PDOException $e) {
+                die("ERROR: Could not connect. " . $e->getMessage());
             }
+        }
+
+        // Re-check session: if still not set after cookie check, redirect
+        if (!isset($_SESSION['id']) || $_SESSION['id'] == "0") {
+            header('location: login.php');
+            exit();
+        }
     }
 
-  }
-  date_default_timezone_set("Asia/Manila"); 
+    //function load data here
+    function displayShiftMonitor($empID, $daysBack = 7) {
+      include 'w_conn.php';
+      
+      try {
+          $pdo = new PDO("mysql:host=$servername;dbname=$db", $username, $password);
+          $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+          
+          $dt1 = date('Y-m-d', strtotime("-$daysBack days"));
+          $dt2 = date('Y-m-d', strtotime('+1 days'));
+          
+          $statement = $pdo->prepare("SELECT * FROM dars WHERE EmpID = :name AND DarDateTime BETWEEN :dt1 AND :dt2 ORDER BY DarDateTime DESC");
+          $statement->execute([
+              ':name' => $empID,
+              ':dt1' => $dt1,
+              ':dt2' => $dt2
+          ]);
+
+          if ($statement->rowCount() > 0) {
+              while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+                  $ts = strtotime($row['DarDateTime']);
+                  ?>
+                  <tr>
+                      <td class="td-dar" width="40%"><?php echo date("F j, Y", $ts); ?></td>
+                      <td class="td-dar res-day" width="40%"><?php echo date("l", $ts); ?></td>
+                      <td class="td-dar" width="40%"><?php echo date("h:i:s A", $ts); ?></td>            
+                      <td class="td-act" width="50%"><?php echo htmlspecialchars($row['EmpActivity']); ?></td>
+                  </tr>
+                  <?php
+              }
+          } else {
+              echo "<tr><td colspan='4' class='text-center'>No activities recorded for the last $daysBack days.</td></tr>";
+          }
+
+      } catch(PDOException $e) {
+          echo "<tr><td colspan='4'>Error: " . $e->getMessage() . "</td></tr>";
+      }
+    }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -380,34 +412,7 @@
                       </tr>
                     </thead>
                     <tbody class="body-half-screen w-auto" id="adddar">         
-                      <?php
-                      try{
-                          include 'w_conn.php';
-                          $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
-                          $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                        }catch(PDOException $e){
-                          die("ERROR: Could not connect. " . $e->getMessage());
-                        }
-                          $id=$_SESSION['id'];
-                          $dt1=date('Y-m-d', strtotime('-7 days'));
-                          $dt2=date('Y-m-d', strtotime('+1 days'));
-                          $statement = $pdo->prepare("select * from dars where EmpID = :name and DarDateTime between :dt1 and :dt2  order by DarDateTime desc");
-                          $statement->bindParam(':name' , $id);
-                          $statement->bindParam(':dt1' , $dt1);
-                          $statement->bindParam(':dt2' , $dt2);
-                          $statement->execute();
-
-                          while ($row = $statement->fetch()){
-                          ?>
-                            <tr>
-                                <td class="td-dar" width="40%"><?php echo date("F j, Y", strtotime($row['DarDateTime'])); ?></td>
-                                <td class="td-dar res-day" width="40%"><?php echo date("l", strtotime($row['DarDateTime'])); ?></td>
-                                <td class="td-dar" width="40%"><?php echo date("h:i:s A", strtotime($row['DarDateTime'])); ?></td>            
-                                <td class="td-act" width="50%"><?php echo $row['EmpActivity']; ?></td>
-                            </tr>
-                          <?php
-                          }
-                          ?>
+                       <?php displayShiftMonitor($_SESSION['id']); ?>
                     </tbody>
                   </table>
                 </div>
@@ -417,7 +422,7 @@
           <div class="home-container att-lilo">   
               <p style="font-family: 'Tahoma'; display: inline-block; font-size: 26px; margin: 0px;">Attendance Log</p>      
               <button class="btn btnref2"  type="button">
-                <!-- <img src="assets/images/refreshicon.png" data-toggle="tooltip" data-placement="right" title="Refresh" width="25px"> -->
+          
                 <i class="fa fa-refresh" aria-hidden="true"></i>
               </button>         
               <div class="outer-div-tblattendance">

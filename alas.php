@@ -82,7 +82,7 @@
     <script type="text/javascript" src="assets/js/script.js"></script>
     <script src="assets/js/script-reports.js"></script>
     <script type="text/javascript" src="assets/js/script-modules.js"></script>
-        <!-- <script type="text/javascript" src="assets/js/administrative.js"></script> -->
+    <script type="text/javascript" src="assets/js/administrative.js"></script>
 
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
