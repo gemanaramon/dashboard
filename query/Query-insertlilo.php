@@ -80,6 +80,63 @@
       }
     }
 
+    //new update for leave validation
+    // function validateUserLeave($id) {
+      // 1. IMPORT CONNECTION: Para mabasa ang $con connection galing sa labas
+      global $con; 
+
+      // 2. TIMEZONE SETTING: Gawin ito bago mag-create ng date objects
+      date_default_timezone_set('Asia/Manila');
+      
+      $now = new DateTime(); 
+      $currentTime   = $now->format('H:i');
+      $today_compare = $now->format('Y-m-d');
+
+      // 3. SQL QUERY: Inayos ang date parameter gamit ang "?" placeholder
+      $sql = "SELECT * FROM hleavesbd WHERE EmpID = ? AND LStatus = '4' AND LStart = ? LIMIT 1";
+      
+      $stmt = $con->prepare($sql);
+      
+      if ($stmt) {
+          // "ss" means dalawang strings (id at today_compare)
+          $stmt->bind_param("ss", $id, $today_compare); 
+          $stmt->execute();
+
+          $result = $stmt->get_result();
+          $leave = $result->fetch_assoc();
+          
+          if ($leave) {
+         
+              // Check Whole Day (LDuration 600)
+              if ($leave['LDuration'] == 600) {
+                  print 1000;
+                  return;
+              }
+
+              // Check Half-day (LDuration 300)
+              if ($leave['LDuration'] == 300) {
+                  if ($leave['am_pm'] === 'half_day_am') {
+                      if ($currentTime < '13:00') {
+                          print 1001;
+                          return;
+                      }
+                  } elseif ($leave['am_pm'] === 'half_day_pm') {
+                      if ($currentTime >= '13:00') {
+                          print 1002;
+                          return;
+                      }
+                  } 
+              }
+          }
+          $stmt->close(); // Ugaliing i-close ang statement
+      }
+
+      return ['can_login' => true];
+    // }
+
+    //   validateUserLeave($id);
+      //new update for leave validation
+
     $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN 
     workschedule ON workdays.SchedTime=workschedule.WorkSchedID 
     inner join schedeffectivity as c on workdays.EFID=c.efids
@@ -95,9 +152,6 @@
       if ($row['SchedTime'] != 0){
         //initialized data for attendance
         $tfrom = $row['TimeFrom'];
-
-       
-
 
         // ogm lilo script end
         $tto = $row['TimeTo'];
@@ -340,8 +394,8 @@
             }else{
               print 2;
             }
-          }      
-        //ogm script end
+        }      
+           //ogm script end
 
         $rsss=2;    
         $wsched= $tfrom;

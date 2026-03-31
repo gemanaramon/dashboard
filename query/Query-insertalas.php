@@ -29,10 +29,10 @@
       $id=$_SESSION['id'];
       if($id=="WeDoinc-012"){
       }else{
-          if($timenow > $startTime){
-              echo "The leave application must be completed on or before 8:30 AM.";
-              return;
-          }
+          // if($timenow > $startTime){
+          //     echo "The leave application must be completed on or before 8:30 AM.";
+          //     return;
+          // }
       }
     }
 
@@ -259,7 +259,7 @@
     
       // Filing Validation
       if ($today==$dtd){
-        if ($vl_duringfile==0){ echo "Filing not allowed"; return false; }
+        // if ($vl_duringfile==0){ echo "Filing not allowed"; return false; }
         if ($_POST['leavedur']==0.5 && $vl_halfday==0){ echo "You cant file halfday on this Leave"; return; }
       }else if ($today>=$dtd){
         if ($vl_after==1){
@@ -326,6 +326,13 @@
       $dtstartleave = $_POST['lstarts'];
       $drt = ($_POST['leavedur']>=1) ? 600 : 300;
 
+      //determine leave type for half day
+      $leave_type_ampm = 'whole_day'; // Default
+
+      if (isset($_POST['is_half_day'])) {
+          $leave_type_ampm = $_POST['half_day_type']; 
+      }
+
       while ($dtstartleave <= $dtendleave) {
           $shouldInsert = false;
           
@@ -347,13 +354,13 @@
           }
 
           if($shouldInsert){
-              $sqlbd = "INSERT INTO hleavesbd (FID,EmpID,EmpSID,LType,LFDate,LStart,LEnd,LPurpose,LDuration,LStatus,LInputDate,Lpaid,LDateTimeUpdated) VALUES (:fidsl,:id,:is,:ltype,:lfdate,:lstart,:lend,:LPurpose,:lduration,:LStatus,:DTin,:lpay,:ldupdated)";
+              $sqlbd = "INSERT INTO hleavesbd (FID,EmpID,EmpSID,LType,LFDate,LStart,LEnd,LPurpose,LDuration,LStatus,LInputDate,Lpaid,LDateTimeUpdated,am_pm) VALUES (:fidsl,:id,:is,:ltype,:lfdate,:lstart,:lend,:LPurpose,:lduration,:LStatus,:DTin,:lpay,:ldupdated,:am_pm)";
               $stmtbd = $pdo->prepare($sqlbd);
               $stmtbd->execute([
                   ':fidsl' => $fkeyid, ':id' => $id, ':is' => $isid, ':ltype' => $_POST['leavetype'],
                   ':lfdate' => $today, ':lstart' => $dtstartleave, ':lend' => $dtstartleave,
                   ':LPurpose' => $streason, ':lduration' => $drt, ':LStatus' => $statid,
-                  ':DTin' => $today2, ':lpay' => $_POST['leavepay'], ':ldupdated' => $today2
+                  ':DTin' => $today2, ':lpay' => $_POST['leavepay'], ':ldupdated' => $today2,':am_pm' => $leave_type_ampm
               ]);
               $ida = $pdo->lastInsertId();
 

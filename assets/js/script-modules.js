@@ -325,12 +325,11 @@ $(document).ready(function(){
         }
     });
     
-        // 9-11
+    // 9-11
     $("#leavetype option[value=33]").hide();
     $('#leavetype').val("35");
     
     // $("#leavetype").children('option').show();
-
     $("#leavepay").change(function(){
     
         if($(this).val()==0){
@@ -731,6 +730,17 @@ $(document).ready(function(){
             }
         });
 
+    });
+
+
+    //udate leave type kind if change
+    $('#exampleCheck1').on('change', function() {
+        
+        if ($(this).is(':checked')) {
+            $('#halfDayOptions').show(); 
+        } else {
+            $('#halfDayOptions').hide(); 
+        }
     });
 
 });

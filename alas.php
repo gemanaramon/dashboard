@@ -34,6 +34,8 @@
                         $cid                  = $row['EmpCompID'];
                         $_SESSION['CompID']   = $row['EmpCompID'];
                         $_SESSION['EmpISID']  = $row['EmpISID'];
+                        	$_SESSION['gender'] = $rowGender['EmpGender'];
+                        $gender=$rowGender['EmpGender'];	
                         $statement            = $pdo->prepare("select * from companies where CompanyID = :pw");
                         $statement->bindParam(':pw', $cid);
                         $statement->execute();
@@ -82,54 +84,56 @@
     <script type="text/javascript" src="assets/js/script.js"></script>
     <script src="assets/js/script-reports.js"></script>
     <script type="text/javascript" src="assets/js/script-modules.js"></script>
-    <script type="text/javascript" src="assets/js/administrative.js"></script>
+         <script type="text/javascript" src="assets/js/administrative.js"></script> 
 
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
     <script>
-    function FunctionChangedate() {
-        var d = new Date();
-        var n = d.getFullYear();
-        var x = document.getElementById("lstarts").max = n + "-12-31";
-        var x = document.getElementById("lenddate").max = n + "-12-31";
-        var x = document.getElementById("lstarts").min = n + "-01-01";
-        var x = document.getElementById("lenddate").min = n + "-01-01";
-    }
+        function FunctionChangedate() {
+            var d = new Date();
+            var n = d.getFullYear();
+            var x = document.getElementById("lstarts").max = n + "-12-31";
+            var x = document.getElementById("lenddate").max = n + "-12-31";
+            var x = document.getElementById("lstarts").min = n + "-01-01";
+            var x = document.getElementById("lenddate").min = n + "-01-01";
+        }
 
-    function checkSubCategory(selectElement) {
-    const subCategoryArea = document.getElementById('sub_category_area');
-    const subCategorySelect = document.getElementById('leave_subcategory');
-    
-    // Get the text of the selected option
-    const selectedText = selectElement.options[selectElement.selectedIndex].text.toUpperCase();
+        function checkSubCategory(selectElement) {
+            const subCategoryArea = document.getElementById('sub_category_area');
+            const subCategorySelect = document.getElementById('leave_subcategory');
+            
+            // Get the text of the selected option
+            const selectedText = selectElement.options[selectElement.selectedIndex].text.toUpperCase();
 
-    
+            
 
-    // If the selection contains the word "VACATION", show the second tier
-    if (selectedText.includes("SIL VACATION") || selectedText.includes("VACATION")) {
-        subCategoryArea.style.display = 'block';
-        subCategorySelect.setAttribute('required', 'required');
-    } else {
-        subCategoryArea.style.display = 'none';
-        subCategorySelect.removeAttribute('required');
-        subCategorySelect.value = ""; // Clear selection if hidden
-    }
-}
+            // If the selection contains the word "VACATION", show the second tier
+            if (selectedText.includes("SIL VACATION") || selectedText.includes("VACATION")) {
+                subCategoryArea.style.display = 'block';
+                subCategorySelect.setAttribute('required', 'required');
+            } else {
+                subCategoryArea.style.display = 'none';
+                subCategorySelect.removeAttribute('required');
+                subCategorySelect.value = ""; // Clear selection if hidden
+            }
+        }
+
+      
     </script>
 </head>
 
 <style type="text/css">
-html body {
-    font-family: Tahoma !important;
-}
+    html body {
+        font-family: Tahoma !important;
+    }
 
-.modal-backdrop {
-    background-color: transparent;
-}
+    .modal-backdrop {
+        background-color: transparent;
+    }
 
-.ihd-dis {
-    /*display:  none;*/
-}
+    .ihd-dis {
+        /*display:  none;*/
+    }
 </style>
 
 <body style="background-image: none">
@@ -188,7 +192,7 @@ html body {
                                                     <div class="form-group">
                                                         <label>Personnel Name:</label>
                                                         <input type="text" disabled class="form-control"
-                                                            value="<?php echo $_SESSION['UserType'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN'] ?>">
+                                                            value="<?php echo $row['EmpLN'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN'] ?>">
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Company Name:</label>
@@ -232,24 +236,11 @@ html body {
 
                                                                 if ($crcnt25 > 0) {
 
-                                                                        if (!isset($_SESSION['gender']) || !isset($_SESSION['id'])) {
-                                                                            // 1. Clear any accidental output
-                                                                            ob_end_clean(); 
-                                                                            
-                                                                            // 2. Force the redirect header
-                                                                            header('Location: login.php');
-                                                                            
-                                                                            // 3. Fallback: If headers are already sent, use HTML to push the reload
-                                                                            echo '<meta http-equiv="refresh" content="0;url=login.php">';
-                                                                            echo '<script>window.location.href="login.php";</script>';
-                                                                            
-                                                                            exit(); 
-                                                                        }
-                                                                    //2026 new code for gender validation and leave type
-                                                                    if ($_SESSION['gender'] == "Male") {
+                                                                    
+                                                                    if ( $gender == "Male") {
                                                                                 $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('29','33','30','22') order by LeaveDesc asc");
 
-                                                                    } else if ($_SESSION['gender'] == "Female") {
+                                                                    } else if ( $gender == "Female") {
                                                                         $sql = mysqli_query($con, "select * from  leaves where LeaveID IN('27','33','30','22') order by LeaveDesc asc");
 
                                                                     } else {
@@ -278,7 +269,7 @@ html body {
                                                     </div>
 
                                                     <div class="form-group" id="sub_category_area" style="display:none; background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
-                                                        <label>Select Vacation Detail:</label>
+                                                        <label>Select Vacation Detail: </label>
                                                         <select class="form-control" id="leave_subcategory" name="leave_subcategory">
                                                             <option value="22">VACATION </option>
                                                             <option value="38">FORCE MAJEURE (Inclement weather, nature, etc.)</option>
@@ -544,7 +535,7 @@ html body {
                                                         <?php 
                                                             // Determine the display value
                                                             if (is_numeric($creditEarned)) {
-                                                                $displayValue = number_format((float) $creditEarned, 2 , '.', '');
+                                                                $displayValue = number_format((float) $creditEarned, 2, '.', '');
                                                             } else {
                                                                 // It's already a string message, so keep it as is
                                                                 $displayValue = $creditEarned;
@@ -580,12 +571,31 @@ html body {
                                                     </div> -->
                                                     <div class="form-group">
                                                         <!--   -->
-                                                        <div class="ihd-dis" style="float: right;">
+                                                        <!-- <div class="ihd-dis" style="float: right;">
                                                             <input type="checkbox" class="form-check-input"
                                                                 style="position: relative;" id="exampleCheck1">
                                                             <label class="form-check-label" for="exampleCheck1">If Half
                                                                 Day?</label>
+                                                        </div> -->
+
+                                                        <div class="ihd-dis" style="float: right;">
+                                                            <div class="form-check">
+                                                                <input type="checkbox" class="form-check-input" style="position: relative;" id="exampleCheck1" name="is_half_day">
+                                                                <label class="form-check-label" for="exampleCheck1">If Half Day?</label>
+                                                            </div>
+
+                                                            <div id="halfDayOptions" style="display: none; margin-top: 10px; padding-left: 20px;">
+                                                                <div class="form-check form-check-inline">
+                                                                    <input class="form-check-input" type="radio" name="half_day_type" id="typeAM" value="half_day_am" checked>
+                                                                    <label class="form-check-label" for="typeAM">AM (Morning)</label>
+                                                                </div>
+                                                                <div class="form-check form-check-inline">
+                                                                    <input class="form-check-input" type="radio" name="half_day_type" id="typePM" value="half_day_pm">
+                                                                    <label class="form-check-label" for="typePM">PM (Afternoon)</label>
+                                                                </div>
+                                                            </div>
                                                         </div>
+
                                                         <label class="dur-text">Duration Days:</label>
                                                         <input type="text" readonly="readonly" value="1" id="leavedur"
                                                             name="leavedur" class="form-control dura">
