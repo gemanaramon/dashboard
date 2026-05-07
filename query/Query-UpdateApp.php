@@ -226,42 +226,99 @@
                                         //
                                     }else{
                                         //special case for WeDoinc-0145
-                                        $cth = $crdetailTH['CTH'];
-                                        $ct  = $crdetailTH['CT'];
-                                        $dor = $crdetailTH['EmpDOR']; // Ensure EmpDOR is available in your scope
+                                        // $cth = $crdetailTH['CTH'];
+                                        // $ct  = $crdetailTH['CT'];
+                                        // $dor = $crdetailTH['EmpDOR']; // Ensure EmpDOR is available in your scope
                                         
-                                        if (!empty($dor)) {
-                                            $currentYear = date("Y");
-                                            $hireYear    = date("Y", strtotime($dor));
+                                        // if (!empty($dor)) {
+                                        //     $currentYear = date("Y");
+                                        //     $hireYear    = date("Y", strtotime($dor));
                                             
-                                            // 1. Set start date: Jan 1 or Date of Regularization
-                                            $calcStart = ($hireYear < $currentYear) 
-                                                ? date_create("1/1/" . $currentYear) 
-                                                : date_create($dor);
+                                        //     // 1. Set start date: Jan 1 or Date of Regularization
+                                        //     $calcStart = ($hireYear < $currentYear) 
+                                        //         ? date_create("1/1/" . $currentYear) 
+                                        //         : date_create($dor);
                                             
-                                            $dateNow = date_create(date("Y-m-d"));
+                                        //     $dateNow = date_create(date("Y-m-d"));
 
-                                            // 2. Calculate days in the current year
-                                            $dateJan1     = date_create("1/1/" . $currentYear);
-                                            $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
-                                            $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
+                                        //     // 2. Calculate days in the current year
+                                        //     $dateJan1     = date_create("1/1/" . $currentYear);
+                                        //     $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
+                                        //     $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
 
-                                            // 3. Pro-rated math
-                                            $cdPerDay   = $cth / $daysInYear;
-                                            $daysActive = date_diff($calcStart, $dateNow)->format("%a");
-                                            $usedCredit = $cth - $ct;
+                                        //     // 3. Pro-rated math
+                                        //     $cdPerDay   = $cth / $daysInYear;
+                                        //     $daysActive = date_diff($calcStart, $dateNow)->format("%a");
+                                        //     $usedCredit = $cth - $ct;
 
-                                            // 4. Set $varCT to the LIVE earned value for the approval loop
-                                            $calculatedEarnings = ($cdPerDay * $daysActive) - $usedCredit;
+                                        //     // 4. Set $varCT to the LIVE earned value for the approval loop
+                                        //     $calculatedEarnings = ($cdPerDay * $daysActive) - $usedCredit;
                                             
-                                            // We use floor() to ensure we only approve full days earned
-                                            $varCT = round($calculatedEarnings, 2); // Rounds to 2 decimal places
-                                            $varTH = $cth;
-                                        } else {
-                                            // Fallback if no DOR found
-                                            $varCT = $ct;
-                                            $varTH = $cth;
-                                        }
+                                        //     // We use floor() to ensure we only approve full days earned
+                                        //     $varCT = round($calculatedEarnings, 2); // Rounds to 2 decimal places
+                                        //     $varTH = $cth;
+                                        // } else {
+                                        //     // Fallback if no DOR found
+                                        //     $varCT = $ct;
+                                        //     $varTH = $cth;
+                                        // }
+
+                                        // special case for WeDoinc-0145
+                                            $cth = $crdetailTH['CTH'];
+                                            $ct  = $crdetailTH['CT'];
+                                            $dor = $crdetailTH['EmpDOR']; 
+
+                                            if (!empty($dor)) {
+                                                $currentYear = date("Y");
+                                                $hireYear    = date("Y", strtotime($dor));
+
+                                                // 1. Set start date: Jan 1 or Date of Regularization
+                                                $calcStart = ($hireYear < $currentYear) 
+                                                    ? date_create("1/1/" . $currentYear) 
+                                                    : date_create($dor);
+
+                                                $dateNow = date_create(date("Y-m-d"));
+
+                                                // 2. Calculate days in the current year
+                                                $dateJan1     = date_create("1/1/" . $currentYear);
+                                                $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
+                                                $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
+
+                                                // 3. Kunin ang ACTUAL used credits gamit ang SUM ng LDuration (Minutes)
+                                                // Gagamit tayo ng SUM dahil may half-day (300 mins) at whole day (600 mins)
+                                                $sqlSum = "SELECT SUM(hb.LDuration) FROM hleavesbd hb 
+                                                        JOIN hleaves h ON hb.FID = h.LeaveID 
+                                                        WHERE h.EmpID = :empid 
+                                                        AND h.LType = 24 
+                                                        AND hb.LStatus = 4 
+                                                        AND YEAR(hb.LStart) = :year";
+
+                                                $stmtSum = $pdo->prepare($sqlSum);
+                                                $stmtSum->execute([':empid' => $id, ':year' => $currentYear]);
+                                                $totalMinutesUsed = (float)$stmtSum->fetchColumn() ?: 0;
+
+                                                // I-convert ang minutes sa Days (600 mins = 1 day)
+                                                $totalUsedInDays = $totalMinutesUsed / 600;
+
+                                                // 4. Pro-rated math + Bonus
+                                                $cdPerDay = $cth / $daysInYear;
+                                                $daysActive = date_diff($calcStart, $dateNow)->format("%a");
+
+                                                // FORMULA: (Earned per day * days active) + 4 Bonus - Actual Used Days
+                                                $calculatedEarnings = (($cdPerDay * $daysActive) + 4) - $totalUsedInDays;
+
+                                                // Safety check: Gamitan ng max(0, ...) para walang negative value
+                                                $finalValue = max(0, $calculatedEarnings);
+
+                                                // 5. Set values para sa approval loop
+                                                $varCT = round($finalValue, 2); 
+                                                $varTH = $cth + 4;
+
+                                            } else {
+                                                // Fallback if no DOR found
+                                                $varCT = $ct;
+                                                $varTH = $cth;
+                                            }
                                     }
                                     
                                 }    

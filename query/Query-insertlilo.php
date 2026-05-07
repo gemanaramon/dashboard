@@ -131,7 +131,7 @@
           $stmt->close(); // Ugaliing i-close ang statement
       }
 
-      return ['can_login' => true];
+      // return ['can_login' => true];
     // }
 
     //   validateUserLeave($id);

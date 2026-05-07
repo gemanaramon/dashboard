@@ -152,42 +152,46 @@
 								if(is_null($dor)){
 									 $creditEarned = "Missing Regularization Date";
 								}else{
-									 $hireYear = date("Y", strtotime($dor));
-                                
-									// Set calculation start: Jan 1 of current year OR Hire Date if hired this year
-									$calcStart = ($hireYear < $currentYear) 
-										? date_create("1/1/" . $currentYear) 
-										: date_create($dor);
-									
-									$dateNow = date_create(date("Y-m-d"));
-									$daysInYear = date_diff(date_create("1/1/".$currentYear), date_create("1/1/".($currentYear+1)))->format("%a");
-									
-									$cdPerDay = $cth / $daysInYear;
-									$daysActive = date_diff($calcStart, $dateNow)->format("%a");
-									
-									$calculated = ($cdPerDay * $daysActive) - $usedCredit + 4; // +4 as bonus
-									$creditEarned = number_format($calculated, 4, '.', '');
-
-                                    //get here the total use credits for emergency leave this year
-                                    $currentYear = date('Y');
-                                        $localCount = 0;
-                                        
-                                    // 1. Get how many days have ALREADY been used this year before this loop
-                                    $totalApprovedCount = 0;
-                                    // if ($leaveType == 24) {
-                                        $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
-                                                    JOIN hleaves h ON hb.FID = h.LeaveID 
-                                                    WHERE h.EmpID = :empid 
-                                                    AND h.LType = 24 
-                                                    AND hb.LStatus = 4 
-                                                    AND YEAR(hb.LStart) = :year";
-                                        $stmtCount = $pdo->prepare($sqlCount);
-                                        $stmtCount->execute([':empid' => $id, ':year' => $currentYear]);
-                                        $totalApprovedCount = (int)$stmtCount->fetchColumn();
-
-                                         $usedCredit += $totalApprovedCount;
-                                         $creditEarned -= $totalApprovedCount;
-                                    // }
+									               $currentYear = date("Y");
+                                    $hireYear    = date("Y", strtotime($dor));
+                                    $dateNow     = date_create(date("Y-m-d"));
+                                    
+                                    // 1. Kunin ang total minutes mula sa DB
+                                    $sqlSum = "SELECT SUM(hb.LDuration) FROM hleavesbd hb 
+                                               JOIN hleaves h ON hb.FID = h.LeaveID 
+                                               WHERE h.EmpID = :empid 
+                                            
+                                               AND hb.LStatus = 4 
+                                               AND YEAR(hb.LStart) = :year";
+                                    $stmtSum = $pdo->prepare($sqlSum);
+                                    $stmtSum->execute([':empid' => $id, ':year' => $currentYear]);
+                                    $totalMinutesUsed = (float)$stmtSum->fetchColumn() ?: 0;
+                                    
+                                    // 2. I-convert ang minutes sa days (Base sa policy mo na 600 mins = 1 day)
+                                    $totalUsedInDays = $totalMinutesUsed / 600;
+                                    
+                                    // 3. Set Start Date (Jan 1 o Hire Date)
+                                    $calcStart = ($hireYear < $currentYear) 
+                                        ? date_create("1/1/" . $currentYear) 
+                                        : date_create($dor);
+                                    
+                                    // 4. Daily Accrual Calculation
+                                    $dateJan1     = date_create("1/1/" . $currentYear);
+                                    $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
+                                    $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
+                                    
+                                    $cdPerDay   = $cth / $daysInYear;
+                                    $daysActive = date_diff($calcStart, $dateNow)->format("%a");
+                                    
+                                    // 5. Final Math: (Earned + 4 Bonus) - Used Days
+                                    // Dito natin ibabawas yung converted days (e.g., 300 mins = 0.5 days)
+                                    $calculated = (($cdPerDay * $daysActive) + 4) - $totalUsedInDays;
+                                    
+                                    // 6. Safety Floor (Zero protection)
+                                    $finalBalance = max(0, $calculated);
+                                    
+                                    // 7. Formatting
+                                    $creditEarned = number_format($finalBalance, 4, '.', '');
 								}
                                
                             } 
