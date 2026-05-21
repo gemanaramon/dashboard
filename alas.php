@@ -316,114 +316,215 @@
                                                                     $creditEarned = "Missing Regularization Date";
                                                                 } else {
 
+                                                                        // $dth = $details['EmpDOR'];
+                                                                        // $yr  = date("Y", strtotime($dth));
+                                                                        // $cyr = date("Y");
+                                                                        // ######################
+                                                                        // #2024 script for credit
+                                                                        // #get the details to validate 15 and 10 cridets
+                                                                        // $sql24  = "select * from credit where EmpID = :id";
+                                                                        // $stmt24 = $pdo->prepare($sql24);
+                                                                        // $stmt24->bindParam(':id', $id);
+                                                                        // $stmt24->execute();
+                                                                        // $crdetail24 = $stmt24->fetch();
+                                                                        // $crcnt24    = $stmt24->rowCount();
+
+                                                                        // //2026 set default credit earned
+                                                                        // $creditEarned = $crdetail24['CT'] ?? 0;
+
+                                                                        // if($id=="WeDoinc-0145"){
+                                                                            
+                                                                        //     #if credit is 10 then set system to earning mode
+                                                                        //     if ($yr < $cyr) {
+                                                                        //         $sql  = "select * from credit where EmpID = :id";
+                                                                        //         $stmt = $pdo->prepare($sql);
+                                                                        //         $stmt->bindParam(':id', $id);
+                                                                        //         $stmt->execute();
+                                                                        //         $crdetail = $stmt->fetch();
+                                                                        //         $crcnt    = $stmt->rowCount();
+                                                                        //             if ($crcnt > 0) {
+                                                                        //                 $crh  = $crdetail['CTH'];
+                                                                        //                 $crth = $crdetail['CT'];
+
+                                                                        //                 $tdy   = date("Y");
+                                                                        //                 $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
+                                                                        //                 $date1 = date_create("1/1/" . $tdy);
+                                                                        //                 $date2 = date_create("1/1/" . $tdy1);
+                                                                        //                 $diff  = date_diff($date1, $date2);
+                                                                        //                 //output data
+                                                                        //                 $noOfDays = $diff->format("%a") / 12;
+
+                                                                        //                 //credit per month earning
+                                                                        //                 $cdPerMonth = $crh / 12;
+
+                                                                        //                 //credit per day earning
+                                                                        //                 $cdPerDay = $cdPerMonth / $noOfDays;
+
+                                                                        //                 //get no of days from jan to present
+                                                                        //                 $todaydate  = date("Y");
+                                                                        //                 $todaydate1 = date("m/d/Y");
+                                                                        //                 $gnOfdJan   = date_create("01/01/" . $todaydate);
+                                                                        //                 // $gnOfdCur = date_create("11/01/2024" );
+                                                                        //                 $gnOfdCur = date_create($todaydate1);
+                                                                        //                 //$gnOfdCur=date_create("01/01/2021");
+                                                                        //                 $diff2 = date_diff($gnOfdJan, $gnOfdCur);
+                                                                        //                 //output data
+                                                                        //                 $gnOfdJanCur = $diff2->format("%r%a");
+                                                                        //                 //get use credits and subtract to total earned credits ramon
+                                                                        //                 $useCredit = $crh - $crth;
+                                                                        //                 //get total earned creidit
+                                                                        //                 $creditEarned = ($cdPerDay * ($gnOfdJanCur + 1)) - $useCredit;
+                                                                        //                 // print $gnOfdJanCur + 1;
+
+                                                                        //             } else {
+                                                                        //                 $creditEarned = "Missing credit logs";
+                                                                        //                 //return;
+                                                                        //             }
+                                                                        //     } else {
+
+                                                                        //         $sql  = "select * from credit where EmpID = :id";
+                                                                        //         $stmt = $pdo->prepare($sql);
+                                                                        //         $stmt->bindParam(':id', $id);
+                                                                        //         $stmt->execute();
+                                                                        //         $crdetail = $stmt->fetch();
+                                                                        //         $crcnt    = $stmt->rowCount();
+                                                                        //         if ($crcnt > 0) {
+                                                                        //             $crh   = $crdetail['CTH'];
+                                                                        //             $crth  = $crdetail['CT'];
+                                                                        //             $tdy   = date("Y");
+                                                                        //             $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
+                                                                        //             $date1 = date_create("1/1/" . $tdy);
+                                                                        //             $date2 = date_create("1/1/" . $tdy1);
+                                                                        //             $diff  = date_diff($date1, $date2);
+                                                                        //             //output data
+                                                                        //             $noOfDays = $diff->format("%a") / 12;
+                                                                        //             //credit per month earning
+                                                                        //             $cdPerMonth = $crh / 12;
+                                                                        //             //credit per day earning
+                                                                        //             $cdPerDay = $cdPerMonth / $noOfDays;
+                                                                        //             //get no of days from jan to present
+                                                                        //             $todaydate  = date("Y");
+                                                                        //             $todaydate1 = date("m/d/Y");
+                                                                        //             $gnOfdJan   = date_create($dth);
+                                                                        //             $gnOfdCur   = date_create($todaydate1);
+                                                                        //             //$gnOfdCur=date_create("01/01/2021");
+                                                                        //             $diff2 = date_diff($gnOfdJan, $gnOfdCur);
+                                                                        //             //output data
+                                                                        //             $gnOfdJanCur = $diff2->format("%a");
+                                                                        //             //get use credits and subtract to total earned credits ramon
+                                                                        //             $useCredit = $crh - $crth;
+                                                                        //             //get total earned creidit
+
+                                                                        //             $creditEarned = ($cdPerDay * $gnOfdJanCur  + 1) - $useCredit  ;
+
+                                                                        //             //if greater than
+                                                                        //             //return;
+                                                                        //         }
+                                                                        //     }
+
+
+                                                                        // }       
+
                                                                         $dth = $details['EmpDOR'];
                                                                         $yr  = date("Y", strtotime($dth));
-                                                                        $cyr = date("Y");
+                                                                        $cyr = date("Y"); // Ito rin ang ating $currentYear
+
+                                                                        // Siguraduhin natin na parehong may hawak na ID ang dalawang variable para walang conflict sa query mo
+                                                                        $EmplID = $id; 
+                                                                        $currentYear = $cyr;
+
                                                                         ######################
-                                                                        #2024 script for credit
-                                                                        #get the details to validate 15 and 10 cridets
-                                                                        $sql24  = "select * from credit where EmpID = :id";
+                                                                        # 2024 script for credit
+                                                                        # get the details to validate 15 and 10 credits
+                                                                        $sql24  = "SELECT * FROM credit WHERE EmpID = :id";
                                                                         $stmt24 = $pdo->prepare($sql24);
                                                                         $stmt24->bindParam(':id', $id);
                                                                         $stmt24->execute();
                                                                         $crdetail24 = $stmt24->fetch();
                                                                         $crcnt24    = $stmt24->rowCount();
 
-                                                                        //2026 set default credit earned
+                                                                        // 2026 set default credit earned
                                                                         $creditEarned = $crdetail24['CT'] ?? 0;
 
-                                                                        if($id=="WeDoinc-0145"){
+                                                                        // Suriin kung ang empleyado ay ang partikular na account para sa earning mode
+                                                                        if ($id == "WeDoinc-0145") {
                                                                             
-                                                                            #if credit is 10 then set system to earning mode
-                                                                            if ($yr < $cyr) {
-                                                                                $sql  = "select * from credit where EmpID = :id";
-                                                                                $stmt = $pdo->prepare($sql);
-                                                                                $stmt->bindParam(':id', $id);
-                                                                                $stmt->execute();
-                                                                                $crdetail = $stmt->fetch();
-                                                                                $crcnt    = $stmt->rowCount();
-                                                                                    if ($crcnt > 0) {
-                                                                                        $crh  = $crdetail['CTH'];
-                                                                                        $crth = $crdetail['CT'];
+                                                                            // Kunin ang kasalukuyang kabuuang credit logs (Isang query na lang sa itaas ng math logic)
+                                                                            $sql  = "SELECT * FROM credit WHERE EmpID = :id";
+                                                                            $stmt = $pdo->prepare($sql);
+                                                                            $stmt->bindParam(':id', $id);
+                                                                            $stmt->execute();
+                                                                            $crdetail = $stmt->fetch();
+                                                                            $crcnt    = $stmt->rowCount();
 
-                                                                                        $tdy   = date("Y");
-                                                                                        $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
-                                                                                        $date1 = date_create("1/1/" . $tdy);
-                                                                                        $date2 = date_create("1/1/" . $tdy1);
-                                                                                        $diff  = date_diff($date1, $date2);
-                                                                                        //output data
-                                                                                        $noOfDays = $diff->format("%a") / 12;
+                                                                            if ($crcnt > 0) {
+                                                                                $crh  = $crdetail['CTH']; // Total Credits Allowable (e.g., 15)
+                                                                                $crth = $crdetail['CT'];  // Current Credit Balance na natitira sa DB
 
-                                                                                        //credit per month earning
-                                                                                        $cdPerMonth = $crh / 12;
+                                                                                // 1. Kunin ang kabuuang minuto ng aprubadong leaves mula sa DB (Kabilang ang mga half-day o buong araw)
+                                                                                $sqlCount = "SELECT SUM(hb.LDuration) FROM hleavesbd hb 
+                                                                                            JOIN hleaves h ON hb.FID = h.LeaveID 
+                                                                                            WHERE h.EmpID = :empid 
+                                                                                            AND h.LType = 24 
+                                                                                            AND hb.LStatus = 4 
+                                                                                            AND YEAR(hb.LStart) = :year";
+                                                                                $stmtCount = $pdo->prepare($sqlCount);
+                                                                                $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
 
-                                                                                        //credit per day earning
-                                                                                        $cdPerDay = $cdPerMonth / $noOfDays;
+                                                                                // Kung walang record, gawin nating 0 ang minutes
+                                                                                $totalMinutesApproved = (float)$stmtCount->fetchColumn() ?: 0;
 
-                                                                                        //get no of days from jan to present
-                                                                                        $todaydate  = date("Y");
-                                                                                        $todaydate1 = date("m/d/Y");
-                                                                                        $gnOfdJan   = date_create("01/01/" . $todaydate);
-                                                                                        // $gnOfdCur = date_create("11/01/2024" );
-                                                                                        $gnOfdCur = date_create($todaydate1);
-                                                                                        //$gnOfdCur=date_create("01/01/2021");
-                                                                                        $diff2 = date_diff($gnOfdJan, $gnOfdCur);
-                                                                                        //output data
-                                                                                        $gnOfdJanCur = $diff2->format("%r%a");
-                                                                                        //get use credits and subtract to total earned credits ramon
-                                                                                        $useCredit = $crh - $crth;
-                                                                                        //get total earned creidit
-                                                                                        $creditEarned = ($cdPerDay * ($gnOfdJanCur + 1)) - $useCredit;
-                                                                                        // print $gnOfdJanCur + 1;
+                                                                                // 2. I-convert ang total minutes sa eksaktong bilang ng araw (Halimbawa: 300 mins / 600 = 0.5 araw)
+                                                                                $hrApprovedLeaves = $totalMinutesApproved / 600;
 
-                                                                                    } else {
-                                                                                        $creditEarned = "Missing credit logs";
-                                                                                        //return;
-                                                                                    }
-                                                                            } else {
+                                                                                $tdy   = date("Y");
+                                                                                $date1 = date_create($tdy . "-01-01"); 
+                                                                                $date2 = date_create(($tdy + 1) . "-01-01");
+                                                                                $diff  = date_diff($date1, $date2);
+                                                                                $daysInYear = (int)$diff->format("%a");
 
-                                                                                $sql  = "select * from credit where EmpID = :id";
-                                                                                $stmt = $pdo->prepare($sql);
-                                                                                $stmt->bindParam(':id', $id);
-                                                                                $stmt->execute();
-                                                                                $crdetail = $stmt->fetch();
-                                                                                $crcnt    = $stmt->rowCount();
-                                                                                if ($crcnt > 0) {
-                                                                                    $crh   = $crdetail['CTH'];
-                                                                                    $crth  = $crdetail['CT'];
-                                                                                    $tdy   = date("Y");
-                                                                                    $tdy1  = date("Y", strtotime(date("Y") . "+1 years"));
-                                                                                    $date1 = date_create("1/1/" . $tdy);
-                                                                                    $date2 = date_create("1/1/" . $tdy1);
-                                                                                    $diff  = date_diff($date1, $date2);
-                                                                                    //output data
-                                                                                    $noOfDays = $diff->format("%a") / 12;
-                                                                                    //credit per month earning
-                                                                                    $cdPerMonth = $crh / 12;
-                                                                                    //credit per day earning
-                                                                                    $cdPerDay = $cdPerMonth / $noOfDays;
-                                                                                    //get no of days from jan to present
-                                                                                    $todaydate  = date("Y");
-                                                                                    $todaydate1 = date("m/d/Y");
-                                                                                    $gnOfdJan   = date_create($dth);
-                                                                                    $gnOfdCur   = date_create($todaydate1);
-                                                                                    //$gnOfdCur=date_create("01/01/2021");
-                                                                                    $diff2 = date_diff($gnOfdJan, $gnOfdCur);
-                                                                                    //output data
-                                                                                    $gnOfdJanCur = $diff2->format("%a");
-                                                                                    //get use credits and subtract to total earned credits ramon
-                                                                                    $useCredit = $crh - $crth;
-                                                                                    //get total earned creidit
+                                                                                // Credit rate kada isang araw
+                                                                                $cdPerDay = $crh / $daysInYear;
 
-                                                                                    $creditEarned = ($cdPerDay * $gnOfdJanCur) - $useCredit  ;
-
-                                                                                    //if greater than
-                                                                                    //return;
+                                                                                // Tukuyin ang panimulang petsa base sa Year comparison
+                                                                                if ($yr < $cyr) {
+                                                                                    $gnOfdJan = date_create($tdy . "-01-01");
+                                                                                } else {
+                                                                                    $gnOfdJan = date_create($dth);
                                                                                 }
+
+                                                                                // Kalkulahin ang bilang ng araw mula panimula hanggang ngayon
+                                                                                $gnOfdCur    = date_create(date("Y-m-d"));
+                                                                                $diff2       = date_diff($gnOfdJan, $gnOfdCur);
+                                                                                $gnOfdJanCur = (int)$diff2->format("%r%a");
+
+                                                                                // 1. Alamin ang kabuuang bawas sa credit mula sa database ($useCredit)
+                                                                                $useCredit = $crh - $crth;
+
+                                                                                // 2. LOGIC NG "ON-THE-SPOT 4 CREDIT" AT APPROVED LEAVES:
+                                                                                // Kung mas malaki ang bawas sa credit ($useCredit) kumpara sa totoong aprubadong leave ($hrApprovedLeaves),
+                                                                                // ang ibig sabihin, ang sumobra o natira ay ibinawas/pumasok na doon sa on-the-spot 4 credits.
+                                                                                $usedOnTheSpot = $useCredit - $hrApprovedLeaves;
+
+                                                                                // Guard rails para hindi mag-negative kung wala pang nagagamit sa on-the-spot 4 credits
+                                                                                if ($usedOnTheSpot < 0) {
+                                                                                    $usedOnTheSpot = 0;
+                                                                                }
+
+                                                                                // 3. PINAL NA KALKULASYON:
+                                                                                // (Kalkulado kada araw) - (Tunay na HR Leaves) + (4 On-the-spot Credits) - (Kung magkano ang nabawas na sa on-the-spot)
+                                                                                $onTheSpotCredit = 4;
+                                                                                $creditEarned = ($cdPerDay * ($gnOfdJanCur + 1)) - $hrApprovedLeaves + $onTheSpotCredit - $usedOnTheSpot;
+
+                                                                                // Siguraduhing hindi maging negative ang pinal na resulta
+                                                                                if ($creditEarned < 0) {
+                                                                                    $creditEarned = 0;
+                                                                                }
+
+                                                                            } else {
+                                                                                $creditEarned = "Missing credit logs";
                                                                             }
-
-
-                                                                        }       
+                                                                        }
                                                                     
 
                                                                         //this is disabled for 2024 credit system

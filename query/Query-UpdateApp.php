@@ -354,10 +354,27 @@
                                             $currentYear = date('Y');
                                             $localCount = 0;
                                             
-                                            // 1. Get how many days have ALREADY been used this year before this loop
+                                            // // 1. Get how many days have ALREADY been used this year before this loop
+                                            // $totalApprovedCount = 0;
+                                            // if ($leaveType == 24) {
+                                            //     $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
+                                            //                 JOIN hleaves h ON hb.FID = h.LeaveID 
+                                            //                 WHERE h.EmpID = :empid 
+                                            //                 AND h.LType = 24 
+                                            //                 AND hb.LStatus = 4 
+                                            //                 AND YEAR(hb.LStart) = :year";
+                                            //     $stmtCount = $pdo->prepare($sqlCount);
+                                            //     $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
+                                            //     $totalApprovedCount = (int)$stmtCount->fetchColumn();
+                                            //     // $varCT = $emergencyTH - $totalApprovedCount;
+
+                                            // }
+
+                                            // 1. Get how many days have ALREADY been used this year before this loop (Converted accurately from minutes)
                                             $totalApprovedCount = 0;
                                             if ($leaveType == 24) {
-                                                $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
+                                                // Gagamit tayo ng SUM sa LDuration sa halip na COUNT para sa mga half-day check
+                                                $sqlCount = "SELECT SUM(hb.LDuration) FROM hleavesbd hb 
                                                             JOIN hleaves h ON hb.FID = h.LeaveID 
                                                             WHERE h.EmpID = :empid 
                                                             AND h.LType = 24 
@@ -365,9 +382,15 @@
                                                             AND YEAR(hb.LStart) = :year";
                                                 $stmtCount = $pdo->prepare($sqlCount);
                                                 $stmtCount->execute([':empid' => $EmplID, ':year' => $currentYear]);
-                                                $totalApprovedCount = (int)$stmtCount->fetchColumn();
+                                                
+                                                // Kunin ang total minutes, gawing 0 kung walang nahanap na record
+                                                $totalMinutesUsedBefore = (float)$stmtCount->fetchColumn() ?: 0;
+                                                
+                                                // I-convert sa araw base sa 600 mins = 1 day policy ng company ninyo
+                                                $totalApprovedCount = $totalMinutesUsedBefore / 600;
+                                                
+                                                // Ngayon ay maaari mo na itong ibawas sa emergency total hours nang walang labis o kulang sa half-day:
                                                 // $varCT = $emergencyTH - $totalApprovedCount;
-
                                             }
                                         // echo $durData;
                                         // return;

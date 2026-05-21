@@ -138,6 +138,71 @@
                         $stmt->execute();
                         $currentYear = date("Y");
 
+                        // while ($row = $stmt->fetch()) {
+                        //     $id = $row['EmpID'];
+                        //     $cth = $row['CTH']; // Total per year (e.g. 15)
+                        //     $ct = $row['CT'];   // Currently set credit
+                        //     $dor = $row['EmpDOR'];
+                            
+                        //     $usedCredit = $cth - $ct;
+                        //     $creditEarned = $ct; // Default
+
+                        //     // Specialized Calculation for specific ID or general Pro-rating
+                        //     if ($id == "WeDoinc-0145" ) {
+						// 		if(is_null($dor)){
+						// 			 $creditEarned = "Missing Regularization Date";
+						// 		}else{
+						// 			               $currentYear = date("Y");
+                        //             $hireYear    = date("Y", strtotime($dor));
+                        //             $dateNow     = date_create(date("Y-m-d"));
+                                    
+                        //             // 1. Kunin ang total minutes mula sa DB
+                        //             $sqlSum = "SELECT SUM(hb.LDuration) FROM hleavesbd hb 
+                        //                        JOIN hleaves h ON hb.FID = h.LeaveID 
+                        //                        WHERE h.EmpID = :empid 
+                                            
+                        //                        AND hb.LStatus = 4 
+                        //                        AND YEAR(hb.LStart) = :year";
+                        //             $stmtSum = $pdo->prepare($sqlSum);
+                        //             $stmtSum->execute([':empid' => $id, ':year' => $currentYear]);
+                        //             $totalMinutesUsed = (float)$stmtSum->fetchColumn() ?: 0;
+                                    
+                        //             // 2. I-convert ang minutes sa days (Base sa policy mo na 600 mins = 1 day)
+                        //             $totalUsedInDays = $totalMinutesUsed / 600;
+                                    
+                        //             // 3. Set Start Date (Jan 1 o Hire Date)
+                        //             $calcStart = ($hireYear < $currentYear) 
+                        //                 ? date_create("1/1/" . $currentYear) 
+                        //                 : date_create($dor);
+                                    
+                        //             // 4. Daily Accrual Calculation
+                        //             $dateJan1     = date_create("1/1/" . $currentYear);
+                        //             $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
+                        //             $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
+                                    
+                        //             $cdPerDay   = $cth / $daysInYear;
+                        //             $daysActive = date_diff($calcStart, $dateNow)->format("%a");
+                                    
+                        //             // 5. Final Math: (Earned + 4 Bonus) - Used Days
+                        //             // Dito natin ibabawas yung converted days (e.g., 300 mins = 0.5 days)
+                        //             $calculated = (($cdPerDay * $daysActive) + 4) - $totalUsedInDays;
+                                    
+                        //             // 6. Safety Floor (Zero protection)
+                        //             $finalBalance = max(0, $calculated);
+                                    
+                        //             // 7. Formatting
+                        //             $creditEarned = number_format($finalBalance, 4, '.', '');
+						// 		}
+                               
+                        //     } 
+                            
+                        //     if (is_numeric($creditEarned)) {
+                        //         $remaining = number_format($creditEarned, 4, '.', '');
+                        //     } else {
+                              
+                        //         $remaining = number_format(0, 4, '.', '');
+                        //     }
+
                         while ($row = $stmt->fetch()) {
                             $id = $row['EmpID'];
                             $cth = $row['CTH']; // Total per year (e.g. 15)
@@ -145,24 +210,26 @@
                             $dor = $row['EmpDOR'];
                             
                             $usedCredit = $cth - $ct;
+                         
+
                             $creditEarned = $ct; // Default
 
                             // Specialized Calculation for specific ID or general Pro-rating
                             if ($id == "WeDoinc-0145" ) {
-								if(is_null($dor)){
-									 $creditEarned = "Missing Regularization Date";
-								}else{
-									               $currentYear = date("Y");
+                                if (is_null($dor)) {
+                                    $creditEarned = "Missing Regularization Date";
+                                } else {
+                                    $currentYear = date("Y");
                                     $hireYear    = date("Y", strtotime($dor));
                                     $dateNow     = date_create(date("Y-m-d"));
                                     
                                     // 1. Kunin ang total minutes mula sa DB
                                     $sqlSum = "SELECT SUM(hb.LDuration) FROM hleavesbd hb 
-                                               JOIN hleaves h ON hb.FID = h.LeaveID 
-                                               WHERE h.EmpID = :empid 
-                                            
-                                               AND hb.LStatus = 4 
-                                               AND YEAR(hb.LStart) = :year";
+                                            JOIN hleaves h ON hb.FID = h.LeaveID 
+                                            WHERE h.EmpID = :empid 
+                                            AND hb.LStatus = 4 
+                                            AND h.LType = 24 
+                                            AND YEAR(hb.LStart) = :year";
                                     $stmtSum = $pdo->prepare($sqlSum);
                                     $stmtSum->execute([':empid' => $id, ':year' => $currentYear]);
                                     $totalMinutesUsed = (float)$stmtSum->fetchColumn() ?: 0;
@@ -172,36 +239,52 @@
                                     
                                     // 3. Set Start Date (Jan 1 o Hire Date)
                                     $calcStart = ($hireYear < $currentYear) 
-                                        ? date_create("1/1/" . $currentYear) 
+                                        ? date_create($currentYear . "-01-01") 
                                         : date_create($dor);
                                     
                                     // 4. Daily Accrual Calculation
-                                    $dateJan1     = date_create("1/1/" . $currentYear);
-                                    $dateNextJan1 = date_create("1/1/" . ($currentYear + 1));
+                                    $dateJan1     = date_create($currentYear . "-01-01");
+                                    $dateNextJan1 = date_create(($currentYear + 1) . "-01-01");
                                     $daysInYear   = date_diff($dateJan1, $dateNextJan1)->format("%a");
                                     
                                     $cdPerDay   = $cth / $daysInYear;
                                     $daysActive = date_diff($calcStart, $dateNow)->format("%a");
                                     
-                                    // 5. Final Math: (Earned + 4 Bonus) - Used Days
-                                    // Dito natin ibabawas yung converted days (e.g., 300 mins = 0.5 days)
-                                    $calculated = (($cdPerDay * $daysActive) + 4) - $totalUsedInDays;
+                                    // 5. SEPARATED MATH LOGIC (On-the-spot vs Earned Accrual)
+                                    
+                                    // A. Kunin ang purong naipon base sa lumipas na araw (Walang kasamang bonus)
+                                    $earnedSoFar = $cdPerDay * ($daysActive + 1); // (+1 para kasama ang kasalukuyang araw)
+
+                                    // B. Kwentahin kung magkano ang natitira sa On-The-Spot 4 Credit
+                                    // Ang mga nagamit na leave ay ibabawas muna sa 4 credits hanggang sa maubos ito.
+                                    $remainingOnTheSpot = 4 - $totalUsedInDays;
+
+                                    $usedFromEarned = 0;
+                                    // Kung sumobra ang nagamit na leave sa 4 credits, ang labis ay doon pa lang ibabawas sa purong ipon
+                                    if ($remainingOnTheSpot < 0) {
+                                        $usedFromEarned = abs($remainingOnTheSpot); // Kunin ang positive value ng sumobra na ibabawas sa ipon
+                                        $remainingOnTheSpot = 0; // Ubos na ang on-the-spot 4 credit
+                                    }
+
+                                    // C. Pinal na Balance: (Purong Ipon - Sobrang Leave) + Natitirang On-The-Spot Credit
+                                    $calculated = ($earnedSoFar - $usedFromEarned) + $remainingOnTheSpot;
                                     
                                     // 6. Safety Floor (Zero protection)
                                     $finalBalance = max(0, $calculated);
                                     
                                     // 7. Formatting
                                     $creditEarned = number_format($finalBalance, 4, '.', '');
-								}
-                               
+                                }
                             } 
                             
+                            // Pag-set sa $remaining balance display
                             if (is_numeric($creditEarned)) {
                                 $remaining = number_format($creditEarned, 4, '.', '');
                             } else {
-                              
                                 $remaining = number_format(0, 4, '.', '');
                             }
+                        
+ 
                             ?>
 
                             <tr>
@@ -209,7 +292,7 @@
                                 <td class="text-danger"><?php echo number_format($usedCredit, 2); ?></td>
                                 <td class="text-primary"><?php echo $creditEarned; ?></td>
 								
-                                <td class="fw-bold text-success"><?php echo number_format($remaining, 4); ?></td>
+                                <td class="fw-bold text-success"><?php echo number_format($cth - $usedCredit, 4); ?></td>
                                 <td class="text-center">
                                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal<?php echo $id; ?>">
                                         <i class="fa fa-eye"></i>
