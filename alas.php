@@ -514,7 +514,9 @@
                                                                                 // 3. PINAL NA KALKULASYON:
                                                                                 // (Kalkulado kada araw) - (Tunay na HR Leaves) + (4 On-the-spot Credits) - (Kung magkano ang nabawas na sa on-the-spot)
                                                                                 $onTheSpotCredit = 4;
-                                                                                $creditEarned = ($cdPerDay * ($gnOfdJanCur + 1)) - $hrApprovedLeaves + $onTheSpotCredit - $usedOnTheSpot;
+                                                                                $creditEarned = (($cdPerDay * ($gnOfdJanCur + 1 )) - $hrApprovedLeaves) + $onTheSpotCredit - $useCredit;
+                                                                                // 1.8 -
+                                                                                
 
                                                                                 // Siguraduhing hindi maging negative ang pinal na resulta
                                                                                 if ($creditEarned < 0) {
@@ -634,6 +636,9 @@
                                                         <label>Leave Credits:</label>
 
                                                         <?php 
+
+                                                            echo $hrApprovedLeaves . ' | ' . $onTheSpotCredit . ' | ' . $usedOnTheSpot;
+                                                            // $creditEarned = ($cdPerDay * ($gnOfdJanCur +1 )) - $hrApprovedLeaves + $onTheSpotCredit - $usedOnTheSpot;
                                                             // Determine the display value
                                                             if (is_numeric($creditEarned)) {
                                                                 $displayValue = number_format((float) $creditEarned, 2, '.', '');

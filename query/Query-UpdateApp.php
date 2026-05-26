@@ -145,32 +145,32 @@
                             if ((($leaveterminal['SumOfDur'] / 60) / 10) < 8) {
                                 // Handled if terminal leave criteria is met
                             } else {
-                                $reas = "0 Terminal Leave";
-                                $sql = "UPDATE hleaves SET LStatus=6, LDateTimeUpdated=:dtu, LHRReason=:rsn WHERE LeaveID=:idd";
-                                $stmt = $pdo->prepare($sql);                       
-                                $stmt->bindParam(':dtu', $todaydt);
-                                $stmt->bindParam(':rsn', $reas);
-                                $stmt->bindParam(':idd', $_GET['id']);
-                                $stmt->execute();
+                                        $reas = "0 Terminal Leave";
+                                        $sql = "UPDATE hleaves SET LStatus=6, LDateTimeUpdated=:dtu, LHRReason=:rsn WHERE LeaveID=:idd";
+                                        $stmt = $pdo->prepare($sql);                       
+                                        $stmt->bindParam(':dtu', $todaydt);
+                                        $stmt->bindParam(':rsn', $reas);
+                                        $stmt->bindParam(':idd', $_GET['id']);
+                                        $stmt->execute();
 
-                                $sql = "UPDATE hleavesbd SET LStatus=6, LDateTimeUpdated=:dtu, LHRReason=:rsn WHERE FID=:idd";
-                                $stmt = $pdo->prepare($sql);
-                                $stmt->bindParam(':dtu', $todaydt);
-                                $stmt->bindParam(':rsn', $reas);
-                                $stmt->bindParam(':idd', $_GET['id']);
-                                $stmt->execute();   
+                                        $sql = "UPDATE hleavesbd SET LStatus=6, LDateTimeUpdated=:dtu, LHRReason=:rsn WHERE FID=:idd";
+                                        $stmt = $pdo->prepare($sql);
+                                        $stmt->bindParam(':dtu', $todaydt);
+                                        $stmt->bindParam(':rsn', $reas);
+                                        $stmt->bindParam(':idd', $_GET['id']);
+                                        $stmt->execute();   
 
-                                $id = $_SESSION['id'];
-                                $ch = "Disapproved Leaves of " . $nameE . " Reason : 0 Terminal Leave";
-                                // insert into dars
-                                $sql = "INSERT INTO dars (EmpID, EmpActivity, DarDateTime) VALUES (:id, :empact, :ddt)";
-                                $stmt = $pdo->prepare($sql);
-                                $stmt->bindParam(':id', $id);
-                                $stmt->bindParam(':empact', $ch);
-                                $stmt->bindParam(':ddt', $todaydt);
-                                $stmt->execute(); 
-                                return;
-                            }
+                                        $id = $_SESSION['id'];
+                                        $ch = "Disapproved Leaves of " . $nameE . " Reason : 0 Terminal Leave";
+                                        // insert into dars
+                                        $sql = "INSERT INTO dars (EmpID, EmpActivity, DarDateTime) VALUES (:id, :empact, :ddt)";
+                                        $stmt = $pdo->prepare($sql);
+                                        $stmt->bindParam(':id', $id);
+                                        $stmt->bindParam(':empact', $ch);
+                                        $stmt->bindParam(':ddt', $todaydt);
+                                        $stmt->execute(); 
+                                        return;
+                                    }
                         }
 
                         // new logic for earning credit process and threshold classification
@@ -178,6 +178,7 @@
                         // { -- get the leave credit (15 or 10)
                         $varTH = 0;
                         $varCT = 0;
+                        $useCRDT= 0;
 
                         $sqlEmp = "SELECT a.EmpDOR, c.CT, c.CTH 
                                 FROM empdetails as a 
@@ -199,6 +200,9 @@
                                 // SPECIAL CASE FOR WeDoinc-0145
                                 $cth = $crdetailTH['CTH'];
                                 $ct  = $crdetailTH['CT']; // Purong accrued credits mula sa DB
+                                $useCRDT=  $crdetailTH['CTH'] - $crdetailTH['CT'] ; // Use the accrued credits as the base for calculation
+                                
+
                                 $dor = $crdetailTH['EmpDOR']; 
 
                                 if (!empty($dor)) {
@@ -221,12 +225,18 @@
                                     // Pinal na kalkulasyon ng purong credit earned (Strictly base sa pro-rating mula DOR, walang bawas mula sa LType 24)
                                     $varCT = $cdPerDay * $daysActive; 
                                     $varTH = $cth; 
+
                                 } else {
                                     $varCT = $ct;
                                     $varTH = $cth;
                                 }
+                                $varCT= $varCT-$useCRDT; // Adjust the available credit by subtracting the accrued credits that are being used for calculation
                             }
                         }
+
+                      
+
+                      
 
                         // { -- approval block
                         try {
@@ -315,10 +325,14 @@
                                     $DayDur--;
                                 }
 
+                                //      print  $varCT . "-" . $statusFiD ;
+                                // return ;
+
                                 // 4. Update the main leave header status
                                 $sqlHLeaves = "UPDATE hleaves SET LStatus=9, LDateTimeUpdated=:dtu WHERE LeaveID=:idd";
                                 $stmtHLeaves = $pdo->prepare($sqlHLeaves);
                                 $stmtHLeaves->execute([':dtu' => $todaydt, ':idd' => $_GET['id']]);
+ 
 
                                 // 5. PAGBAWAS NG CREDIT SA DATABASE:
                                 if ($isSpecialEmployee && $leaveType == 24) {
@@ -326,13 +340,26 @@
                                     // DO NOT DEDUCT. Mananatiling buo ang regular credit earning balance ($varCT) sa DB
                                     // $xcrd = $varCT; 
                                 } else {
-                                    // Kung Medical Leave o ibang leave types/empleyado: Ibabawas ang nagamit sa kabuuang static wallet ($durData - $usedInThisLoop)
-                                    $xcrd = $durData - $usedInThisLoop; 
+                                    // // Kung Medical Leave o ibang leave types/empleyado: Ibabawas ang nagamit sa kabuuang static wallet ($durData - $usedInThisLoop)
+                                    // $xcrd = $durData - $usedInThisLoop; 
 
-                                    // In-uncomment ang code na ito para ma-save na ng permanente ang bawas sa credit table sa DB
-                                    $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
+                                    // // In-uncomment ang code na ito para ma-save na ng permanente ang bawas sa credit table sa DB
+                                    // $sqlCredit = "UPDATE credit SET CT=:ncrd WHERE EmpID=:idd";
+                                    // $stmtCredit = $pdo->prepare($sqlCredit);
+                                    // $stmtCredit->execute([':ncrd' => number_format($xcrd, 4, '.', ''), ':idd' => $EmplID]);
+
+                                    // 1. I-compute lang kung magkano ang ibabawas sa loop na ito
+                                    $amountToDeduct = number_format($usedInThisLoop, 4, '.', '');
+
+                                    // 2. Ang SQL ay dapat magbawas mismo sa kasalukuyang value ng CT (CT = CT - :deduction)
+                                    $sqlCredit = "UPDATE credit SET CT = CT - :deduction WHERE EmpID = :idd";
                                     $stmtCredit = $pdo->prepare($sqlCredit);
-                                    $stmtCredit->execute([':ncrd' => number_format($xcrd, 4, '.', ''), ':idd' => $EmplID]);
+
+                                    // 3. I-execute gamit ang ibabawas na halaga, hindi ang computed total
+                                    $stmtCredit->execute([
+                                        ':deduction' => $amountToDeduct, 
+                                        ':idd'       => $EmplID
+                                    ]);
                                 }
                                 
                                 
