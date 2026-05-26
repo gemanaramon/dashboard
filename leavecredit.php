@@ -143,6 +143,10 @@
                             $cth = $row['CTH']; // Total per year (e.g. 15)
                             $ct = $row['CT'];   // Currently set credit
                             $dor = $row['EmpDOR'];
+                            $cdPerDay =0;
+                             $daysActive=0;
+                             $specialCredit = 0;
+                            
                             
                             $usedCredit = $cth - $ct;
                             $creditEarned = $ct; // Default
@@ -152,41 +156,41 @@
 								if(is_null($dor)){
 									 $creditEarned = "Missing Regularization Date";
 								}else{
-								// 	 $hireYear = date("Y", strtotime($dor));
-                                
-								// 	// Set calculation start: Jan 1 of current year OR Hire Date if hired this year
-								// 	$calcStart = ($hireYear < $currentYear) 
-								// 		? date_create("1/1/" . $currentYear) 
-								// 		: date_create($dor);
-									
-								// 	$dateNow = date_create(date("Y-m-d"));
-								// 	$daysInYear = date_diff(date_create("1/1/".$currentYear), date_create("1/1/".($currentYear+1)))->format("%a");
-									
-								// 	$cdPerDay = $cth / $daysInYear;
-								// 	$daysActive = date_diff($calcStart, $dateNow)->format("%a");
-									
-								// 	$calculated = ($cdPerDay * $daysActive) - $usedCredit + 4; // +4 as bonus
-								// 	$creditEarned = number_format($calculated, 4, '.', '');
-
-        //                             //get here the total use credits for emergency leave this year
-        //                             $currentYear = date('Y');
-        //                                 $localCount = 0;
+                                    // 	 $hireYear = date("Y", strtotime($dor));
+                                    
+                                    // 	// Set calculation start: Jan 1 of current year OR Hire Date if hired this year
+                                    // 	$calcStart = ($hireYear < $currentYear) 
+                                    // 		? date_create("1/1/" . $currentYear) 
+                                    // 		: date_create($dor);
                                         
-        //                             // 1. Get how many days have ALREADY been used this year before this loop
-        //                             $totalApprovedCount = 0;
-        //                             // if ($leaveType == 24) {
-        //                                 $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
-        //                                             JOIN hleaves h ON hb.FID = h.LeaveID 
-        //                                             WHERE h.EmpID = :empid 
-        //                                             AND h.LType = 24 
-        //                                             AND hb.LStatus = 4 
-        //                                             AND YEAR(hb.LStart) = :year";
-        //                                 $stmtCount = $pdo->prepare($sqlCount);
-        //                                 $stmtCount->execute([':empid' => $id, ':year' => $currentYear]);
-        //                                 $totalApprovedCount = (int)$stmtCount->fetchColumn();
+                                    // 	$dateNow = date_create(date("Y-m-d"));
+                                    // 	$daysInYear = date_diff(date_create("1/1/".$currentYear), date_create("1/1/".($currentYear+1)))->format("%a");
+                                        
+                                    // 	$cdPerDay = $cth / $daysInYear;
+                                    // 	$daysActive = date_diff($calcStart, $dateNow)->format("%a");
+                                        
+                                    // 	$calculated = ($cdPerDay * $daysActive) - $usedCredit + 4; // +4 as bonus
+                                    // 	$creditEarned = number_format($calculated, 4, '.', '');
 
-        //                                  $usedCredit += $totalApprovedCount;
-        //                                  $creditEarned -= $totalApprovedCount;
+                                    //                             //get here the total use credits for emergency leave this year
+                                    //                             $currentYear = date('Y');
+                                    //                                 $localCount = 0;
+                                                                    
+                                    //                             // 1. Get how many days have ALREADY been used this year before this loop
+                                    $totalApprovedCount = 0;
+                                    // if ($leaveType == 24) {
+                                        $sqlCount = "SELECT COUNT(*) FROM hleavesbd hb 
+                                                    JOIN hleaves h ON hb.FID = h.LeaveID 
+                                                    WHERE h.EmpID = :empid 
+                                                    AND h.LType = 24 
+                                                    AND hb.LStatus = 4 
+                                                    AND YEAR(hb.LStart) = :year";
+                                        $stmtCount = $pdo->prepare($sqlCount);
+                                        $stmtCount->execute([':empid' => $id, ':year' => $currentYear]);
+                                        $totalApprovedCount = (int)$stmtCount->fetchColumn();
+
+                                         $usedCredit += $totalApprovedCount;
+                                         
                                     // }
                                     
                                     $currentYear = date("Y");
@@ -225,13 +229,18 @@
                                     $calculated = (($cdPerDay * $daysActive) + 4) - $totalUsedInDays;
                                     
                                     // 6. Safety Floor (Zero protection)
+                                    // $finalBalance = max(0, $calculated);
                                     $finalBalance = max(0, $calculated);
                                     
                                     // 7. Formatting
                                     $creditEarned = number_format($finalBalance, 4, '.', '');
+
+                                    
 								}
-                               
-                            } 
+                               $cth = $cth - ($cdPerDay * $daysActive);
+                            } else{
+                                $cth= $cth - $usedCredit;
+                            }
                             
                             if (is_numeric($creditEarned)) {
                                 $remaining = number_format($creditEarned, 4, '.', '');
@@ -247,7 +256,7 @@
                                 <td class="text-primary"><?php echo $creditEarned;  ?></td>
 								
                                 <!--<td class="fw-bold text-success"><?php echo number_format($remaining, 4); ?></td>-->
-                                <td class="fw-bold text-success"><?php echo number_format($cth - $usedCredit, 4); ?></td>
+                                <td class="fw-bold text-success"><?php echo number_format(($cth), 4); ?></td>
 
                                 <td class="text-center">
                                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal<?php echo $id; ?>">
