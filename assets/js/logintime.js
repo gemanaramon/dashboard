@@ -90,7 +90,7 @@ $(document).ready(function () {
                     errorMsg.text("Incorrect Password!");
                     errorMsg.fadeIn();
                 } else if (data == 7) {
-                    location.replace("http://dashboard.wedoinc.ph/questionnaire.php");
+                    location.replace("questionnaire.php");
                 } else {
                     // Success - reload to go to index.php
                      location.reload(true);

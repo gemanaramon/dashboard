@@ -178,7 +178,7 @@ $(document).ready(function(){
                           //modal.style.display = "none";
                         }
                         };
-                      xmlhttp.open("GET", "query-searchpayroll?dte=" + vl +  "& filter=" + filter, true);
+                      xmlhttp.open("GET", "query-searchpayroll.php?dte=" + vl +  "& filter=" + filter, true);
                       xmlhttp.send();
                       document.getElementById("btngen").disabled = false;
                       $("#btngen").text("Generate");
@@ -471,7 +471,7 @@ $(document).ready(function(){
            
               }
               };
-            xmlhttp.open("GET", "/query-searchpayroll.php?dte=" + vl +  "& filter=" + filter, true);
+            xmlhttp.open("GET", "query-searchpayroll.php?dte=" + vl +  "& filter=" + filter, true);
             xmlhttp.send();
                      
             $(".pyrlfilt").html("Payroll Attachment Summary");
@@ -491,7 +491,7 @@ $(document).ready(function(){
                   //  modal.style.display = "none";
                 }
                 };
-                xmlhttp.open("GET", "/Query-searchpaysrollmain.php?dte=" + vl +  "& filter=" + filter, true);
+                xmlhttp.open("GET", "Query-searchpaysrollmain.php?dte=" + vl +  "& filter=" + filter, true);
                               xmlhttp.send();
         $(".pyrlfilt").html("WeDo Metro Payroll Report");
       });

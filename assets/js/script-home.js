@@ -2,14 +2,14 @@
        function check_session()
        {
           $.ajax({
-            url:"http://dashboard.wedoinc.ph/query/sessionex_.php",
+            url:"query/sessionex_.php",
             method:"POST",
             success:function(data)
             {
               if(data == '2' || data == 2)
               {
                 alert('Your session has expired! You Need to log in again.');  
-               window.location.href="http://dashboard.wedoinc.ph/login.php";
+               window.location.href="login.php";
               }
             }
           })
