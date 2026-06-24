@@ -1,7 +1,7 @@
 
 <?php 
   include 'w_conn.php';
-  session_start();
+  if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
 try{
@@ -274,7 +274,7 @@ else
               elseif ($minlate == 0 || $minlate == '' ) { 
                       insert_eo($pdo,$id,$isid,$logid,$today1,$filed_date1,$today2,$statusval); 
               }else{
-                print $minlate;
+                // print $minlate;
                 Print 2;//Tardy
               }                
               }  

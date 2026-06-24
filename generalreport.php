@@ -1,4 +1,4 @@
-<?php session_start();
+<?php if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (isset($_SESSION['id']) && $_SESSION['id'] != "0") {
 
 } else {
@@ -235,8 +235,8 @@ if (isset($_SESSION['id']) && $_SESSION['id'] != "0") {
                                     <th class="not_13month_data">Adjustments</th>
                                     <th class="not_13month_data">Adjustments Allow</th>
                                     <th class="not_13month_data">Pay Receivable</th>
-                                    <th>13<sup>th</sup> Month(BASIC)</th>
-                                    <th>13<sup>th</sup> Month(BASIC+ALLOWANCE)</th>
+                                    <th>13<sup>th</sup>Month (BASIC)</th>
+                                    <th>13<sup>th</sup> Month (BASIC+ALLOWANCE)</th>
                                 </tr>
                             </thead>
                             <tbody id="data">

@@ -1,5 +1,5 @@
 <?php
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
     include 'w_conn.php';
 
     // 1. Handle Logout immediately
@@ -75,6 +75,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script src="assets/js/logintime.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
     <style>
         :root {
@@ -210,19 +211,38 @@
             <h4>Sign In</h4>
              <p class="subtitle">Secure access for WeDo BPO Personnel</p>
 
-            <form class="loginform">
-                <div class="form-group">
-                    <input type="text" class="form-control" name="uname" id="uname" placeholder="Username" autocomplete="off">
-                </div>
+            <!--<form class="loginform">-->
+            <!--    <div class="form-group">-->
+            <!--        <input type="text" class="form-control" name="uname" id="uname" placeholder="Username" autocomplete="off">-->
+            <!--    </div>-->
 
-                <div class="form-group mb-4">
-                    <input type="password" id="pass" class="form-control" name="pass" placeholder="Password">
-                    <div class="custom-control custom-checkbox mt-3">
-                        <input type="checkbox" class="custom-control-input" id="showPass" onclick="togglePass()">
-                        <label class="custom-control-label text-white-50 small" for="showPass" style="cursor:pointer">Show Password</label>
+            <!--    <div class="form-group mb-4">-->
+            <!--        <input type="password" id="pass" class="form-control" name="pass" placeholder="Password">-->
+            <!--        <div class="custom-control custom-checkbox mt-3">-->
+            <!--            <input type="checkbox" class="custom-control-input" id="showPass" onclick="togglePass()">-->
+            <!--            <label class="custom-control-label text-white-50 small" for="showPass" style="cursor:pointer">Show Password</label>-->
+            <!--        </div>-->
+            <!--    </div>-->
+
+            <!--    <button type="button" class="btn btn-danger btn-block btnsubmit">Authenticate</button>-->
+            <!--</form>-->
+                <form class="loginform">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="uname" id="uname" placeholder="Username" autocomplete="off">
                     </div>
+            
+                    <div class="form-group mb-4">
+                        <input type="password" id="pass" class="form-control" name="pass" placeholder="Password">
+                        <div class="custom-control custom-checkbox mt-3">
+                            <input type="checkbox" class="custom-control-input" id="showPass" onclick="togglePass()">
+                            <label class="custom-control-label text-white-50 small" for="showPass" style="cursor:pointer">Show Password</label>
+                        </div>
+                    </div>
+            
+                <div class="form-group mb-4">
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAACayjoaxKu_lYec-"></div>
                 </div>
-
+            
                 <button type="button" class="btn btn-danger btn-block btnsubmit">Authenticate</button>
             </form>
         </div>

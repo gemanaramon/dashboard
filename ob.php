@@ -1,4 +1,4 @@
-<?php session_start();
+<?php if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
 ?>
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="assets/js/script-reports.js"></script>
   <script type="text/javascript" src="assets/js/script-modules.js"></script>
-  <script type="text/javascript" src="assets/js/administrative.js"></script>
+   <script type="text/javascript" src="assets/js/administrative.js"></script>
   <link rel="stylesheet" type="text/css" href="assets/css/style.css">
   <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
 <style>  html body{
@@ -52,7 +52,7 @@
         <?php 
                 if ($_SESSION['id']=="admin"){
                     ?>
-                              <button type="button" class="btn btn-primary" id="eventListener" data-toggle="modal" data-target="#newform">+ Official Business Trip Form</button>
+                              <button type="button" class="btn btn-primary" data-toggle="modal" id="eventListener"  data-target="#newform">+ Official Business Trip Form</button>
                     <?php
                 }
         ?>

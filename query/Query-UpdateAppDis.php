@@ -1,7 +1,5 @@
 <?php
-
-//update application disapproved status and reason
-  include 'w_conn.php';session_start();
+  include 'w_conn.php';if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
 try{
@@ -24,8 +22,6 @@ die("ERROR: Could not connect. " . $e->getMessage());
    }else{
       $stat = 5;
    }
-
-  
    if (isset($_GET['ntype'])){
    	if ($_GET['ntype']=="EO"){
 

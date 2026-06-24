@@ -1,4 +1,4 @@
-<?php session_start();
+<?php if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); 			               
 }
@@ -45,8 +45,6 @@ die("ERROR: Could not connect. " . $e->getMessage());
 	  <script type="text/javascript" src="assets/js/script.js"></script>
 	  <script src="assets/js/script-reports.js"></script>
 	  <script type="text/javascript" src="assets/js/script-modules.js"></script>
-  <script type="text/javascript" src="assets/js/administrative.js"></script>
-
 	  <link rel="stylesheet" type="text/css" href="assets/css/style.css">
   <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
 <style>  html body{
@@ -66,155 +64,121 @@ die("ERROR: Could not connect. " . $e->getMessage());
         	
         	<div class="row">
         		<div class="col-lg-12">
-        			<button type="button" class="btn btn-primary" id="eventListener" data-toggle="modal" data-target="#newform">+ Overtime Filling Form</button>
+        			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newform">+ Overtime Filling Form</button>
         			<!-- The Modal -->
 
 					<div class="modal" id="newform">
-    <div class="modal-dialog">
-        <div class="modal-content">
+					  <div class="modal-dialog">
+					    <div class="modal-content">
 
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <h4 class="modal-title">Overtime Filing Form</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
+					      <!-- Modal Header -->
+					      <div class="modal-header">
+					        <h4 class="modal-title">Overtime Filling Form</h4>
+					        <button type="button" class="close" data-dismiss="modal">&times;</button>
+					      </div>
+					      <?php
+			              include 'w_conn.php';
+			                try{
+			                $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
+			                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			                   }
+			                catch(PDOException $e)
+			                   {
+			                die("ERROR: Could not connect. " . $e->getMessage());
+			                   }
+			                   
+			                  $id=$_SESSION['id'];
+			                  $isid=$_SESSION['EmpISID'];
+			                  $statement = $pdo->prepare("SELECT *                                          
+			                              FROM employees 
+			                              INNER JOIN empdetails ON employees.EmpID=empdetails.EmpID
+			                              INNER JOIN companies ON empdetails.EmpCompID=companies.CompanyID
+			                              INNER JOIN departments ON empdetails.EmpdepID=departments.DepartmentID 
+			                              INNER JOIN positions ON positions.PSID=employees.PosID where employees.EmpID=:id");
+			                  $statement->bindParam(':id' , $id);
+			                  $statement->execute();
+			                  $row = $statement->fetch();
+			                ?>
+					      <!-- Modal body -->
+					      <div class="modal-body">
 
-            <!-- PHP Section: Fetching Employee Data -->
-            <?php
-            include 'w_conn.php';
+					        			<form id="otdata" action="">
+					        <div class="row">
 
-            try {
-                $pdo = new PDO("mysql:host=$servername;dbname=$db", $username, $password);
-                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $e) {
-                die("ERROR: Could not connect. " . $e->getMessage());
-            }
+					        		<div class="col-lg-6">
+											  <div class="form-group">
+											    <label >Personnel Name:</label>
+											    <input type="text" disabled class="form-control" value="<?php echo $row['EmpLN']. ' ' . $row['EmpFN']. ' ' .$row['EmpMN'] ?>">
+											  </div>
+											   <div class="form-group">
+											    <label >Company Name:</label>
+											    <input type="text" disabled class="form-control" value="<?php echo $row['CompanyDesc'] ?>">
+											  </div>
+											   <div class="form-group">
+											    <label >Department:</label>
+											    <input type="text" disabled class="form-control" value="<?php echo $row['DepartmentDesc'] ?>">
+											  </div>
+											  <div class="form-group">
+											    <label >Designation:</label>
+											    <input type="text" disabled class="form-control" value="<?php echo $row['PositionDesc'] ?>">
+											  </div>
+											  
+											  <div class="form-group">
+											    <label >Purpose:</label>
+											    <textarea class="form-control" rows="4" id="otpurpose" name="otpur"></textarea>
+											  </div>
 
-            $id = $_SESSION['id'];
-            $isid = $_SESSION['EmpISID'];
+					        		</div>
+					        		<div class="col-lg-3">
+					        			   <div class="form-group">
+											    <label >Filling Date:</label>
+											    <input type="date" name="fdate" readonly="readonly" value="<?php echo date("Y-m-d"); ?>" class="form-control fdate" >
+											</div>
+											 <div class="form-group">
+											    <label >OT Date From:</label>
+											    <input type="date" name="datefrom" class="form-control datefrom" >
+											</div>
+											 <div class="form-group">
+											    <label >OT Date To:</label>
+											    <input type="date" name="dateto" class="form-control dateto" >
+											</div>
+					        		</div>
+					        		<div class="col-lg-3">
+					        			   <div class="form-group">
+											    <label >Filing Time:</label>
+											    <input type="time" readonly="readonly" name="ftime" value="<?php echo date('H:i:s'); ?>" class="form-control" >
+											</div>
+											 <div class="form-group">
+											    <label >OT Time From:</label>
+											    <input type="time" name="timefrom" class="form-control timefrom" >
+											</div>
+											 <div class="form-group">
+											    <label >OT Time To:</label>
+											    <input type="time" name="timeto" class="form-control timeto" >
+											</div>
+											<div class="form-group">
+											   <!--  <label >Duration:</label>
+											    <input type="text" disabled class="form-control" > -->
+											</div>
+											
 
-            // SQL Query to fetch employee details
-            $statement = $pdo->prepare("
-                SELECT employees.*, empdetails.*, companies.CompanyDesc, departments.DepartmentDesc, positions.PositionDesc
-                FROM employees
-                INNER JOIN empdetails ON employees.EmpID = empdetails.EmpID
-                INNER JOIN companies ON empdetails.EmpCompID = companies.CompanyID
-                INNER JOIN departments ON empdetails.EmpdepID = departments.DepartmentID
-                INNER JOIN positions ON positions.PSID = employees.PosID
-                WHERE employees.EmpID = :id
-            ");
-            $statement->bindParam(':id', $id);
-            $statement->execute();
-            $row = $statement->fetch();
-            ?>
+											
+					        		</div>
+									<div  id="result" class="alert alert-success" style="display:none">dd</div>
+					        	<button type="button" id="saveot" class="btn btn-success btn-block" >Submit</button>
+									
+					        	</div>
+					        		</form>
+					      </div>
 
-            <!-- Modal Body -->
-            <div class="modal-body">
-                <form id="otdata" action="">
+					      <!-- Modal footer -->
+					      <div class="modal-footer">
+					        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					      </div>
 
-                    <div class="row">
-                        <!-- Left Column: Employee and Company Details -->
-                        <div class="col-lg-6">
-                            <!-- Personnel Name -->
-                            <div class="form-group">
-                                <label>Personnel Name:</label>
-                                <input type="text" disabled class="form-control" value="<?php echo $row['EmpLN'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN']; ?>">
-                            </div>
-                            <!-- Company Name -->
-                            <div class="form-group">
-                                <label>Company Name:</label>
-                                <input type="text" disabled class="form-control" value="<?php echo $row['CompanyDesc']; ?>">
-                            </div>
-                            <!-- Department -->
-                            <div class="form-group">
-                                <label>Department:</label>
-                                <input type="text" disabled class="form-control" value="<?php echo $row['DepartmentDesc']; ?>">
-                            </div>
-                            <!-- Designation -->
-                            <div class="form-group">
-                                <label>Designation:</label>
-                                <input type="text" disabled class="form-control" value="<?php echo $row['PositionDesc']; ?>">
-                            </div>
-
-							<!-- New Section: Radio Buttons for OT Type -->
-							<div class="form-group">
-                                <label>Overtime Type:</label><br>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="overtimeType" id="singleOT" value="1" >
-                                    <label class="form-check-label" for="singleOT">Single</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="overtimeType" id="multiOT" value="2">
-                                    <label class="form-check-label" for="multiOT">Multiple</label>
-                                </div>
-                            </div>
-
-                            <!-- Purpose -->
-                            <div class="form-group">
-                                <label>Purpose:</label>
-                                <textarea class="form-control" rows="4" id="otpurpose" name="otpur"></textarea>
-                            </div>
-
-						
-                        </div>
-
-                        <!-- Middle Column: Date Fields -->
-                        <div class="col-lg-3">
-                            <!-- Filing Date -->
-                            <div class="form-group">
-                                <label>Filing Date:</label>
-                                <input type="date" name="fdate" readonly="readonly" value="<?php echo date('Y-m-d'); ?>" class="form-control fdate">
-                            </div>
-                            <!-- OT Date From -->
-                            <div class="form-group">
-                                <label>OT Date From:</label>
-                                <input type="date" name="datefrom" class="form-control datefrom">
-                            </div>
-                            <!-- OT Date To -->
-                            <div class="form-group">
-                                <label>OT Date To:</label>
-                                <input type="date" name="dateto" class="form-control dateto">
-                            </div>
-                        </div>
-
-                        <!-- Right Column: Time Fields -->
-                        <div class="col-lg-3">
-                            <!-- Filing Time -->
-                            <div class="form-group">
-                                <label>Filing Time:</label>
-                                <input type="time" readonly="readonly" name="ftime" value="<?php echo date('H:i:s'); ?>" class="form-control">
-                            </div>
-                            <!-- OT Time From -->
-                            <div class="form-group">
-                                <label>OT Time From:</label>
-                                <input type="time" name="timefrom" class="form-control timefrom">
-                            </div>
-                            <!-- OT Time To -->
-                            <div class="form-group">
-                                <label>OT Time To:</label>
-                                <input type="time" name="timeto" class="form-control timeto">
-                            </div>
-                        </div>
-
-
-                    </div>
-
-                    <!-- Alert for Result (if needed) -->
-                    <div id="result" class="alert alert-success" style="display:none">Result Message Here</div>
-
-                    <!-- Submit Button -->
-                    <button type="button" id="saveot" class="btn btn-success btn-block">Submit</button>
-                </form>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+					    </div>
+					  </div>
+					</div>
 
 
 

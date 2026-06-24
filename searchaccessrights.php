@@ -1,4 +1,4 @@
-<?php session_start();
+<?php if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
 	include 'w_conn.php';
@@ -278,8 +278,8 @@ while ($row = $statement->fetch()){
 		<tr><td><i class="fa fa-bar-chart"> </i> <label> Personal Information</label> </td>
 		<?php if ($row['piv']==1){ ?> <td><button id="piv" class="btn btn-danger" data-toggle="modal" data-target="#acchange">OFF</button></td><?php
 	}else{ ?> <td><button id="piv" class="btn btn-success" data-toggle="modal" data-target="#acchange">ON</button></td> <?php } ?> </tr>
-
-	<!-- 13 month start -->
+	
+		<!-- 13 month start -->
 		<tr><td><i class="fa fa-bar-chart"> </i> <label> 13th Month Attachement</label> </td>
 			<?php if ($row['access_13_attachement']==1){ ?> <td><button id="access_13_attachement" class="btn btn-danger" data-toggle="modal" data-target="#acchange">OFF</button></td><?php
 		}else{ ?> <td><button id="access_13_attachement" class="btn btn-success" data-toggle="modal" data-target="#acchange">ON</button></td> <?php } ?> </tr>

@@ -5,15 +5,16 @@ ini_set('session.gc_maxlifetime', 3600);
 // each client should remember their session id for EXACTLY 1 hour
 session_set_cookie_params(3600);
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 include 'w_conn.php';
-
+date_default_timezone_set("Asia/Manila");
 try{
     $customTime = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('P');
     $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->exec("SET time_zone='$customTime';");
-   }catch(PDOException $e)
+   }
+catch(PDOException $e)
    {
 die("ERROR: Could not connect. " . $e->getMessage());
    }
@@ -56,7 +57,6 @@ die("ERROR: Could not connect. " . $e->getMessage());
     //     }
 }
 
-            
             $statement = $pdo->prepare("select * from empdetails where EmpUN = :un");
             $statement->bindParam(':un' , $_POST['uname']);
             $statement->execute(); 
@@ -144,19 +144,23 @@ die("ERROR: Could not connect. " . $e->getMessage());
                             //no action
                         }else{
                             //if no record select for posible birthday in 
-                           
-                            $getEmployeeBday = $pdo->prepare("SELECT * FROM empprofiles INNER JOIN employees ON empprofiles.EmpID=employees.EmpID WHERE EmpStatusID=1  
-                                AND DATE_FORMAT(EmpDOB,'%m-%d') = DATE_FORMAT(NOW(),'%m-%d')OR ((DATE_FORMAT(NOW(),'%Y') % 4 <> 0 
-                                OR (DATE_FORMAT(NOW(),'%Y') % 100 = 0 AND DATE_FORMAT(NOW(),'%Y') % 400 <> 0) )AND DATE_FORMAT(NOW(),'%m-%d') = '03-01'AND DATE_FORMAT(EmpDOB,'%m-%d') = '02-29');");
-                                $getEmployeeBday->execute(); 
-                                $varCountemployee=$getEmployeeBday->rowCount();
+                            // $getEmployeeBday = $pdo->prepare("SELECT * FROM empprofiles WHERE DATE_FORMAT(EmpDOB,'%m-%d') = DATE_FORMAT(NOW(),'%m-%d')OR ((DATE_FORMAT(NOW(),'%Y') % 4 <> 0 
+                            // OR (DATE_FORMAT(NOW(),'%Y') % 100 = 0 AND DATE_FORMAT(NOW(),'%Y') % 400 <> 0) )AND DATE_FORMAT(NOW(),'%m-%d') = '03-01'AND DATE_FORMAT(EmpDOB,'%m-%d') = '02-29');");
+                            // $getEmployeeBday->execute(); 
+                            // $varCountemployee=$getEmployeeBday->rowCount();
                             // $varEmloyeebday=$getEmployeeBday->fetch();
+                             //if no record select for posible birthday in 
+                            $getEmployeeBday = $pdo->prepare("SELECT * FROM empprofiles INNER JOIN employees ON empprofiles.EmpID=employees.EmpID WHERE EmpStatusID=1  AND DATE_FORMAT(EmpDOB,'%m-%d') = DATE_FORMAT(NOW(),'%m-%d')OR ((DATE_FORMAT(NOW(),'%Y') % 4 <> 0 
+                            OR (DATE_FORMAT(NOW(),'%Y') % 100 = 0 AND DATE_FORMAT(NOW(),'%Y') % 400 <> 0) )AND DATE_FORMAT(NOW(),'%m-%d') = '03-01'AND DATE_FORMAT(EmpDOB,'%m-%d') = '02-29');");
+                            $getEmployeeBday->execute(); 
+                            $varCountemployee=$getEmployeeBday->rowCount();
 
                             $employeeData=[];
                             if( $varCountemployee>=1){
                                while ( $varEmloyeebday=$getEmployeeBday->fetch()) {
                                     //get employee
                                     $idemp = $varEmloyeebday['EmpID'];
+                                    echo $idemp ;
                                     $stmtEmp = $pdo->prepare("select * from employees where EmpID = '$idemp' ");
                                     $stmtEmp->execute(); 
                                     $empRowcount=$stmtEmp->rowCount();
@@ -187,16 +191,15 @@ die("ERROR: Could not connect. " . $e->getMessage());
                                         $stmt->bindParam(':ca' ,$todaylogsLong);
                                         $stmt->execute(); 
                             }else{
-                                 //insert logs validator
-                                 $todaylogs = date("Y-m-d");
-                                 $todaylogsLong = date("Y-m-d");
-                                 $sql = "INSERT INTO tblsyslog (datecheck,created_at) 
-                                        VALUES (:dc,:ca)";
-                                         $stmt = $pdo->prepare($sql);
-                                         // $stmt->bindParam(':id' ,$creatorName);
-                                         $stmt->bindParam(':dc' ,$todaylogs);
-                                         $stmt->bindParam(':ca' ,$todaylogsLong);
-                                         $stmt->execute(); 
+                                $todaylogs = date("Y-m-d");
+                                $todaylogsLong = date("Y-m-d");
+                                $sql = "INSERT INTO tblsyslog (datecheck,created_at) 
+                                       VALUES (:dc,:ca)";
+                                        $stmt = $pdo->prepare($sql);
+                                        // $stmt->bindParam(':id' ,$creatorName);
+                                        $stmt->bindParam(':dc' ,$todaylogs);
+                                        $stmt->bindParam(':ca' ,$todaylogsLong);
+                                        $stmt->execute(); 
                             }
                         }
                         //then create announcement 
@@ -207,7 +210,8 @@ die("ERROR: Could not connect. " . $e->getMessage());
             	          $_SESSION['quesID']=$row['EmpID'];
                     	    $epass=password_hash($row['EmpID'], PASSWORD_DEFAULT);
                             setcookie("WeDoID",$epass, time()+28800, "/");
-
+                            
+                            
                              ###### get the status of user 
             
                              $stmtGetStatus= $pdo->prepare("SELECT * FROM `empdetails` where EmpID = :id");
@@ -217,10 +221,8 @@ die("ERROR: Could not connect. " . $e->getMessage());
                              $_SESSION['empstatIDSMON'] = $rowStat['EmpStatID'];
 
                              ######
-
-
-
-                            ###### get the gender for validation on leave 9-11
+                            
+                             ###### get the gender for validation on leave 9-11
             
                             $statementGender = $pdo->prepare("SELECT * FROM `empprofiles` where EmpID = :id");
                             $statementGender->bindParam(':id' , $row['EmpID']);
@@ -230,6 +232,7 @@ die("ERROR: Could not connect. " . $e->getMessage());
                             $rowGender=$statementGender->fetch();
                     		$_SESSION['gender'] = $rowGender['EmpGender'];
                             ######
+                    	
                     	
                     		$_SESSION['id']=$row['EmpID'];
                     		$_SESSION['UserType']=$row['EmpRoleID'];
@@ -285,7 +288,7 @@ die("ERROR: Could not connect. " . $e->getMessage());
             
              	?>
             	<?php
-                
+                  // $q = $_SESSION['id'];
             }
 
 ?>

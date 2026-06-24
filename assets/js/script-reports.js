@@ -2,9 +2,9 @@
 {
 
         // alert("a");
-        var f = document.getElementById("tab_filter");
-        var x = document.getElementById("tab_wrapper");
-        f.style.display = "none";
+        // var f = document.getElementById("tab_filter");
+        // var x = document.getElementById("tab_wrapper");
+        // f.style.display = "none";
         var pagetitle = "(" + document.title + ")";
         // x.style.display = "none";
         var print_div = document.getElementById("tblprint");
@@ -36,18 +36,17 @@ $(document).ready(function(){
   $("#empfdet").change(function(){
       var empid = $(this).val();
        $.ajax({
-              url:'query/Query-searchdarreports.php?fdetails',
-              type:'post',
-              data: { Eid : empid },
-              success:function(res){
-                $("#darviewer").empty();
-                $("#darviewer").append(res);
-              }
+                            url:'query/Query-searchdarreports.php?fdetails',
+                            type:'post',
+                            data: { Eid : empid },
+                            success:function(res){
+                              $("#darviewer").empty();
+                              $("#darviewer").append(res);
+                            }
         });
   });
 
-  //  $(".refreshdar").click(function(){ 
-    $(document).on('click', '.refreshdar', function(e) {
+   $(".refreshdar").click(function(){ 
  
    	  var vl = ($("#empcompid").val());
       var dtfr = ($("#datefrom").val()); 

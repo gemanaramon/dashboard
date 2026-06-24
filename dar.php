@@ -1,17 +1,17 @@
 <?php 
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
     if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
     else { header ('location: login'); }
 
     include 'ReportController.php';
     $handle = new ReportController();
-    $dt1=date('Y-m-d');
+    $dt=date('Y-m-d');
     $dt2=date('Y-m-1');
     $dt3=date('Y-m-16');
     $ddt=date('Y-m-d', strtotime(date('Y-m-1')));
     $ddt2=date('Y-m-d', strtotime(date('Y-m-1')));
-    if ($dt1>$dt2 && $dt1<$dt3){ $dt1=$ddt2; }else{ $dt1=$ddt; }
+    if ($dt>$dt2 && $dt<$dt3){ $dt1=$ddt2; }else{ $dt1=$ddt; }
     $dt2=date('Y-m-d', strtotime('+1 days'));
     if ($_SESSION['UserType']==1){
         $resultdata = $handle->runQuery(" SELECT employees.EmpID as Employees_ID,employees.EmpFN as FirstName,
@@ -189,20 +189,58 @@ function exportToExcel(tableID, filename = ''){
 </script>
 <script type="text/javascript">
   $(document).ready(function() {
-    $(document).on('click', '#btnprint', function(e) {
+  
+$(document).on('click', '#btnprint', function(e) {
 
-      var originalContents = document.body.innerHTML;
-      $("#bodyData td").css("padding", "10px");
-      $("#tab").css("overflow", "block");
+  var originalContents = document.body.innerHTML;
+  $("#bodyData td").css("padding", "10px");
+  $("#tab").css("overflow", "block");
+  // $(".ptd").hide();
+  // var datefrom = $("#date_from").val();
+  // var dateto = $("#date_to").val();
+  // var data = $("#date_from").val() + " To : " + $("#date_to").val();
+  // var hospital=$("#hospital ").val();
+  // var hospitaltext=$("#hospital option:selected").text();
 
-      var printContents = document.getElementById('tblprint').innerHTML;
-      
-      document.body.innerHTML = printContents;
-      window.print();
-      document.body.innerHTML = originalContents;
 
-      });
-    });
+
+
+  // $(".captiond").html(hospitaltext);
+  // $(".captiond").removeClass("d-none").addClass("d-block");
+
+
+  // $(".dateRange").css('font-size','12px');
+  // $(".rptTitle").removeClass("d-none").addClass("d-block");
+  // $(".rptDate").removeClass("d-none").addClass("d-block");
+
+  // $(".dateRange").html(data);
+  // $("#hospitalMonitoring td").css("padding", "8px");
+  // $("#hospitalMonitoring td").css("font-size", "9px");
+  // $(".tableSummary th").css("font-size", "10px");
+  // $(".bdgt").css("font-size", "10px");
+  // $(".bdgt").css("color", "black");
+
+
+
+  var printContents = document.getElementById('tblprint').innerHTML;
+  
+  document.body.innerHTML = printContents;
+  window.print();
+  document.body.innerHTML = originalContents;
+  //  $("#date_to").val(dateto);
+  //  $("#date_from").val(datefrom);
+  //  $("#hospital").val(hospital);
+
+
+
+
+  //  $(".notToPrint").show();
+  //  $(".ptd").show();
+  //  $(".header-print").hide();
+  //  $(".printTR").addClass('noPrint');
+
+  });
+});
 </script>
 
 </head>

@@ -3,13 +3,12 @@
 //connection
 {
   include 'w_conn.php';
-  session_start();
+  if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
   try{
   $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  date_default_timezone_set("Asia/Manila"); 
     }
   catch(PDOException $e)
     {
@@ -18,43 +17,41 @@
 }
 
 try{
-      // initialization
-        ################################################
-        // $datenow = date("Y-m-d");
-        // $datenow1 = date("Y-m-d H:i");
-        // $timenow = strtotime($datenow1);
-        // $startTime = strtotime($datenow ." 08:00");
-        // $id=$_SESSION['id'];
-        // if($id=="WeDoinc-012"){
-        // }else{
-        //  if($timenow > $startTime){
-        //   echo "The OT application must be completed on or before 8:30 AM.";
-        //   return;
-        //   }
-        // }
-        ################################################
-      //initilaization
-
-      {
-        $id = $_SESSION['id'];
-        $isid = $_SESSION['EmpISID'];
-        $statid = 1;
-        $compid = $_SESSION['CompID'];
-        $today = date("Y-m-d"); 
-        $today2 = date("Y-m-d H:i:s");
-        $today3 = date("Y-m-d");
-        $day = date("l");
-        $day2 = date("l", strtotime($_POST['datefrom']));
-        $ddfrom=$_POST['datefrom'];
-        $dteStart = new DateTime($_POST['datefrom']. ' ' .$_POST['timefrom']); 
-        $dteEnd   = new DateTime($_POST['dateto']. ' ' .$_POST['timeto']); 
-        $dteDiff  = $dteStart->diff($dteEnd); 
-        $interval = $dteDiff->format("%h");
-        $fillingdatetime = $_POST['datefrom'];
-        $fillingtime=$_POST['ftime'];
-        $d1 = $_POST['datefrom']. ' ' .$_POST['timefrom']; 
-        $d2  = $_POST['dateto']. ' ' .$_POST['timeto'];
+  // initialization
+  
+    date_default_timezone_set("Asia/Manila"); 
+    ########################################
+      $datenow = date("Y-m-d");
+      $datenow1 = date("Y-m-d H:i");
+      $timenow = strtotime($datenow1);
+      $startTime = strtotime($datenow ." 8:30:00");
+      $id=$_SESSION['id'];
+      if($id=="WeDoinc-012"){
+      }else{
+      if($timenow > $startTime){
+        echo "The OT application must be completed on or before 8:30 AM.";
+        return;
+        }
       }
+    ########################################
+    $id = $_SESSION['id'];
+    $isid = $_SESSION['EmpISID'];
+    $statid = 1;
+    $compid = $_SESSION['CompID'];
+    $today = date("Y-m-d"); 
+    $today2 = date("Y-m-d H:i:s");
+    $today3 = date("Y-m-d");
+    $day = date("l");
+    $day2 = date("l", strtotime($_POST['datefrom']));
+    $ddfrom=$_POST['datefrom'];
+    $dteStart = new DateTime($_POST['datefrom']. ' ' .$_POST['timefrom']); 
+    $dteEnd   = new DateTime($_POST['dateto']. ' ' .$_POST['timeto']); 
+    $dteDiff  = $dteStart->diff($dteEnd); 
+    $interval = $dteDiff->format("%h");
+    $fillingdatetime = $_POST['datefrom'];
+    $fillingtime=$_POST['ftime'];
+    $d1 = $_POST['datefrom']. ' ' .$_POST['timefrom']; 
+    $d2  = $_POST['dateto']. ' ' .$_POST['timeto'];
   
       //get date diff for ot before
       {
@@ -138,7 +135,6 @@ try{
               return;
         }
       }
-
       //if pding application serve
       {
         $idstatus="1";
@@ -200,430 +196,332 @@ try{
             return;
           }
       }
+   
+  //get work schedule
+  
+    $sql="SELECT * from workdays INNER JOIN 
+    workschedule ON workdays.SchedTime=workschedule.WorkSchedID 
+    inner join schedeffectivity as c on workdays.EFID=c.efids
+    where (workdays.empid='$id') and (workdays.Day_s='$day2')
+    and ('$ddfrom' >= dfrom) and ('$ddfrom' <= dto) and workschedule.WorkSchedID <> 0";  
+        // $stmt->bindParam(':id' ,$id);
+    // $stmt->bindParam(':day' ,$day2); 
+    $stmt = $pdo->prepare($sql);
+
+    $stmt->execute();
+    $row = $stmt->fetch();
+    $cntload1 = $stmt->rowCount(); 
+
+    $ordinaryday=0;
+    $restday=0;
+    if($cntload1 > 0){
+      $schedfrom=$row['TimeFrom'];
+      $schedto=$row['TimeTo'];
+
+      $tcross=$row['TimeCross'];
+      $SF =  strtotime($_POST['datefrom']. ' ' .$row['TimeFrom']); 
+      $ST   =  strtotime($_POST['datefrom']. ' ' .$row['TimeTo']); 
+
+      $FDF = strtotime($_POST['datefrom']. ' ' .$_POST['timefrom']); 
+      $FDT   =  strtotime($_POST['dateto']. ' ' .$_POST['timeto']); 
+
+      if( $FDF >= $FDT ){
+        echo "Invalid inclusive dates as";
+        return;
+      }
+      if( $FDF == $FDT ){
+        echo "Invalid inclusive dates 45";
+        return;
+      }
+      $ordinaryday=1;
       
-      ######################## LOOP INSERT START#######################
-
-      $otS=  $_POST['datefrom'];
-      $otT= $_POST['dateto'];
-
-      if (isset($_POST['overtimeType'])) {
-          $overtimeType = $_POST['overtimeType'];
-      } else {
-          echo "No Overtime Type selected.";
-          return false;
-      }
-
-      if($overtimeType==1){//single
-        $otT=$otS;
-      }
-     
-      while ($otS<=$otT) {
-        //get work schedule
-        {
-          $sql="SELECT * from workdays INNER JOIN 
-          workschedule ON workdays.SchedTime=workschedule.WorkSchedID 
-          inner join schedeffectivity as c on workdays.EFID=c.efids
-          where (workdays.empid='$id') and (workdays.Day_s='$day2')
-          and ('$otS' >= dfrom) and ('$otS' <= dto) and workschedule.WorkSchedID <> 0";  
-          // $stmt->bindParam(':id' ,$id);
-          // $stmt->bindParam(':day' ,$day2); 
-          $stmt = $pdo->prepare($sql);
-    
-          $stmt->execute();
-          $row = $stmt->fetch();
-          $cntload1 = $stmt->rowCount();
-        } 
-        
-        $ordinaryday=0;
-        $restday=0;
-        if($cntload1 > 0){
-          $schedfrom=$row['TimeFrom'];
-          $schedto=$row['TimeTo'];
-
-          $tcross=$row['TimeCross'];
-          $SF =  strtotime($otS. ' ' .$row['TimeFrom']); 
-          $ST   =  strtotime($otS. ' ' .$row['TimeTo']); 
-
-          $FDF = strtotime($otS. ' ' .$_POST['timefrom']); 
-
-          if($overtimeType==1){//single
-            // $otT=$otS;
-            $FDT   =  strtotime($_POST['dateto']. ' ' .$_POST['timeto']); 
-          }else{
-            $FDT   =  strtotime($otS. ' ' .$_POST['timeto']); 
- 
-          }
-          // if($overtimeType==2){
-            if( $FDF >= $FDT ){
-              echo "Invalid inclusive dates.";
-              return false;
+      if($ordinaryday=1){
+      
+            if($FDF >= $SF and $FDT <= $ST){
+              echo "Filing not allowed within your respective work Schedule.";
+              return;
             }
-            if( $FDF == $FDT ){
-              echo "Invalid inclusive dates.";
-              return false;
+
+            if($FDF <= $SF and $FDT >= $ST){
+              echo "Filing not allowed within your respective work Schedule.";
+              return;
             }
-          // }  
 
-          $ordinaryday=1;
-          $sql = "select * from holidays where Hdate=:date ";
-          $stmt = $pdo->prepare($sql);
-          $stmt->bindParam(':date' ,$otS);   
-          $stmt->execute();
-          $hrow = $stmt->fetch();
-          $hload= $stmt->rowCount();
-          $holidaytype=0;
-          $holiday=0;
-          if($hload > 0)
-            {
-              // $holidaytype=$hrow['Htype'];
-              // $holiday=1;
-            }else{
-            if($ordinaryday=1){
-            
-                  if($FDF >= $SF and $FDT <= $ST){
-                    echo "Filing not allowed within your respective work Schedule.";
-                    return;
-                  }
-
-                  if($FDF <= $SF and $FDT >= $ST){
-                    echo "Filing not allowed within your respective work Schedule.";
-                    return;
-                  }
-
-                  if($FDF <= $SF and $FDT <= $ST){
-                      if($FDF <= $SF and $FDT <= $SF){
-                        
-                      }else{
-                        echo "Filing not allowed within your respective work Schedule.";
-                        return;
-                      }
-                  }
-
-                  if($FDF >= $SF and $FDT >= $ST){
-                    if($FDF >= $ST and $FDT >= $ST){
-                      
-                    }else{
-                      echo "Filing not allowed within your respective work Schedule.";
-                      return;
-                    }
-
-                }
-
-
-              //get today date lilo
-              $sql = "select * from attendancelog where EmpID=:id AND WSFrom=:day";
-              $stmt = $pdo->prepare($sql);
-              $stmt->bindParam(':id' ,$id);
-              $stmt->bindParam(':day' ,$today);    
-              $stmt->execute();
-              $rowlilo = $stmt->fetch();
-              $cntlilo = $stmt->rowCount();
-              $tardymin=0;
-              if ($cntlilo > 0 )
-              {
-                $tardymin = $rowlilo['MinsLack'] + $rowlilo['MinsLack2'];
-              }
-
-              if ($istardy == 0 and $tardymin > 0)
-                {
-                  echo "Filing not allowed. MinsLack Detected. Please contact system administrator.";//filling not allowed
+            if($FDF <= $SF and $FDT <= $ST){
+                if($FDF <= $SF and $FDT <= $SF){
+                  
+                }else{
+                  echo "Filing not allowed within your respective work Schedule.";
                   return;
                 }
             }
-          }
-        }else{
-          
-          $restday=1;
-        }
 
-        //check if holiday
-        {
-
-          $d1 =$otS. ' ' .$_POST['timefrom']; 
-
-          if($overtimeType==1){//single
-            $d2  =$_POST['dateto']. ' ' .$_POST['timeto'];
-          }else{
-            $d2  =$otS. ' ' .$_POST['timeto'];
-
-          }
-
-          // $hdate=$_POST['datefrom'];
-          $sql = "select * from holidays where Hdate=:date ";
-          $stmt = $pdo->prepare($sql);
-          $stmt->bindParam(':date' ,$otS);   
-          $stmt->execute();
-          $hrow = $stmt->fetch();
-          $hload= $stmt->rowCount();
-          $holidaytype=0;
-          $holiday=0;
-          if($hload > 0)
-            {
-              $holidaytype=$hrow['Htype'];
-              $holiday=1;
-            }
-
-            if ($isholiday == 0 && $holiday == 1){
-                // echo "Sorry OT Filing not allowed during Holiday.";
-                // return;
-            }
-                $x=0;
-            if ($holiday == 1 && $restday == 1){
-                $x=1;
-            }else{
-              
-            }
-            if ($holiday == 1 or $restday == 1) {
-                //validate duration
-                if ( $interval >=1 )    
-                {
-                if ( $schedcat == 1 )
-                    {
-                      if ( $interval >= 6 && $interval <= 10)
-                      {
-                        $consDuration = 10-1;
-                      }
-                      elseif ( $interval >= 6 && $interval > 10)
-                      {
-                        $consDuration = $interval - 1 ;
-                      }
-                      else 
-                      {
-                        $consDuration = 5;
-                      }
-                    }
-              
-                  else
-                    {
-                      if ( $interval >=5 && $interval <= 8 )
-                      {
-                        $consDuration = 8 -1;
-                      }
-                      elseif ( $interval >=5 && $interval > 8 )
-                      {
-                        $consDuration = $interval -1;
-                      }
-                      else 
-                      {
-                        $consDuration = 4;
-                      }
-                    }
-                }
-                else
-                  {
-                    // echo $interval;
-                    echo "Minimum Overtime 1 hr. ";
-                      return;
-                  }
-              
-            }else{  
-            // $consDuration = $interval;  
-              //validate duration
-              if ( $interval >=1 )  {
-                if ( $schedcat == 1 ){
-                      if ( $interval >= 6 && $interval <= 10)
-                      {
-                        $consDuration = 10-1;
-                      }
-                      elseif ( $interval >= 6 && $interval > 10)
-                      {
-                        $consDuration = $interval - 1 ;
-                      }
-                      else 
-                      {
-                        $consDuration = 5;
-                      }
-                    }else{
-                      if ( $interval >=5 && $interval <= 8 )
-                      {
-                        $consDuration = 8 -1;
-                      }
-                      elseif ( $interval >=5 && $interval > 8 )
-                      {
-                        $consDuration = $interval -1;
-                      }
-                      else 
-                      {
-                        $consDuration = 4;
-                      }
-                    }
-                }else{
-                    // echo $interval;
-                    echo "Minimum Overtime 1 hr. ";
-                      return;
-                  }
-            }
-        }
-      
-        $consDuration2=0;
-        //vation validate holiday and restday
-        if ($consDuration > $nhours ){
-            $consDuration2 =$consDuration - $nhours;
-        }
-
-        $pay1=0;$pay2=0;
-        //special holiday or rest day ot
-        if ($consDuration > $nhours ){
-            $consDuration = $nhours;
-        }
-
-        //if computation
-        {
-          if( ($holidaytype == 2 or $restday == 1) and $x==0)
-          {
-              $pay1 = (($hrate * 1.3)) * floor($consDuration);
-                if ($consDuration2>0){
-              $pay2 = (($hrate * 1.3) * 1.3) * floor($consDuration2);
-                }
-        
-            $otpay = $pay1 + $pay2;
-            $calculationtype = "SHorR";
-          }
-          //special holiday and restday ot
-          elseif(($holidaytype == 2 and $restday == 1) and $x==1)
-          {
-              $pay1 = (($hrate * 1.5)) * floor($consDuration);
-        
-                if ($consDuration2>0){
-              $pay2 = (($hrate * 1.5) * 1.3) *  floor($consDuration2);
-                }
-        
-            $otpay = $pay1 + $pay2;
-            $calculationtype = "SHandR";
-          }
-          //regular and rest day ot
-          elseif( $holidaytype == 1 and $restday == 1 )
-          {
-              $pay1 = (($hrate * 2.6)) * floor($consDuration);
-            
-                if ($consDuration2>0){
-              $pay2 = (($hrate * 2.6) * 1.3) *  floor($consDuration2);
-                }
-        
-            $otpay = $pay1 + $pay2;
-            $calculationtype = "RHandR";
-          }
-          //regular day ot
-          elseif( $holidaytype == 1 and $restday == 0 ){
-              $pay1 = (($hrate * 2)) * floor($consDuration);
-                if ($consDuration2>0){
-              $pay2 = (($hrate * 2) * 1.3) *  floor($consDuration2);
-                }
-        
-            $otpay = $pay1 + $pay2;
-            $calculationtype = "RH";
-          }else{
-            //calculate ordinary day
-            $otpay=(($hrate * 1.25) * floor($consDuration)); 
-              $calculationtype = "Ordinary";
-          }
-          //echo $otpay . " Cal- " . $calculationtype . " ConsDuration -  " . $consDuration . " Basic -  " . $basic . " Hrate - " . $hrate . " AvgWork - " . $avgDWork . " Hours - " . $nhours;
-        }
-
-        // insert into ot query
-        {
-          $sql = "INSERT INTO otattendancelog (EmpID,EmpISID,TimeIn,TimeOut,DateFiling,TimeFiling,Status,Duration,OTPay,Purpose,DateTimeUpdate,ctype,DateTimeInputed) 
-          VALUES (:id,:is,:ti,:to,:fd,:ft,:st,:dur,:otpy,:prs,:dtu,:ctype,:dti)";
-          $stmt = $pdo->prepare($sql);
-          $stmt->bindParam(':id' ,$id);
-          $stmt->bindParam(':is', $isid);
-          $stmt->bindParam(':ti' ,$d1);
-          $stmt->bindParam(':to' ,$d2);
-          $stmt->bindParam(':fd' ,$today3);
-          $stmt->bindParam(':ft' ,$fillingtime);
-          $stmt->bindParam(':st' ,$statid);
-          $stmt->bindParam(':dur' ,$interval);  
-          $stmt->bindParam(':prs' ,$_POST['otpur']);
-          $stmt->bindParam(':otpy' ,$otpay);
-          $stmt->bindParam(':dtu' ,$today2);
-          $stmt->bindParam(':ctype' ,$calculationtype);
-          $stmt->bindParam(':dti' ,$today2);
-          // $stmt->execute();
-          $ida = $pdo->lastInsertId();
-        }
-        
-        // start 7/11/2024 gemana lookback initialization   
-        {
-          $sqlst = "SELECT * FROM payrol WHERE (:dts BETWEEN PYDateFrom AND PYDateTo) or (:dtt BETWEEN PYDateFrom AND PYDateTo) LIMIT 1";
-          $state = $pdo->prepare($sqlst);
-          $state->bindParam(':dts', $otS);
-          $state->bindParam(':dtt', $otS);
-          $state->execute();
-
-          if($state->rowCount()>0){//if true then 
-            while ($checkerstate = $state->fetch()) {
-              $pdateData = $checkerstate['PYDate'];
-            }
-
-            if(date_format(date_create($pdateData),"d")==5){
-              $pdateData=date_format(date_create($pdateData),"Y-m"."-20");
-            }else{
-              $pdateData=date_format(date_create($pdateData),"Y-m"."-5");
-              $pdateData = date ("Y-m-d", strtotime($pdateData. "+ 1 month"));
-            }
-
-            $sqlmaxid = "SELECT MAX(PYDate) as PYDate FROM payrol";
-            $statemaxid = $pdo->prepare($sqlmaxid);
-            $statemaxid->execute();
-            $maxdate='';
-            while ($checkerstatemaxdate = $statemaxid->fetch()) {
-              $maxdate='';
-              $maxdate = $checkerstatemaxdate['PYDate'];
-            }
-
-            if($statemaxid->rowCount()>=1){
-              if($maxdate >= $pdateData ){
-                if(date_format(date_create($maxdate),"d")==5){
-                  $pdateData=date_format(date_create($maxdate),"Y-m"."-20");
+            if($FDF >= $SF and $FDT >= $ST){
+              if($FDF >= $ST and $FDT >= $ST){
                 
-                }else{
-                  $pdateData=date_format(date_create($maxdate),"Y-m"."-5");
-                  $pdateData = date ("Y-m-d", strtotime($pdateData. "+ 1 month"));
-                
-                }
+              }else{
+                echo "Filing not allowed within your respective work Schedule.";
+                return;
               }
-            }
-         
-            //trigger exception in a "try" block
-            try {
-                $tagSQL="INSERT INTO ot_lookback (refID,refEmpID,refPayDate,inputdate) VALUES(:id,:empid,:pdate,:inputdate)";
-                $tagSQL=$pdo->prepare($tagSQL);
-                $tagSQL->bindParam(':id',$ida);
-                $tagSQL->bindParam(':empid',$id);
-                $tagSQL->bindParam(':pdate', $pdateData);
-                $tagSQL->bindParam(':inputdate',$today2);
-                $tagSQL->execute(); 
-            }
 
-            //catch exception
-            catch(Exception $e) {
-              echo 'Message: ' .$e->getMessage();
-            }
           }
-        
-        }
-        // end 7/11/2024 gemana lookback initialization
 
-        //dar
+            // print "df";
+            // return;
+        //get today date lilo
+        $sql = "select * from attendancelog where EmpID=:id AND WSFrom=:day";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':id' ,$id);
+        $stmt->bindParam(':day' ,$today);    
+        $stmt->execute();
+        $rowlilo = $stmt->fetch();
+        $cntlilo = $stmt->rowCount();
+        $tardymin=0;
+        if ($cntlilo > 0 )
         {
-          $id=$_SESSION['id'];
-          $ch="Applied OT";
-          // insert into dars
-          $sql = "INSERT INTO dars (EmpID,EmpActivity) VALUES (:id,:empact)";
-          $stmt = $pdo->prepare($sql);
-          $stmt->bindParam(':id' , $id);
-          $stmt->bindParam(':empact', $ch);
-          $stmt->execute(); 
+          $tardymin = $rowlilo['MinsLack'] + $rowlilo['MinsLack2'];
         }
-        ################### LOOP INSERT END ############################
-        $otS = date ("Y-m-d", strtotime($otS. "+1 day"));
 
+        if ($istardy == 0 and $tardymin > 0)
+          {
+            echo "Filing not allowed. MinsLack Detected. Please contact system administrator.";//filling not allowed
+            return;
+          }
+      }
+    }else{
+      //no schedule signal for auto save
+      // echo "restday signal aouto save";
+      
+      $restday=1;
+    }
+  
+   //check if holiday
+   {
+    $hdate=$_POST['datefrom'];
+    $sql = "select * from holidays where Hdate=:date ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':date' ,$hdate);   
+    $stmt->execute();
+    $hrow = $stmt->fetch();
+    $hload= $stmt->rowCount();
+    $holidaytype=0;
+    $holiday=0;
+    if($hload > 0)
+      {
+        $holidaytype=$hrow['Htype'];
+        $holiday=1;
       }
 
-      echo "Application succesfully save! ";                  
-  } catch (Exception $e) {
-      echo 'Caught exception: ',  $e->getMessage(), "\n";
+      if ($isholiday == 0 && $holiday == 1){
+          echo "Sorry OT Filing not allowed during Holiday.";
+          return;
+      }
+          $x=0;
+      if ($holiday == 1 && $restday == 1){
+          $x=1;
+      }else{
+        
+      }
+      if ($holiday == 1 or $restday == 1) {
+          //validate duration
+          if ( $interval >=1 )    
+          {
+           if ( $schedcat == 1 )
+              {
+                if ( $interval >= 6 && $interval <= 10)
+                {
+                  $consDuration = 10-1;
+                }
+                elseif ( $interval >= 6 && $interval > 10)
+                {
+                  $consDuration = $interval - 1 ;
+                }
+                else 
+                {
+                  $consDuration = 5;
+                }
+              }
+        
+            else
+              {
+                if ( $interval >=5 && $interval <= 8 )
+                {
+                  $consDuration = 8 -1;
+                }
+                elseif ( $interval >=5 && $interval > 8 )
+                {
+                  $consDuration = $interval -1;
+                }
+                else 
+                {
+                  $consDuration = 4;
+                }
+              }
+          }
+          else
+            {
+              // echo $interval;
+              echo "Minimum Overtime 1 hr. ";
+                return;
+            }
+         
+      }else{  
+      // $consDuration = $interval;  
+        //validate duration
+        if ( $interval >=1 )  {
+          if ( $schedcat == 1 ){
+                if ( $interval >= 6 && $interval <= 10)
+                {
+                  $consDuration = 10-1;
+                }
+                elseif ( $interval >= 6 && $interval > 10)
+                {
+                  $consDuration = $interval - 1 ;
+                }
+                else 
+                {
+                  $consDuration = 5;
+                }
+              }else{
+                if ( $interval >=5 && $interval <= 8 )
+                {
+                  $consDuration = 8 -1;
+                }
+                elseif ( $interval >=5 && $interval > 8 )
+                {
+                  $consDuration = $interval -1;
+                }
+                else 
+                {
+                  $consDuration = 4;
+                }
+              }
+          }else{
+              // echo $interval;
+              echo "Minimum Overtime 1 hr. ";
+                return;
+            }
+      }
+   }
+    
+
+  $consDuration2=0;
+  //vation validate holiday and restday
+  if ($consDuration > $nhours ){
+      $consDuration2 =$consDuration - $nhours;
   }
+  $pay1=0;$pay2=0;
+  //special holiday or rest day ot
+  if ($consDuration > $nhours ){
+      $consDuration = $nhours;
+  }
+  //if computation
+  {
+    if( ($holidaytype == 2 or $restday == 1) and $x==0)
+    {
+        $pay1 = (($hrate * 1.3)) * floor($consDuration);
+          if ($consDuration2>0){
+        $pay2 = (($hrate * 1.3) * 1.3) * floor($consDuration2);
+          }
+  
+      $otpay = $pay1 + $pay2;
+      $calculationtype = "SHorR";
+    }
+    //special holiday and restday ot
+    elseif(($holidaytype == 2 and $restday == 1) and $x==1)
+    {
+        $pay1 = (($hrate * 1.5)) * floor($consDuration);
+  
+          if ($consDuration2>0){
+        $pay2 = (($hrate * 1.5) * 1.3) *  floor($consDuration2);
+          }
+  
+      $otpay = $pay1 + $pay2;
+      $calculationtype = "SHandR";
+    }
+    //regular and rest day ot
+    elseif( $holidaytype == 1 and $restday == 1 )
+    {
+        $pay1 = (($hrate * 2.6)) * floor($consDuration);
+      
+          if ($consDuration2>0){
+        $pay2 = (($hrate * 2.6) * 1.3) *  floor($consDuration2);
+          }
+  
+      $otpay = $pay1 + $pay2;
+      $calculationtype = "RHandR";
+    }
+    //regular day ot
+    elseif( $holidaytype == 1 and $restday == 0 ){
+        $pay1 = (($hrate * 2)) * floor($consDuration);
+          if ($consDuration2>0){
+        $pay2 = (($hrate * 2) * 1.3) *  floor($consDuration2);
+          }
+  
+      $otpay = $pay1 + $pay2;
+      $calculationtype = "RH";
+    }else{
+      //calculate ordinary day
+      $otpay=(($hrate * 1.25) * floor($consDuration)); 
+        $calculationtype = "Ordinary";
+    }
+    //echo $otpay . " Cal- " . $calculationtype . " ConsDuration -  " . $consDuration . " Basic -  " . $basic . " Hrate - " . $hrate . " AvgWork - " . $avgDWork . " Hours - " . $nhours;
+  }
+
+
+// // insert into ot
+
+//   print "fuck";
+//   return;
+//   $sql = "INSERT INTO otattendancelog (EmpID,EmpISID,TimeIn,TimeOut,DateFiling,TimeFiling,Status,Duration,OTPay,Purpose,DateTimeUpdate,ctype) 
+//   VALUES (:id,:is,:ti,:to,:fd,:ft,:st,:dur,:otpy,:prs,:dtu,:ctype)";
+//   $stmt = $pdo->prepare($sql);
+//   $stmt->bindParam(':id' ,$id);
+//   $stmt->bindParam(':is', $isid);
+//   $stmt->bindParam(':ti' ,$d1);
+//   $stmt->bindParam(':to' ,$d2);
+//   $stmt->bindParam(':fd' ,$fillingdatetime);
+//   $stmt->bindParam(':ft' ,$fillingtime);
+//   $stmt->bindParam(':st' ,$statid);
+//   $stmt->bindParam(':dur' ,$interval);
+//   $stmt->bindParam(':prs' ,$_POST['otpur']);
+//   $stmt->bindParam(':otpy' ,$otpay);
+//   $stmt->bindParam(':dtu' ,$today2);
+//     $stmt->bindParam(':ctype' ,$calculationtype);
+//   $stmt->execute();
+$sql = "INSERT INTO otattendancelog (EmpID,EmpISID,TimeIn,TimeOut,DateFiling,TimeFiling,Status,Duration,OTPay,Purpose,DateTimeUpdate,ctype,DateTimeInputed) 
+    VALUES (:id,:is,:ti,:to,:fd,:ft,:st,:dur,:otpy,:prs,:dtu,:ctype,:dti)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':id' ,$id);
+    $stmt->bindParam(':is', $isid);
+    $stmt->bindParam(':ti' ,$d1);
+    $stmt->bindParam(':to' ,$d2);
+    $stmt->bindParam(':fd' ,$today3);
+    $stmt->bindParam(':ft' ,$fillingtime);
+    $stmt->bindParam(':st' ,$statid);
+    $stmt->bindParam(':dur' ,$interval);  
+    $stmt->bindParam(':prs' ,$_POST['otpur']);
+    $stmt->bindParam(':otpy' ,$otpay);
+    $stmt->bindParam(':dtu' ,$today2);
+    $stmt->bindParam(':ctype' ,$calculationtype);
+    $stmt->bindParam(':dti' ,$today2);
+    $stmt->execute();
+  
+  
+  echo "Sucessfully Saved ! ";
+
+      $id=$_SESSION['id'];
+                      $ch="Applied OT";
+                // insert into dars
+                    $sql = "INSERT INTO dars (EmpID,EmpActivity) VALUES (:id,:empact)";
+                   $stmt = $pdo->prepare($sql);
+                   $stmt->bindParam(':id' , $id);
+                   $stmt->bindParam(':empact', $ch);
+                   $stmt->execute(); 
+  echo "Application succesfully save! ";                  
+                   } catch (Exception $e) {
+  echo 'Caught exception: ',  $e->getMessage(), "\n";
+}
 
 
  ?>

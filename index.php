@@ -1,6 +1,6 @@
   <?php
     // --- 1. SESSION & TIMEZONE INITIALIZATION ---
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
     date_default_timezone_set("Asia/Manila");
     include 'w_conn.php';
 

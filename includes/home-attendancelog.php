@@ -9,12 +9,16 @@
   }
   $id=$_SESSION['id'];
 
+
+	// protected $casts = [
+
+	// ];
   while($dt1<=$dt2){
     $dis='';
     $dytoday=date("d", strtotime($dt2));
     $yrtoday=date("Y", strtotime($dt2));
     $mnthtoday=date("m", strtotime($dt2));
-    $formatted_date = date('Y-m-d', strtotime($dt2));
+      $formatted_date = date('Y-m-d', strtotime($dt2));
 
         // <!-- search worksched  -->
   
@@ -25,7 +29,6 @@
         
         //  $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID inner join schedeffectivity as c on workdays.EFID=c.efids where (workdays.empid='$id') 
         // and (workdays.Day_s='$day_desc') and  SchedTime <> 0 ");
-
         $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN 
         workschedule ON workdays.SchedTime=workschedule.WorkSchedID 
         inner join schedeffectivity as c on workdays.EFID=c.efids
@@ -35,7 +38,40 @@
         $row = mysqli_fetch_array($resultsched); 
         $cntsched= mysqli_num_rows ($resultsched);
         // search attendance in OT OB Leave and cenar
-        $sql="SELECT a.OBID as mid,'OB' as st,a.OBDateFrom as dateattend from 
+        // $sql="SELECT a.OBID as mid,'OB' as st,a.OBDateFrom as dateattend from 
+        // obs as a 
+        // INNER JOIN employees as b ON a.EmpID=b.EmpID 
+        // INNER JOIN empdetails as d ON b.EmpID=d.EmpID where a.EmpID=:id and (OBStatus=1 or OBStatus=2 or OBStatus=4) and (day(a.OBDateFrom)=:dytod and year(a.OBDateFrom)=:yrtod and month(a.OBDateFrom)=:mnth)
+
+        // UNION ALL 
+
+        // SELECT a.SID as mid,'EO' as st,a.DateTimeInputed as dateattend from 
+        // earlyout as a 
+        // INNER JOIN employees as b ON a.EmpID=b.EmpID 
+        // INNER JOIN empdetails as d ON b.EmpID=d.EmpID where a.EmpID=:id and (Status=1 or Status=2 or Status=4) and (day(a.DateTimeInputed)=:dytod and year(a.DateTimeInputed)=:yrtod and month(a.DateTimeInputed)=:mnth)
+        // UNION ALL 
+
+        // SELECT a.LeaveID as mid,'Leave' as st,LEnd as dateattend from 
+        // hleavesbd as a 
+        // INNER JOIN employees as b ON a.EmpID=b.EmpID 
+        // INNER JOIN empdetails as d ON b.EmpID=d.EmpID where a.EmpID=:id and (LStatus=1 or LStatus=2 or LStatus=4) and (day(LEnd)=:dytod and year(LEnd)=:yrtod and month(LEnd)=:mnth)
+
+        // UNION ALL 
+
+        // SELECT a.OTLOGID as mid, 'OT' as st,TimeIn as dateattend from 
+        // otattendancelog as a 
+        // INNER JOIN employees as b ON a.EmpID=b.EmpID 
+        // INNER JOIN empdetails as d ON b.EmpID=d.EmpID  where a.EmpID=:id and (Status=1 or Status=2 or Status=4) and (day(TimeIn)=:dytod and year(TimeIn)=:yrtod and month(TimeIn)=:mnth)
+
+        // UNION ALL 
+
+        // SELECT a.LogID as mid, 'Cenar' as st, TimeIn as dateattend from 
+        // attendancelog as a 
+        // INNER JOIN employees as b ON a.EmpID=b.EmpID 
+        // INNER JOIN empdetails as d ON b.EmpID=d.EmpID  where a.EmpID=:id and (day(TimeIn)=:dytod and year(TimeIn)=:yrtod and month(TimeIn)=:mnth)
+        // order by dateattend desc ";
+        
+          $sql="SELECT a.OBID as mid,'OB' as st,a.OBDateFrom as dateattend from 
         obshbd as a 
         INNER JOIN employees as b ON a.EmpID=b.EmpID 
         INNER JOIN empdetails as d ON b.EmpID=d.EmpID where a.EmpID=:id and (OBStatus=1 or OBStatus=2 or OBStatus=4) and OBDateFrom = '$formatted_date'
@@ -82,26 +118,21 @@
               // }else if(is_null($cntsched)){
               //   $dis = "EMPTY";
               }else{ 
-                $dis = "Rest Day";
                   $tdyhol=date("Y-m-d", strtotime($dt2));
                   $sql2="select * from holidays where HCompID=:cmid and Hdate=:dth";
                   $attendancelog2 = $pdo->prepare($sql2);
                   $attendancelog2->bindParam(':dth' , $tdyhol);
                   $attendancelog2->bindParam(':cmid' , $_SESSION['CompID']);
                   $attendancelog2->execute();
-
                   if ($attendancelog2->rowCount()>0){
                       $row4=$attendancelog2->fetch();
                       $dis = $row4['Hdescription']; 
                   }else{
-                    
-                    if( $row['SchedTime']=='0'){
+                    if( $row['SchedTime']==0){
                       $dis = "Rest Day"; 
                     }else{
-                      $dis = "No Attendance23" . $row['SchedTime']; 
+                      $dis = "No Attendance"; 
                     } 
-                    
-
                      
                   }
               }
@@ -109,11 +140,11 @@
           <tr>
             <td class="darth"><?php echo date("F j, Y", strtotime($dt2));?></td>
             <td class="darth"><?php echo date("l", strtotime($dt2));?></td>
-            <td class="darth <?php if($dis=="No Attendances") {echo "flash bg-danger";}?>" ><?php echo $dis; ?></td>
-            <td class="darth <?php if($dis=="No Attendances") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
-            <td class="darth <?php if($dis=="No Attendances") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
-            <td class="darth <?php if($dis=="No Attendances") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
-            <td class="darth <?php if($dis=="No Attendances") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
+            <td class="darth <?php if($dis=="No Attendance") {echo "flash bg-danger";}?>" ><?php echo $dis; ?></td>
+            <td class="darth <?php if($dis=="No Attendance") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
+            <td class="darth <?php if($dis=="No Attendance") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
+            <td class="darth <?php if($dis=="No Attendance") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
+            <td class="darth <?php if($dis=="No Attendance") {echo "flash bg-danger";}?>"><?php echo $dis; ?></td>
           </tr>
           <?php
         }else{                  
@@ -138,7 +169,8 @@
             }
             //ob attendance
             elseif ($row2['st']=="OB"){
-                $attendancelog2 = $pdo->prepare("select * from obshbd where OBID = :id  and OBDateFrom = '$formatted_date'");
+                // $attendancelog2 = $pdo->prepare("select * from obshbd where OBID = :id ");
+                  $attendancelog2 = $pdo->prepare("select * from obshbd where OBID = :id  and OBDateFrom = '$formatted_date'");
                 $attendancelog2->bindParam(':id' , $row2['mid']);
                 $attendancelog2->execute();
                 $rowcenar = $attendancelog2->fetch();

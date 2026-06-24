@@ -1,5 +1,5 @@
 <?php 
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
     if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
     else { header ('location: login'); }
     include 'ReportController.php';
@@ -62,16 +62,8 @@
     <script type="text/javascript"> 
         $(document).ready(function() {
         
-            // $(".buttons-html5").remove("span");
-            // $('#tab').DataTable( {
-            //     dom: 'Bfrtip',
-            //     buttons: [
-            //         'excelHtml5',
-            //         'csvHtml5'
-            //     ]
-            // } );
-
-        $(document).on('click', '#btnprint', function(e) {
+            $(document).on('click', '#btnprint', function(e) {
+              
             var css = '@page { size: landscape; }',
             head = document.head || document.getElementsByTagName('head')[0],
             style = document.createElement('style');
@@ -229,7 +221,7 @@
                         <th width="12.5%">End Date</th>
                         <th width="12.5%">Leave Type</th>
                         <th width="12.5%">Purpose</th>
-                        <th width="12.5%">Duration(m)</th>
+                        <th width="12.5%">Duration</th>
                         <th width="12.5%">Status</th>
                     </tr>
                     </thead>
@@ -263,7 +255,7 @@
                                     <td><?php echo date("F j, Y", strtotime($row["End_Date"])); ?> </td>
                                     <td><?php echo $row["Leave_Type"]; ?> </td>  
                                     <td><?php echo $row["Purpose"]; ?> </td>
-                                    <td><?php echo $row["Duration"] . "m"; ?> </td>
+                                    <td><?php echo $row["Duration"]; ?> </td>
                                     <td><?php echo $row["Status"]; ?> </td>
                                 </tr>
                             <?php

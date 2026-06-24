@@ -1,5 +1,5 @@
 <?php
-		session_start();
+		if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
           try{
           include 'w_conn.php';
@@ -141,11 +141,12 @@
 
                   FROM employees
                   INNER JOIN earlyout ON employees.EmpID=earlyout.EMPID 
-                  INNER JOIN status ON earlyout.Status=status.StatusID where earlyout.Status=4 and earlyout.FDate BETWEEN :dfr AND :dto order by LastName,earlyout.FDate  desc"); 
+                  INNER JOIN status ON earlyout.Status=status.StatusID where earlyout.FDate BETWEEN :dfr AND :dto order by LastName,earlyout.FDate  desc"); 
                    $statement = $pdo->prepare($resultdata);
                   $statement->bindParam(':dfr' , $dtf);
                   $statement->bindParam(':dto' , $dtt);
                   $statement->execute();
+                 // INNER JOIN status ON earlyout.Status=status.StatusID where earlyout.Status=4 and earlyout.FDate BETWEEN :dfr AND :dto order by LastName,earlyout.FDate  desc"); 
               }
               else{
                   $resultdata = ("SELECT employees.EmpID as Employees_ID,
@@ -164,12 +165,14 @@
 
                   FROM employees
                   INNER JOIN earlyout ON employees.EmpID=earlyout.EMPID 
-                  INNER JOIN status ON earlyout.Status=status.StatusID WHERE earlyout.Status=4 and employees.EmpID=:idn AND earlyout.FDate BETWEEN :dfr AND :dto order by LastName,earlyout.DateTimeUpdated  desc"); 
+                  INNER JOIN status ON earlyout.Status=status.StatusID WHERE  employees.EmpID=:idn AND earlyout.FDate BETWEEN :dfr AND :dto order by LastName,earlyout.DateTimeUpdated  desc"); 
                    $statement = $pdo->prepare($resultdata);
                   $statement->bindParam(':idn' , $id);
                   $statement->bindParam(':dfr' , $dtf);
                   $statement->bindParam(':dto' , $dtt);
                   $statement->execute();
+                  
+                   // INNER JOIN status ON earlyout.Status=status.StatusID WHERE earlyout.Status=4 and employees.EmpID=:idn AND earlyout.FDate BETWEEN :dfr AND :dto order by LastName,earlyout.DateTimeUpdated  desc"); 
 
                 }
                   $ids=1;
@@ -197,7 +200,7 @@
               }
 
           }
-           if (isset($_GET['srchalsv'])){
+            if (isset($_GET['srchalsv'])){
               $id=$_POST['Eid'];
               $dtf=$_POST['dtfrom'];
               $dtt=date($_POST['dtto'], strtotime('+1 days'));
@@ -244,7 +247,7 @@
                     <td><?php echo date("F j, Y", strtotime($row2["End_Date"])); ?> </td>
                     <td><?php echo $row2["Leave_Type"]; ?> </td>  
                     <td><?php echo $row2["Purpose"]; ?> </td>
-                    <td><?php echo $row2["Duration"] . 'm'; ?> </td>
+                    <td><?php echo $row2["Duration"]; ?> </td>
                     <td><?php echo $row2["Status"]; ?> </td>
 
               
@@ -253,6 +256,7 @@
                    $ids=$ids+1;
               }
            }
+
 
              if (isset($_GET['srchcomdata'])){
                   $id=$_POST['Eid'];
@@ -331,7 +335,7 @@
                           status.StatusDesc as Status,
                           obs.OBInputDate as DateTimeInputed FROM employees
                           INNER JOIN obs ON employees.EmpID=obs.EmpID
-                          INNER JOIN status ON obs.OBStatus=status.StatusID WHERE obs.OBStatus=4 and obs.OBDateFrom BETWEEN :dfr AND :dto order by employees.EmpLN,obs.OBDateFrom desc");
+                          INNER JOIN status ON obs.OBStatus=status.StatusID WHERE  obs.OBDateFrom BETWEEN :dfr AND :dto order by employees.EmpLN,obs.OBDateFrom desc");
                          $statement = $pdo->prepare($resultdata);
                           $statement->bindParam(':dfr' , $dtf);
                           $statement->bindParam(':dto' , $dtt);
@@ -357,7 +361,7 @@
                           status.StatusDesc as Status,
                           obs.OBInputDate as DateTimeInputed FROM employees
                           INNER JOIN obs ON employees.EmpID=obs.EmpID
-                          INNER JOIN status ON obs.OBStatus=status.StatusID WHERE obs.OBStatus=4 and obs.OBDateFrom BETWEEN :dfr AND :dto order by employees.EmpLN,obs.OBDateFrom desc");
+                          INNER JOIN status ON obs.OBStatus=status.StatusID WHERE obs.OBDateFrom BETWEEN :dfr AND :dto order by employees.EmpLN,obs.OBDateFrom desc");
                          $statement = $pdo->prepare($resultdata);
                           $statement->bindParam(':dfr' , $dtf);
                           $statement->bindParam(':dto' , $dtt);
@@ -414,7 +418,7 @@
                           status.StatusDesc as Status,
                           obs.OBInputDate as DateTimeInputed FROM employees
                           INNER JOIN obs ON employees.EmpID=obs.EmpID
-                          INNER JOIN status ON obs.OBStatus=status.StatusID WHERE obs.OBStatus=4 and obs.OBDateFrom BETWEEN :dfr AND :dto order by employees.EmpLN,obs.OBDateFrom desc");
+                          INNER JOIN status ON obs.OBStatus=status.StatusID WHERE obs.OBDateFrom BETWEEN :dfr AND :dto order by employees.EmpLN,obs.OBDateFrom desc");
                          $statement = $pdo->prepare($resultdata);
                           $statement->bindParam(':dfr' , $dtf);
                           $statement->bindParam(':dto' , $dtt);
@@ -463,7 +467,8 @@
                           status.StatusDesc as Status,
                           obs.OBInputDate as DateTimeInputed FROM employees
                           INNER JOIN obs ON employees.EmpID=obs.EmpID
-                          INNER JOIN status ON obs.OBStatus=status.StatusID  WHERE obs.OBStatus=4 and obs.EmpID=:idn  AND obs.OBInputDate BETWEEN :dfr AND :dto");
+                          INNER JOIN status ON obs.OBStatus=status.StatusID  WHERE obs.EmpID=:idn  AND obs.OBInputDate BETWEEN :dfr AND :dto");
+                                                    // INNER JOIN status ON obs.OBStatus=status.StatusID  WHERE obs.OBStatus=4 and obs.EmpID=:idn  AND obs.OBInputDate BETWEEN :dfr AND :dto");
                           $statement = $pdo->prepare($resultdata);
                           $statement->bindParam(':idn' , $id);
                           $statement->bindParam(':dfr' , $dtf);
@@ -492,7 +497,7 @@
                           }
                   }
              }
-                         if (isset($_GET['srchovertimt'])){
+             if (isset($_GET['srchovertimt'])){
                                $id=$_POST['Eid'];
                                 $dtf=$_POST['dtfrom'];
                                 $dtt=date($_POST['dtto'], strtotime('+1 days'));
@@ -517,7 +522,7 @@
 
                                           FROM otattendancelog as a 
                                           INNER JOIN employees as b ON a.EmpID=b.EmpID
-                                          INNER JOIN status as c ON a.Status=c.StatusID  WHERE  a.TimeIn BETWEEN :dfr AND :dto and (StatusID=1 or StatusID=2 or StatusID=4)");
+                                          INNER JOIN status as c ON a.Status=c.StatusID  WHERE  a.TimeIn BETWEEN :dfr AND :dto and (StatusID=1 or StatusID=2 or StatusID=4  or StatusID=5)");
                                             $statement = $pdo->prepare($resultdata);
                                             $statement->bindParam(':dfr' , $dtf);
                                             $statement->bindParam(':dto' , $dtt);
@@ -543,7 +548,7 @@
 
                                           FROM otattendancelog as a 
                                           INNER JOIN employees as b ON a.EmpID=b.EmpID
-                                          INNER JOIN status as c ON a.Status=c.StatusID  WHERE b.EmpID=:idn AND a.TimeIn BETWEEN :dfr AND :dto and (StatusID=1 or StatusID=2 or StatusID=4)");
+                                          INNER JOIN status as c ON a.Status=c.StatusID  WHERE b.EmpID=:idn AND a.TimeIn BETWEEN :dfr AND :dto and (StatusID=1 or StatusID=2 or StatusID=4 or StatusID=5)");
                                             $statement = $pdo->prepare($resultdata);
                                             $statement->bindParam(':idn' , $id);
                                             $statement->bindParam(':dfr' , $dtf);

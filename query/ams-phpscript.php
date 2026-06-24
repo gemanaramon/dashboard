@@ -1,6 +1,6 @@
 <?php 
 include 'w_conn.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
 else{ header ('location: login.php'); }
 date_default_timezone_set("Asia/Manila");
@@ -32,11 +32,28 @@ catch(PDOException $e){
         echo json_encode(array("errcode"=>1));
     }
    }
+   
+   
+   
+   
+if (isset($_GET['viewall'])){
+          $getemployee = $pdo->prepare("Select * from amsarchive as a INNER JOIN employees as b on (a.verifiedby=b.EmpID) order by a.lname asc");
+        $getemployee->execute();
+        $count = $getemployee->rowCount();
+        while ($getrow = $getemployee->fetch()) {
+            $empdata[]=$getrow;
+        }
+        if($count>0){
+             echo json_encode(array("data"=> $empdata,"errcode"=>0));
+        }else{
+            echo json_encode(array("errcode"=>1));
+        }
+    }   
 
 
 if (isset($_GET['amssearch'])){
         $query=$_GET['query']; 
-        $getemployee = $pdo->prepare("Select * from amsarchive where lname like '%$query%' order by lname asc");
+        $getemployee = $pdo->prepare("Select * from amsarchive as a INNER JOIN employees as b on (a.verifiedby=b.EmpID) where a.lname like '%$query%' order by a.lname asc");
         $getemployee->execute();
         $count = $getemployee->rowCount();
         while ($getrow = $getemployee->fetch()) {
@@ -61,7 +78,7 @@ if (isset($_GET['amssearch'])){
         $salary=$_GET['salary'];
         $resignation=$_GET['resignation'];
         $addrem=$_GET['addrem'];
-        $addver=$_GET['addver'];
+        $addver=trim($_GET['addver']);
         $pos=$_GET['pos'];
          
         $sql = "INSERT INTO amsarchive (fname,lname,empdatesfrom,empdatesto,employmentstatus,reasonforleaving,derogatoryrecords,clearance,salary,addremarks,pedngingresignation,verifiedby,datetime,pos) 
@@ -114,7 +131,7 @@ if (isset($_GET['amssearch'])){
         $salary=$_GET['salary'];
         $resignation=$_GET['resignation'];
         $addrem=$_GET['addrem'];
-        $addver=$_GET['addver'];
+        $addver=trim($_GET['addver']);
         $pos=$_GET['pos'];
          
          	$sql = "UPDATE amsarchive SET fname=:fname,lname=:lname,empdatesfrom=:dfrom,empdatesto=:dto, 
@@ -135,14 +152,14 @@ if (isset($_GET['amssearch'])){
                $stmt->bindParam(':salary' , $salary);
                $stmt->bindParam(':addremarks' , $addrem);
                $stmt->bindParam(':pendingres' , $resignation);
-               $stmt->bindParam(':ver' , $addver);
+               $stmt->bindParam(':ver' ,$_SESSION['id']);
                $stmt->bindParam(':datetime' , $today);
                $stmt->bindParam(':pos' , $pos);
 
                if($stmt->execute()){
                 echo json_encode(array("errcode"=>0));
                 $id=$_SESSION['id'];
-                $ch="Updated user " . $lname . " " .$fname . " by user " . $id . " on AMS!" ;
+                $ch="Updated user " . $lname . " " .$fname . " by user " . $id . " on AMS." ;
                 // insert into dars
                 $sql = "INSERT INTO dars (EmpID,EmpActivity,DarDateTime) VALUES (:id,:empact,:ddt)";
                 $stmt = $pdo->prepare($sql);
@@ -151,8 +168,7 @@ if (isset($_GET['amssearch'])){
                 $stmt->bindParam(':ddt', $today);
                 $stmt->execute();
 
-               }
-               else{
+               }else{
                 echo json_encode(array("errcode"=>1));  
                }
         }

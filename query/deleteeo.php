@@ -1,7 +1,7 @@
  <?php
  
  include 'w_conn.php';
-  session_start();
+  if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
    date_default_timezone_set("Asia/Manila");

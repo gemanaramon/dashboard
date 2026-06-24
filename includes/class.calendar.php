@@ -82,7 +82,7 @@ class PHPCalendar {
 				   
 				}
 				else{
-					  session_start();
+					  if (session_status() === PHP_SESSION_NONE) { session_start(); }
 				}
 
 				 include 'w_conn.php';

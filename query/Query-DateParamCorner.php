@@ -1,5 +1,5 @@
  <?php
- session_start();
+ if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login'); }
                        try{
@@ -18,7 +18,13 @@
                         $statement->bindParam(':dt' , $date1);
                         $statement->execute();
 
+
+                      
+
+
                         while ($row2 = $statement->fetch()){
+
+
 
                         $st = $pdo->prepare("select * from empprofiles where EmpID=:id");
                         $st->bindParam(':id' , $row2['EmpID']);

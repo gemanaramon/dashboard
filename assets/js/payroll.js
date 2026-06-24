@@ -14,7 +14,7 @@ $(document).ready(function(){
    } 
    else{
     jQuery.ajax({
-      url:'/query/query-payrollscript.php?approvedPayroll', 
+      url:'query/query-payrollscript.php?approvedPayroll', 
       method: 'POST',
       data: {pdate:pdate},
       cache: false,
@@ -471,7 +471,7 @@ $(document).ready(function(){
            
               }
               };
-            xmlhttp.open("GET", "query-searchpayroll.php?dte=" + vl +  "& filter=" + filter, true);
+            xmlhttp.open("GET", "/query-searchpayroll.php?dte=" + vl +  "& filter=" + filter, true);
             xmlhttp.send();
                      
             $(".pyrlfilt").html("Payroll Attachment Summary");
@@ -491,7 +491,7 @@ $(document).ready(function(){
                   //  modal.style.display = "none";
                 }
                 };
-                xmlhttp.open("GET", "Query-searchpaysrollmain.php?dte=" + vl +  "& filter=" + filter, true);
+                xmlhttp.open("GET", "/Query-searchpaysrollmain.php?dte=" + vl +  "& filter=" + filter, true);
                               xmlhttp.send();
         $(".pyrlfilt").html("WeDo Metro Payroll Report");
       });

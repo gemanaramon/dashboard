@@ -1,12 +1,12 @@
 <?php
 		include 'w_conn.php';
-      session_start();
+      if (session_status() === PHP_SESSION_NONE) { session_start(); }
       if (isset($_SESSION['id']) && $_SESSION['id']!="0"){
         header ('location: index');
       }
 
     if(isset($_GET['logout'])){
-      session_start();
+      if (session_status() === PHP_SESSION_NONE) { session_start(); }
       $_SESSION['id']="0";
       session_destroy();
       header ('location: login');

@@ -1,6 +1,6 @@
 <?php
 include 'w_conn.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 try{
 $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

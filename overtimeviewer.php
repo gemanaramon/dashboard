@@ -1,5 +1,5 @@
 <?php 
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else { header ('location: login'); }
 
@@ -193,18 +193,17 @@ function exportToExcel(tableID, filename = ''){
                 <div class="col-lg-4">
                     <div class="form-group ">
                       <label for="sel1">Choose Employee:</label>
-                      <select class="form-control" id="empcompid" name="empcompany">
-                       <option value="all">All</option>
-
-                        <?php
-                      $sql=mysqli_query($con, "select * from employees order by EmpLN asc");
-                                  while($res=mysqli_fetch_array($sql)){
+                        <select class="form-control" id="empcompid" name="empcompany">
+                            <option value="all">All</option>
+                            <?php
+                              $sql=mysqli_query($con, "select * from employees inner join empdetails on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin' and employees.EmpStatusID = 1  and EmpCompID='WeDoInc-01' order by EmpLN asc");
+                              while($res=mysqli_fetch_array($sql)){
                               ?>
-                        <option  value="<?php echo $res['EmpID']; ?>"><?php echo $res['EmpLN'] . ", " . $res['EmpMN'] . " " . $res['EmpFN']; ?>  </option>
-                              <?php   
-                                  }
-                                  ?>
-                      </select>
+                            <option  value="<?php echo $res['EmpID']; ?>"><?php echo $res['EmpLN'] . ", " . $res['EmpFN']  . " "  . $res['EmpMN']; ?>  </option>
+                            <?php   
+                              }
+                            ?>    
+                        </select>
                     </div> 
                 </div>
                  <div class="col-lg-8">

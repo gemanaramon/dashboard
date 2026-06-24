@@ -1,6 +1,6 @@
 <?php
    $lid= $_POST['ltid'];
-   session_start();
+   if (session_status() === PHP_SESSION_NONE) { session_start(); }
    try{
       include 'w_conn.php';
       $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);

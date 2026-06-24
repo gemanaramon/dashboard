@@ -2,7 +2,7 @@
 
   require_once 'includes/class.calendar.php';
   $phpCalendar = new PHPCalendar ();
-  session_start();
+  if (session_status() === PHP_SESSION_NONE) { session_start(); }
    if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ 
     if(!isset($_COOKIE["WeDoID"])) {

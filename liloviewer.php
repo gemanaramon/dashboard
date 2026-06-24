@@ -1,5 +1,5 @@
 <?php 
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else { header ('location: login'); }
 
@@ -79,6 +79,7 @@ if ($_SESSION['UserType']==1)
   <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
 
   <link rel="stylesheet" type="text/css" href="assets/css/style-reports.css">
+  
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css">
   <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
@@ -101,88 +102,127 @@ if ($_SESSION['UserType']==1)
     // });
 } );
   </script>
+  
+   <script type="text/javascript"> 
+        $(document).ready(function() {
+        
+            $(document).on('click', '#thisprints', function(e) {
+                 
+            $("#darviewer td").css("padding", "9px");
+            $("#darviewer td").css("text-align", "center");
+            $("#darviewer td").css("font-size", "10px");
+            $("#tabth th").css("font-size", "10px");
+            $("#tab").css({
+                overflow: 'hidden',
+                height: '100%'
+                });
+
+                $("#tab").css({
+                overflow: 'auto',
+                height: 'auto'
+                });
+         
+            $("td").css("font-size", "12px");
+             $("th").css("font-size", "12px");
+              $("td").css("padding", "5px");
+            $("td").css("text-align", "center");
+
+            var originalContents = document.body.innerHTML;
+            var printContents = document.getElementById('tblprint1').innerHTML;
+            document.body.innerHTML = printContents;
+            window.focus();;
+            window.print();
+            document.body.innerHTML = originalContents;
+
+
+
+            });
+        } );
+    </script>
     <style>
-      html body{
-		font-family: Tahoma !important;
-	}
-     .modal-body .alert{
-        font-size: 30px;
-    }
-    .buttons-html5{
-          background-image: none !important;
-    background-color: green !important;
-    color: #fff !important;
-    border-radius: 5px !important;
-    }
+              html body{
+        		font-family: Tahoma !important;
+        	}
+             .modal-body .alert{
+                font-size: 30px;
+            }
+            .buttons-html5{
+                  background-image: none !important;
+            background-color: green !important;
+            color: #fff !important;
+            border-radius: 5px !important;
+            }
+        </style>
+        
+          <style>
+        
+        body {
+            font-size: 0.95em;
+            font-family: arial;
+            color: #212121;
+        }
+        
+        th {
+            background: #E6E6E6;
+            border-bottom: 1px solid #000000;
+        }
+        
+        #table-container {
+            width: 1066px;
+            margin: 50px auto;
+        }
+        
+        table#tab {
+            border-collapse: collapse;
+            width: 100%;
+            white-space: nowrap;
+            display: block;
+            height: 450px;
+            overflow-y: scroll;
+        }
+        table#tab tr th{text-align: center;}
+        
+        table#tab th, table#tab td {
+                border-bottom: 1px solid #E0E0E0;
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 0.95em;
+        }
+        
+        
+        #btnExport {
+            padding: 10px 40px;
+            background: #499a49;
+            border: #499249 1px solid;
+            color: #ffffff;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .dtpar{
+          display: inline-block;
+          float: right;
+        }
+        .dtpar p{
+          display: block;
+          font-size: 13px;
+        }
+        .dtpar label{
+          font-size: 13px;;
+        }
+        .dtpar input{
+          font-size: 13px;
+          width:140px;
+        }
+        .dtpar label {
+          display: inline-block;
+          padding: 0px 5px 0px 5px;
+        }
+        .dtpar input {
+          display: inline-block;
+        }
 </style>
+   
 
-  <style>
-
-body {
-    font-size: 0.95em;
-    font-family: arial;
-    color: #212121;
-}
-
-th {
-    background: #E6E6E6;
-    border-bottom: 1px solid #000000;
-}
-
-#table-container {
-    width: 1066px;
-    margin: 50px auto;
-}
-
-table#tab {
-    border-collapse: collapse;
-    width: 100%;
-    white-space: nowrap;
-    display: block;
-    height: 450px;
-    overflow-y: scroll;
-}
-table#tab tr th{text-align: center;}
-
-table#tab th, table#tab td {
-        border-bottom: 1px solid #E0E0E0;
-    padding: 8px 15px;
-    text-align: center;
-    font-size: 0.95em;
-}
-
-
-#btnExport {
-    padding: 10px 40px;
-    background: #499a49;
-    border: #499249 1px solid;
-    color: #ffffff;
-    font-size: 0.9em;
-    cursor: pointer;
-}
-.dtpar{
-  display: inline-block;
-  float: right;
-}
-.dtpar p{
-  display: block;
-  font-size: 13px;
-}
-.dtpar label{
-  font-size: 13px;;
-}
-.dtpar input{
-  font-size: 13px;
-  width:140px;
-}
-.dtpar label {
-  display: inline-block;
-  padding: 0px 5px 0px 5px;
-}
-.dtpar input {
-  display: inline-block;
-}
-</style>
   <script type="text/javascript">
 function exportToExcel(tableID, filename = ''){
     var downloadurl;
@@ -216,32 +256,6 @@ function exportToExcel(tableID, filename = ''){
 }
  
 </script>
-
-<script type="text/javascript">
-  $(document).ready(function() {
-    $(document).on('click', '#btnprint', function(e) {
-
-      var originalContents = document.body.innerHTML;
-      // var myStyle = '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />';
-
-      $("#bodyData td").css("padding", "10px");
-      // $("#tab").css("overflow", "block");
-
-      // var printContents = document.getElementById('tblprint1').innerHTML;
-      
-      // document.body.innerHTML = printContents;
-      // window.print();
-      // document.body.innerHTML = originalContents;
-      // window.open(null, 'Print_Page', 'scrollbars=no');
-      var myStyle = '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />';
-          window.document.write(myStyle + jQuery('#tblprint1').html());
-          // window.document.close();
-          window.print();
-          document.body.innerHTML = originalContents;
-
-      });
-    });
-</script>
 </head>
 <body>
     <?php 
@@ -255,103 +269,102 @@ function exportToExcel(tableID, filename = ''){
         <div class="row">
           <div class="col-lg-3"></div>
          <!-- website content -->
-          <div class="col-lg-9 wd-login">
+         <div class="col-lg-9 wd-login">
             <h4 class="page-title" style="<?php echo "color: " . $_SESSION['CompanyColor']; ?>">Attendance Viewer </h4>
               <div id="table-container">
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="form-group ">
-                          <form id="vlilodata" >
-                          <label for="sel1">Choose Employee:</label>
-                          <select class="form-control" id="empcompid" name="empcompany">
-                            <option value="all">All</option>
+              <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group ">
+                      <form id="vlilodata" >
+                      <label for="sel1">Choose Employee:</label>
+                      <select class="form-control" id="empcompid" name="empcompany">
+                        <option value="all">All</option>
 
-                            
-                                <?php 
-                                if ($_SESSION['UserType']==1){
-                                    // $sql=mysqli_query($con, "select * from employees inner join empdetails on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin' and EmpCompID='" . $_SESSION['CompID']  . "' and EmpStatusID=1 order by EmpLN asc");
-                                    $sql=mysqli_query($con, "select * from employees inner join empdetails on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin'  and EmpStatusID=1 order by EmpLN asc");
-                                }else{
-                                    $sql=mysqli_query($con, "select * from employees inner join empdetails 
-                                    on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin' and 
-                                    (EmpISID='" . $_SESSION['id'] . "' or employees.EmpID='" . $_SESSION['id'] . "')  and EmpStatusID=1 order by EmpLN asc");
-                                }
-                                while($res=mysqli_fetch_array($sql)){
-                                  ?>
-                            <option  value="<?php echo $res['EmpID']; ?>"><?php echo $res['EmpLN'] . ", " . $res['EmpMN'] . " " . $res['EmpFN']; ?>  </option>
-                              <?php   
-                                  }
-                              ?>     
-
-                                        
-                          </select>
-                        </div> 
-                    </div>
-                    <div class="col-lg-8">
-                        <div class="dtpar">
-                          <p>Date Parameters:</p>
-                          <label>From:</label>
-                          <input type="date" class="form-control" id="dtp1"  value=<?php $dt=date('Y-m-d'); $dt2=date('Y-m-1'); $dt3=date('Y-m-16'); $ddt=date('Y-m-d', strtotime(date('Y-m-1'))); $ddt2=date('Y-m-d', strtotime(date('Y-m-1'))); if ($dt>$dt2 && $dt<$dt3){ echo $ddt2; }else{ echo $ddt; }?>>
-                            <label>To:</label>
-                          <input type="date" class="form-control" id="dtp2" value="<?php echo date("Y-m-d");?>">
-                          <button class="btn" id="viewlilo" type="button"><img src="assets/images/refreshicon.png" data-toggle="tooltip" data-placement="right" title="Refresh" width="25px"></button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                  <!--   <p>Export to:</p> -->
-                  <div class="btn">
-                    <form  method="post">
-                        <!-- <button type="submit" name='export1' value="Export to Excel"class="btn btn-info">Export to Excel</button> -->
-                        <button class="btn btn-info  btnprint" id="btnprint" onclick='printDiv();'><i class="fa fa-print" aria-hidden="true"></i> Print this Table</button>  
-                        <button class="btn btn-success" onclick="exportToExcel('tab', 'user-data')"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Export Table Data To Excel File</button>
-                    </form>
-
-                </div>
-          
-                <div id="tblprint1">
-                  <table id="tab">
-                      <thead>
-                          <tr>
-                              <th width="5%">No</th>
-                              <th >EmpID</th>
-                              <th width="10%">Name</th>
-                              <th width="25%">Timein</th>
-                              <th width="25%">Timeout</th>
-                              <th width="25%">Duration</th>
-
-                          </tr>
-                      </thead>
-                      <tbody id="darviewer">
-          
-                            <!-- <?php
-                              $ids=0;
-                            if (! empty($resultdata)) {
-                                foreach ($resultdata as $key => $value) {
-                                  $ids=$ids+1;
-                                    ?>
-                                
-                                    <tr>
-                                    <td align="center "><?php echo $ids; ?> </td>
-                                    <td><?php echo $resultdata[$key]["Employee_ID"]; ?> </td>
-                                    <td><?php echo $resultdata[$key]["LastName"]. ', '.$resultdata[$key]["FirstName"].' '.$resultdata[$key]["MiddleName"]; ?> </td>
-                                    <td align="center"><?php echo date("F j, Y h:i:s A", strtotime($resultdata[$key]["Timein"])); ?> </td>  
-                                    <td> <?php If($resultdata[$key]["Timeout"]!=null){ echo date("F j, Y h:i:s A", strtotime($resultdata[$key]["Timeout"])); }?> </td>
-                                    <td><?php echo number_format($resultdata[$key]["BillHours"], 2); ?> </td>
-                                  
-                                </tr>
-                            <?php
-                                }
+                        
+                             <?php 
+                            if ($_SESSION['UserType']==1){
+                                // $sql=mysqli_query($con, "select * from employees inner join empdetails on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin' and EmpCompID='" . $_SESSION['CompID']  . "' and EmpStatusID=1 order by EmpLN asc");
+                                 $sql=mysqli_query($con, "select * from employees inner join empdetails on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin'  and EmpStatusID=1 order by EmpLN asc");
+                            }else{
+                                $sql=mysqli_query($con, "select * from employees inner join empdetails 
+                                on employees.EmpID=empdetails.EmpID where employees.EmpID<>'admin' and 
+                                (EmpISID='" . $_SESSION['id'] . "' or employees.EmpID='" . $_SESSION['id'] . "')  and EmpStatusID=1 order by EmpLN asc");
                             }
-                            ?> -->
-                      </tbody>
-                  </table>
-                </div>
+                            while($res=mysqli_fetch_array($sql)){
+                              ?>
+                        <option  value="<?php echo $res['EmpID']; ?>"><?php echo $res['EmpLN'] . ", " . $res['EmpMN'] . " " . $res['EmpFN']; ?>  </option>
+                          <?php   
+                              }
+                          ?>     
 
-               
-          
+                                    
+                      </select>
+                    </div> 
+                </div>
+                 <div class="col-lg-8">
+                    <div class="dtpar">
+            <p>Date Parameters:</p>
+            <label>From:</label>
+            <input type="date" class="form-control" id="dtp1"  value=<?php $dt=date('Y-m-d'); $dt2=date('Y-m-1'); $dt3=date('Y-m-16'); $ddt=date('Y-m-d', strtotime(date('Y-m-1'))); $ddt2=date('Y-m-d', strtotime(date('Y-m-1'))); if ($dt>$dt2 && $dt<$dt3){ echo $ddt2; }else{ echo $ddt; }?>>
+              <label>To:</label>
+            <input type="date" class="form-control" id="dtp2" value="<?php echo date("Y-m-d");?>">
+
+            <button class="btn" id="viewlilo" type="button"><img src="assets/images/refreshicon.png" data-toggle="tooltip" data-placement="right" title="Refresh" width="25px"></button>
+        </div>
+                </div>
+               </form>
               </div>
-          </div>
+                  <!--   <p>Export to:</p> -->
+          <div id="tblprint1">
+        <table id="tab">
+            <thead id="tabth">
+                <tr>
+                    <th width="5%">No</th>
+                    <th >EmpID</th>
+                    <th width="10%">Name</th>
+                    <th width="25%">Timein</th>
+                    <th width="25%">Timeout</th>
+                    <th width="25%">Duration</th>
+
+                </tr>
+            </thead>
+            <tbody id="darviewer">
+ 
+            <!-- <?php
+              $ids=0;
+            if (! empty($resultdata)) {
+                foreach ($resultdata as $key => $value) {
+                  $ids=$ids+1;
+                    ?>
+                 
+                     <tr>
+                    <td align="center "><?php echo $ids; ?> </td>
+                    <td><?php echo $resultdata[$key]["Employee_ID"]; ?> </td>
+                    <td><?php echo $resultdata[$key]["LastName"]. ', '.$resultdata[$key]["FirstName"].' '.$resultdata[$key]["MiddleName"]; ?> </td>
+                    <td align="center"><?php echo date("F j, Y h:i:s A", strtotime($resultdata[$key]["Timein"])); ?> </td>  
+                    <td> <?php If($resultdata[$key]["Timeout"]!=null){ echo date("F j, Y h:i:s A", strtotime($resultdata[$key]["Timeout"])); }?> </td>
+                    <td><?php echo number_format($resultdata[$key]["BillHours"], 2); ?> </td>
+                  
+                </tr>
+             <?php
+                }
+            }
+            ?> -->
+      </tbody>
+        </table>
+      </div>
+
+        <div class="btn">
+            <form  method="post">
+                <!-- <button type="submit" name='export1' value="Export to Excel"class="btn btn-info">Export to Excel</button> -->
+                <button class="btn btn-info  btnprint" type="button" id="thisprints"><i class="fa fa-print" aria-hidden="true"></i> Print this Table</button>  
+                 <button class="btn btn-success" onclick="exportToExcel('tab', 'user-data')"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Export Table Data To Excel File</button>
+            </form>
+
+        </div>
+         
+    </div>
+         </div>
        </div>
      </div>
 

@@ -1,10 +1,10 @@
 <?php 
 include 'w_conn.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
 else{ header ('location: login.php'); }
 date_default_timezone_set("Asia/Manila");
-$today = date("Y-m-d H:i");
+$today = date("Y-m-d H:i ");
 
 try{
     $customTime = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('P');
@@ -24,9 +24,9 @@ catch(PDOException $e){
         }else{
             $datenow = date("Y-m-d");
             $timenow = strtotime($today);
-            $startTime = strtotime($datenow ." 08:00");
-    
-            if($timenow>$startTime){
+            $startTime = strtotime($datenow . " 8:30:00");
+            
+            if($timenow > $startTime){
                 echo json_encode(array("errcode"=>"1"));
             }else{
                 echo json_encode(array("errcode"=>"2"));

@@ -2,7 +2,7 @@
 
     // DATABASE CONNECTION 
     {
-      include 'w_conn.php';session_start();
+      include 'w_conn.php';if (session_status() === PHP_SESSION_NONE) { session_start(); }
       date_default_timezone_set("Asia/Manila"); 
 
       if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
@@ -19,22 +19,22 @@
         die("ERROR: Could not connect. " . $e->getMessage());
       }
     }
-
+    
      //admin time validation
-    {   
-      $datenow = date("Y-m-d");
-      $datenow1 = date("Y-m-d H:i");
-      $timenow = strtotime($datenow1);
-      $startTime = strtotime($datenow ." 8:30:00");
-      $id=$_SESSION['id'];
-      if($id=="WeDoinc-012"){
-      }else{
-          // if($timenow > $startTime){
-          //     echo "The leave application must be completed on or before 8:30 AM.";
-          //     return;
-          // }
-      }
-    }
+  {   
+     $datenow = date("Y-m-d");
+     $datenow1 = date("Y-m-d H:i");
+     $timenow = strtotime($datenow1);
+     $startTime = strtotime($datenow ." 8:30:00");
+     $id=$_SESSION['id'];
+     if($id=="WeDoinc-012"){
+     }else{
+         if($timenow > $startTime){
+            echo "The leave application must be completed on or before 8:30 AM.";
+            return;
+        }
+     }
+  }
 
     #declaration
     {
@@ -71,7 +71,7 @@
       $ifLacking=0;
     }
 
-    {//get the leave credit (15 or 10)
+       {//get the leave credit (15 or 10)
           $varTH=0;
           $varCT=0;
         
@@ -89,7 +89,6 @@
             // }
           }    
     }
-
     //validate if leave type is maternity or paternity
     {
       
@@ -106,30 +105,6 @@
 
 
     }
-
-    //if applying leave without attendance
-    {
-    //  $dy=date("d"); 
-    //  $yr=date("Y"); 
-    //  $mnth=date("m"); 
-    //  $sql = "SELECT * FROM attendancelog WHERE EmpID=:id AND day(TimeIn)=:dy AND year(TimeIn)=:yr AND month(TimeIn)=:mnth ORDER BY TimeIn DESC";
-    //  $stmt = $pdo->prepare($sql);
-    //  $stmt->bindParam(':id' , $id);
-    //  $stmt->bindParam(':dy' , $dy);
-    //  $stmt->bindParam(':mnth' , $mnth);
-    //  $stmt->bindParam(':yr' , $yr);
-    //  $stmt->execute(); 
-    //  $rowcenar=$stmt->fetch();
-
-
-    //  if ($stmt->rowCount()>0 and $rowcenar['TimeOut']==NULL){
-
-    //  }else{
-    //    echo "You cant apply you have no Attendance";
-    //    return;
-    //  }
-    }
-
     //validate if schedule is not correct
     {    
       while ($dteEndValid>=$dteStartValid){
@@ -167,6 +142,11 @@
       echo "Missing Regularization Date.";
       return;
     }
+    
+    if (empty($_POST['leavepay']) || $_POST['leavepay'] == 0) {
+        echo "Missing Schedule. Please contact your systems administrator.";
+        return;
+    }
 
     // Employee status check
     {
@@ -185,10 +165,6 @@
       }
     }
 
-    if (empty($_POST['leavepay']) || $_POST['leavepay'] == 0) {
-        echo "Missing Schedule. Please contact your systems administrator.";
-        return;
-    }
     // if leave kind is paid 
     if ($_POST['leavepay']==1){
       $statement = $pdo->prepare(" SELECT * FROM leaves INNER JOIN leaves_validation ON leaves.LeaveID=leaves_validation.lid WHERE leaves_validation.lid=:lid AND compid=:id");
@@ -259,7 +235,7 @@
     
       // Filing Validation
       if ($today==$dtd){
-        // if ($vl_duringfile==0){ echo "Filing not allowed"; return false; }
+        if ($vl_duringfile==0){ echo "Filing not allowed"; return false; }
         if ($_POST['leavedur']==0.5 && $vl_halfday==0){ echo "You cant file halfday on this Leave"; return; }
       }else if ($today>=$dtd){
         if ($vl_after==1){
@@ -325,11 +301,10 @@
       $dtendleave = $_POST['lenddate'];
       $dtstartleave = $_POST['lstarts'];
       $drt = ($_POST['leavedur']>=1) ? 600 : 300;
+     //   $leave_type_ampm = null;
+          $leave_type_ampm = 'whole_day'; // Default
 
-      //determine leave type for half day
-      $leave_type_ampm = 'whole_day'; // Default
-
-      if (isset($_POST['is_half_day'])) {
+       if (isset($_POST['is_half_day'])) {
           $leave_type_ampm = $_POST['half_day_type']; 
       }
 
@@ -354,6 +329,15 @@
           }
 
           if($shouldInsert){
+            //   $sqlbd = "INSERT INTO hleavesbd (FID,EmpID,EmpSID,LType,LFDate,LStart,LEnd,LPurpose,LDuration,LStatus,LInputDate,Lpaid,LDateTimeUpdated) VALUES (:fidsl,:id,:is,:ltype,:lfdate,:lstart,:lend,:LPurpose,:lduration,:LStatus,:DTin,:lpay,:ldupdated)";
+            //   $stmtbd = $pdo->prepare($sqlbd);
+            //   $stmtbd->execute([
+            //       ':fidsl' => $fkeyid, ':id' => $id, ':is' => $isid, ':ltype' => $_POST['leavetype'],
+            //       ':lfdate' => $today, ':lstart' => $dtstartleave, ':lend' => $dtstartleave,
+            //       ':LPurpose' => $streason, ':lduration' => $drt, ':LStatus' => $statid,
+            //       ':DTin' => $today2, ':lpay' => $_POST['leavepay'], ':ldupdated' => $today2
+            //   ]);
+            
               $sqlbd = "INSERT INTO hleavesbd (FID,EmpID,EmpSID,LType,LFDate,LStart,LEnd,LPurpose,LDuration,LStatus,LInputDate,Lpaid,LDateTimeUpdated,am_pm) VALUES (:fidsl,:id,:is,:ltype,:lfdate,:lstart,:lend,:LPurpose,:lduration,:LStatus,:DTin,:lpay,:ldupdated,:am_pm)";
               $stmtbd = $pdo->prepare($sqlbd);
               $stmtbd->execute([

@@ -1,17 +1,7 @@
     <?php
-     include 'w_conn.php';session_start();
+     include 'w_conn.php';if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
-
-
-  try{
-    $pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-       }
-    catch(PDOException $e)
-       {
-    die("ERROR: Could not connect. " . $e->getMessage());
-       }
 if (isset($_GET['delete'])){
 	       $res12=mysqli_query($con,"select * from jobdescription inner join empjobdesc on jobdescription.JD_ID=empjobdesc.JID where empjobdesc.EmpID='" . $_GET['delete'] . "'");
                                             while ($row3=mysqli_fetch_array($res12)) {
@@ -21,21 +11,13 @@ if (isset($_GET['delete'])){
                                             }
                            
 }elseif(isset($_GET['jd'])){
-
-        
-          $statement = $pdo->prepare("SELECT * from jobdescription INNER JOIN empjobdesc on 
-          (jobdescription.JD_ID=empjobdesc.JID) where empjobdesc.EmpID='". trim($_GET['jd']) ."'");
-
-          $statement->execute();
-          $calload = $statement->rowCount();
-          while ( $row3 = $statement->fetch()) { 
-	        //  $res12=mysqli_query($con,"select * from jobdescription inner join empjobdesc on jobdescription.JD_ID=empjobdesc.JID where empjobdesc.EmpID='" . $_GET['jd'] . "'");
-           
-          //  while ($row3=mysqli_fetch_array($res12)) {?>
+	         $res12=mysqli_query($con,"select * from jobdescription inner join empjobdesc on jobdescription.JD_ID=empjobdesc.JID where empjobdesc.EmpID='" . $_GET['jd'] . "'");
+                                            while ($row3=mysqli_fetch_array($res12)) {
+                                          ?>
                                            
-              <tr class="cdd-tr"><th class="det-f"><?php echo $row3["JDescription"]; ?></th></tr>
-            <?php
-             }
+                                              <tr class="cdd-tr"><th class="det-f"><?php echo $row3["JDescription"]; ?></th></tr>
+                                          <?php
+                                            }
 }
 elseif(isset($_GET['displayjd'])){
 

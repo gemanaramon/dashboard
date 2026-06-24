@@ -118,7 +118,7 @@ try {
    
    
     // $sql="UPDATE empdetails SET EmpISID='$empis',EmpRoleID='$roleid',EmpdepID='$EmpdepID',EmpCompID='$empcom',EmpDateHired='$empdh',EmpDateResigned='$dr',EmpStatID='$empclass',AgencyID='$empage',HMO_ID='$emphmo',EmpDOR='$dor' WHERE EmpID='$EmpID'";
-    $sql="UPDATE empdetails SET EmpISID='$empis',EmpdepID='$EmpdepID',EmpCompID='$empcom',EmpDateHired='$empdh',EmpDateResigned='$dr',EmpStatID='$empclass',AgencyID='$empage',HMO_ID='$emphmo' WHERE EmpID='$EmpID'";
+    $sql="UPDATE empdetails SET EmpDOR='$dor', EmpISID='$empis',EmpdepID='$EmpdepID',EmpCompID='$empcom',EmpDateHired='$empdh',EmpDateResigned='$dr',EmpStatID='$empclass',AgencyID='$empage',HMO_ID='$emphmo' WHERE EmpID='$EmpID'";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(); 
 

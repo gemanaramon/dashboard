@@ -22,19 +22,19 @@
                   <!-- search worksched  -->
                   <?php
                    $day_desc=date("l", strtotime($dt2));
-                   $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN 
+                $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN 
                                   workschedule ON workdays.SchedTime=workschedule.WorkSchedID 
                                   inner join schedeffectivity as c on workdays.EFID=c.efids
 															  	where (workdays.empid='$id') and (workdays.Day_s='$day_desc')
 																  and workschedule.WorkSchedID <> 0 order by workdays.WID Limit 1");
                          
-                    // $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc' and SchedTime<>0");
-                      $row = mysqli_fetch_array($resultsched); 
-                      $cntsched= mysqli_num_rows ($resultsched);
+                         // $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc' and SchedTime<>0");
+                            $row = mysqli_fetch_array($resultsched); 
+                            $cntsched= mysqli_num_rows ($resultsched);
                
                   // search attendance in OT OB Leave and cenar
-                     $sql="SELECT a.OBID as mid,'OB' as st,a.OBDateFrom as dateattend from 
-                    obs as a 
+                $sql="SELECT a.OBID as mid,'OB' as st,a.OBDateFrom as dateattend from 
+                    obshbd as a 
                     INNER JOIN employees as b ON a.EmpID=b.EmpID 
                     INNER JOIN empdetails as d ON b.EmpID=d.EmpID where a.EmpID=:id and (OBStatus=1 or OBStatus=2 or OBStatus=4) and (day(a.OBDateFrom)=:dytod and year(a.OBDateFrom)=:yrtod and month(a.OBDateFrom)=:mnth)
                     
@@ -89,7 +89,7 @@
                                 $row4=$attendancelog2->fetch();
                                 $dis = $row4['Hdescription']; 
                             }else{
-                                $dis = "No Attendancesdsd"; 
+                                $dis = "No Attendancesss"; 
                             }
                         }
                     ?>
@@ -102,244 +102,246 @@
                     <?php
                   }else{                  
                     while ($row2 = $attendancelog->fetch()){
-                      //search for attendancelog
-                      if ($row2['st']=="Cenar"){
-                        $attendancelog2 = $pdo->prepare("select * from attendancelog where LogID = :id");
-                        $attendancelog2->bindParam(':id' , $row2['mid']);
-                        $attendancelog2->execute();
-                        $rowcenar = $attendancelog2->fetch();
-                        ?>
-                        <tr>
-                          <td class="darth"><?php   echo  date("F j, Y", strtotime($dt2));?></td>
-                          <td class="darth"><?php   echo  date("l", strtotime($dt2));?></td>
-                          <td class="darth"><?php if ($cntsched==0){ echo $rowcenar['wsched']; }else{ echo $row['TimeFrom'] . " - " . $row['TimeTo'];  } ?></td>
-                          <td  class="darth td-dar"> <?php echo date("h:i:s A", strtotime($rowcenar['TimeIn']));  ?></td> 
-                          <td  class="darth td-dar"> <?php  if ($rowcenar['TimeOut']==NULL){ 
-                          }else{
-                            echo date(" h:i:s A", strtotime($rowcenar['TimeOut']));
-                          }
-                          ?></td>
-                          <td class="darth"><?php echo "Onsite";?></td> 
-                            <td   class="darth td-dar"> <?php  
-                          if ($rowcenar['TimeOut']==NULL){ 
-                        
-                          }else{
-                                          $time2=$rowcenar['TimeIn'];
-                                          $time1=$rowcenar['TimeOut'];
-                                          //$hourdiff = round((strtotime($time1) - strtotime($time2))/3600, 1);
-                                          //echo $hourdiff; 
-                                          //round(1.9, 2); 
-                        
-                            
-                                          //compute duration of login
-                                          date_default_timezone_set("Asia/Manila");
-                                          $day_desc=date("l", strtotime($rowcenar['TimeIn']));
-                                          $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc'");
-                                          $row = mysqli_fetch_array($resultsched); 
-                                          $cntsched= mysqli_num_rows ($resultsched);
-                                          //time in and out
-                                          $tfrom = $row['TimeFrom'];
-                                          $tto = $row['TimeTo'];
-                                          
-                                          $dnow = date("Y-m-d", strtotime($rowcenar['TimeIn']));
-                                          
-                                          $wfromtime = $dnow. ' ' .$tfrom;
-                                          $wfromto = $dnow. ' ' .$tto;
-                                          
-                                          //time in
-                                          $timestampIN = strtotime($time2);
-                                          $timestampfrom = strtotime($wfromtime);
-                                          
-                                          //time out
-                                          $timestampOUT = strtotime($time1);
-                                          $timestampINOUT2 = strtotime($wfromto);
-                                          
-                                          if ($timestampfrom<$timestampIN){
-                                                $dteStart = date_create($time2); 
-                                                  
-                                          }else{
-                                              $dteStart = date_create($wfromtime); 
-                                              
-                                          }
-                                
-                                          if ($timestampINOUT2<$timestampOUT){
-                                                  $dteEnd   = date_create($wfromto); 
-                                                
-                                          }else{
-                                                  $dteEnd   = date_create($time1); 
-                                                        
-                                          }
-                                          $dteDiff=date_diff($dteEnd,$dteStart);
-                                          //$dteDiff  = $dteStart->diff($dteEnd); 
-                                          $dteDiff=date_diff($dteEnd,$dteStart);
-                                          //get hour in min
-                                          $gethr = floatval($dteDiff->format('%h'))*60;
-                                          //get total min
-                                          $getmin = floatval($dteDiff->format('%i')); 
-                                          //get total hrs
-                                          $gettotalmin=floatval(($gethr + $getmin))/60;
-                                                                
-                                          echo round ($gettotalmin,2);
-                                      
-                            
-                          }
-                        ?></td>   
 
-                          
-                        </tr>
-                        <?php            
-                      }
-                      //ob attendance
-                      elseif ($row2['st']=="OB"){
-                        ?>
-                        
-                          <?php
-                                $attendancelog2 = $pdo->prepare("select * from obs where OBID = :id");
-                                $attendancelog2->bindParam(':id' , $row2['mid']);
-                                $attendancelog2->execute();
-                                $rowcenar = $attendancelog2->fetch();
 
-                                $daysched=date("l", strtotime($rowcenar['OBDateFrom']));
-                                $getWsched = $pdo->prepare("select * from workdays inner join workschedule on workdays.SchedTime=workschedule.WorkSchedID where empid = :id and Day_s = :wday");
-                                $getWsched->bindParam(':wday' , $daysched);
-                                $getWsched->bindParam(':id' , $_SESSION['id']);
-                                $getWsched->execute();
-                                $rowWrkSched=$getWsched->fetch();
-                            ?>
-                            <tr>
-                          <td class="darth">  <?php   echo  date("F j, Y", strtotime($rowcenar['OBDateFrom']));?></td>
-                          <td class="darth">  <?php   echo  date("l", strtotime($rowcenar['OBDateFrom']));?></td><td class="darth">  <?php  echo  $rowWrkSched['TimeFrom'] . " - " . $rowWrkSched['TimeTo'];?></td>
-                          <td class="darth">  <?php   echo  date("h:i:s A", strtotime($rowcenar['OBTimeFrom']));?></td>
-                          
-                          <td class="darth">  <?php   echo  date("h:i:s A", strtotime($rowcenar['OBTimeTo']));?></td>
-                            <td class="darth">
-                          <?php 
-                              echo  $row2['st'];
-                          ?>
-                          </td>
-                          <td class="darth">  <?php   echo  $rowcenar['OBDuration'];?></td>
-                        </tr>
-
-                        <?php
-                      }
-                      //ot
-                      elseif ($row2['st']=="OT"){
-
-                        $attendancelog25 = $pdo->prepare("select * from otattendancelog inner join status on otattendancelog.Status=status.StatusID where OTLOGID=:id");
-                        $attendancelog25->bindParam(':id' , $row2['mid']);
-                        $attendancelog25->execute();
-                        $rowcenar3 = $attendancelog25->fetch();
-                        
-                        $day_desc=date("l", strtotime($rowcenar3['TimeIn']));
-                        $dayfrom=date("h:i:s A", strtotime($rowcenar3['TimeIn']));
-                        $dayto=date("h:i:s A", strtotime($rowcenar3['TimeOut']));
-                        ?>
-                        <tr>
-                          <td class="darth"><?php  echo  date("F j, Y", strtotime($rowcenar3['TimeIn']));?></td>
-                          <td class="darth"><?php  echo  $day_desc;?></td>
-                          <td class="darth"><?php  echo  $dayfrom .  "-" . $dayto;?></td>
-                          <td class="darth"><?php  echo  $dayfrom;?></td>
-                          <td class="darth"><?php  echo  $dayto;?></td>
-                          <td class="darth"><?php echo  $row2['st'];  ?>/<?php  echo  $rowcenar3['StatusDesc'];?></td>
-                          <td class="darth"><?php echo  $rowcenar3['Duration'];  ?></td>
-                        </tr>
-                        <?php
-                      }
-                      // leave attendance
-                      elseif ($row2['st']=="Leave"){
-                                
-                              
-                          ?>
-                                <tr>
-                                        <td class="darth"><?php  echo date("F j, Y", strtotime($dt2)); ?></td>
-                                        <td class="darth"><?php  echo  $day_desc;?></td>
-                                        <td class="darth"><?php  echo  $row['TimeFrom'] . " - " . $row['TimeTo'];?></td>
-                                        <td class="darth">Leave</td>
-                                        <td class="darth">Leave</td>
-                                        <td class="darth"><?php echo  $row2['st'];  ?></td>
-                                        <td class="darth">0</td>
-                                </tr>
-                          <?php
-                        //         while ($lsta<=$lend) {
-                        //           if ($rowcenar3['LStatus']==1 || $rowcenar3['LStatus']==2 || $rowcenar3['LStatus']==4){
-
-                        //           $day_desc=date("l", strtotime($lend));
-                        //             $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc' and SchedTime<>0");
-                        //             $row = mysqli_fetch_array($resultsched); 
-                        //             $cntsched2= mysqli_num_rows ($resultsched);
-
-                        //             if ($cntsched2>0){
-                        //              ?>
-                        <!-- //               <tr>
-                        //                 <td class="darth"><?php  echo  date("F j, Y", strtotime($lend));?></td>
-                        //                 <td class="darth"><?php  echo  $day_desc;?></td>
-                        //                 <td class="darth"><?php  echo  $row['TimeFrom'] . " - " . $row['TimeTo'];?></td>
-                        //                 <td class="darth">N/A</td>
-                        //                 <td class="darth">N/A</td>
-                        //                 <td class="darth"><?php echo  $row2['st'];  ?>/<?php  echo  $rowcenar3['StatusDesc'];?></td>
-                        //                 <td class="darth">1</td>
-                        //               </tr> -->
-                                <?php 
-                                    
-                                        
-                        //             }else{
-                        //               $dis =  "Rest Day";
-                        //                 ?>
-                        <!-- //                  <tr>
-                        //                   <td class="darth"><?php   echo  date("F j, Y", strtotime($dt2));?></td>
-                        //                   <td class="darth"><?php   echo  date("l", strtotime($dt2));?></td>
-                        //                   <td class="darth"><?php echo $dis; ?></td>
-                        //                   <td class="darth"><?php echo $dis; ?></td><td class="darth"><?php echo $dis; ?></td><td class="darth"><?php echo $dis; ?></td><td class="darth"><?php echo $dis; ?></td>
-                        //                   </tr> -->
-                                        <?php
-                        //           }
-                        //             }
-                        // ?>  
-                                
-                        <?php
-                        //       $dt2=date('Y-m-d', strtotime($dt2 . ' - 1 days'));
-                        //         $lend=date('Y-m-d', strtotime($lend . ' - 1 days'));
-                        //       if ($dt1==$lend){
-                        //         break;
-                        //         }
-                        //       }
-                              
-                        ?>  
-
-                      
-                        <?php
-                      }
-                      //eo
-                      elseif ($row2['st']=="EO"){
-                        ?>
-                      
-                        
-                            <?php
-                                $attendancelog2 = $pdo->prepare("select * from earlyout inner join attendancelog on earlyout.LogID=attendancelog.LogID where SID = :id");
-                                $attendancelog2->bindParam(':id' , $row2['mid']);
-                                $attendancelog2->execute();
-                                $rowcenar = $attendancelog2->fetch();
-                                
-                                $day_desc=date("l", strtotime($lend));
-                                    $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc' and SchedTime<>0");
-                                    $row = mysqli_fetch_array($resultsched); 
-                                    $cntsched2= mysqli_num_rows ($resultsched);
-                                ?>
-                                  <tr>
-                                  <td class="darth"><?php   echo  date("F j, Y", strtotime($dt2));?></td>      
-                                  <td class="darth"><?php   echo  date("l", strtotime($dt2));?></td>
-                                        <td class="darth"><?php  echo  $row['TimeFrom'] . " - " . $row['TimeTo'];?></td>
-                                <td class="darth"><?php echo date("h:i:s A", strtotime($rowcenar['TimeIn']));  ?></td>
-                                <td class="darth"><?php echo date("h:i:s A", strtotime($rowcenar['DateTimeInputed']));  ?></td>
-                                <td class="darth"><?php  echo  $row2['st'];?></td>
-                                <td class="darth">0</td>
-                                  </tr>
+                    //search for attendancelog
+                    if ($row2['st']=="Cenar"){
+                      $attendancelog2 = $pdo->prepare("select * from attendancelog where LogID = :id");
+                      $attendancelog2->bindParam(':id' , $row2['mid']);
+                      $attendancelog2->execute();
+                      $rowcenar = $attendancelog2->fetch();
+                      ?>
+                      <tr>
+                         <td class="darth"><?php   echo  date("F j, Y", strtotime($dt2));?></td>
+                    <td class="darth"><?php   echo  date("l", strtotime($dt2));?></td>
+                    <td class="darth"><?php if ($cntsched==0){ echo $rowcenar['wsched']; }else{ echo $row['TimeFrom'] . " - " . $row['TimeTo'];  } ?></td>
+                        <td  class="darth td-dar"> <?php echo date("h:i:s A", strtotime($rowcenar['TimeIn']));  ?></td> 
+                        <td  class="darth td-dar"> <?php  if ($rowcenar['TimeOut']==NULL){ 
+                        }else{
+                           echo date(" h:i:s A", strtotime($rowcenar['TimeOut']));
+                        }
+                        ?></td>
+                         <td class="darth"><?php echo "Onsite";?></td> 
+                          <td   class="darth td-dar"> <?php  
+         if ($rowcenar['TimeOut']==NULL){ 
+               
+                }else{
+                  $time2=$rowcenar['TimeIn'];
+                  $time1=$rowcenar['TimeOut'];
+                  //$hourdiff = round((strtotime($time1) - strtotime($time2))/3600, 1);
+                  //echo $hourdiff; 
+                  //round(1.9, 2); 
+               
                   
-                        <?php
-                      }
+                          //compute duration of login
+                          date_default_timezone_set("Asia/Manila");
+                                $day_desc=date("l", strtotime($rowcenar['TimeIn']));
+                          $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc'");
+                                $row = mysqli_fetch_array($resultsched); 
+                                $cntsched= mysqli_num_rows ($resultsched);
+                                //time in and out
+                                $tfrom = $row['TimeFrom'];
+                                $tto = $row['TimeTo'];
+                                
+                                $dnow = date("Y-m-d", strtotime($rowcenar['TimeIn']));
+                                
+                                
+                                $wfromtime = $dnow. ' ' .$tfrom;
+                                $wfromto = $dnow. ' ' .$tto;
+                                
+                                //time in
+                                $timestampIN = strtotime($time2);
+                                $timestampfrom = strtotime($wfromtime);
+                                
+                                //time out
+                                $timestampOUT = strtotime($time1);
+                                $timestampINOUT2 = strtotime($wfromto);
+                                
+                                if ($timestampfrom<$timestampIN){
+                                      $dteStart = date_create($time2); 
+                                        
+                                }else{
+                                    $dteStart = date_create($wfromtime); 
+                                     
+                                }
+                      
+                                if ($timestampINOUT2<$timestampOUT){
+                                        $dteEnd   = date_create($wfromto); 
+                                       
+                                }else{
+                                        $dteEnd   = date_create($time1); 
+                                               
+                                }
+                                  $dteDiff=date_diff($dteEnd,$dteStart);
+                            //$dteDiff  = $dteStart->diff($dteEnd); 
+                                                           $dteDiff=date_diff($dteEnd,$dteStart);
+                                                           //get hour in min
+                                                           $gethr = floatval($dteDiff->format('%h'))*60;
+                                                           //get total min
+                                                           $getmin = floatval($dteDiff->format('%i')); 
+                                                           //get total hrs
+                                                           $gettotalmin=floatval(($gethr + $getmin))/60;
+                                                       
+                                     echo round ($gettotalmin,2);
+                            
+                   
+                }
+                  ?></td>   
 
-                      ?> 
+                     
+                </tr>
+                  <?php            
+                    }
+                    //ob attendance
+                     elseif ($row2['st']=="OB"){
+                      ?>
+                       
+                        <?php
+                              $attendancelog2 = $pdo->prepare("select * from obs where OBID = :id");
+                              $attendancelog2->bindParam(':id' , $row2['mid']);
+                              $attendancelog2->execute();
+                              $rowcenar = $attendancelog2->fetch();
+
+                              $daysched=date("l", strtotime($rowcenar['OBDateFrom']));
+                              $getWsched = $pdo->prepare("select * from workdays inner join workschedule on workdays.SchedTime=workschedule.WorkSchedID where empid = :id and Day_s = :wday");
+                              $getWsched->bindParam(':wday' , $daysched);
+                              $getWsched->bindParam(':id' , $_SESSION['id']);
+                              $getWsched->execute();
+                               $rowWrkSched=$getWsched->fetch();
+                          ?>
+                          <tr>
+                        <td class="darth">  <?php   echo  date("F j, Y", strtotime($rowcenar['OBDateFrom']));?></td>
+                        <td class="darth">  <?php   echo  date("l", strtotime($rowcenar['OBDateFrom']));?></td><td class="darth">  <?php  echo  $rowWrkSched['TimeFrom'] . " - " . $rowWrkSched['TimeTo'];?></td>
+                        <td class="darth">  <?php   echo  date("h:i:s A", strtotime($rowcenar['OBTimeFrom']));?></td>
+                        
+                        <td class="darth">  <?php   echo  date("h:i:s A", strtotime($rowcenar['OBTimeTo']));?></td>
+                          <td class="darth">
+                        <?php 
+                            echo  $row2['st'];
+                        ?>
+                        </td>
+                        <td class="darth">  <?php   echo  $rowcenar['OBDuration'];?></td>
+                       </tr>
+
                       <?php
+                    }
+                    elseif ($row2['st']=="OT"){
+
+                      $attendancelog25 = $pdo->prepare("select * from otattendancelog inner join status on otattendancelog.Status=status.StatusID where OTLOGID=:id");
+                      $attendancelog25->bindParam(':id' , $row2['mid']);
+                      $attendancelog25->execute();
+                      $rowcenar3 = $attendancelog25->fetch();
+                      
+                      $day_desc=date("l", strtotime($rowcenar3['TimeIn']));
+                      $dayfrom=date("h:i:s A", strtotime($rowcenar3['TimeIn']));
+                      $dayto=date("h:i:s A", strtotime($rowcenar3['TimeOut']));
+                    ?>
+                      <tr>
+                        <td class="darth"><?php  echo  date("F j, Y", strtotime($rowcenar3['TimeIn']));?></td>
+                        <td class="darth"><?php  echo  $day_desc;?></td>
+                        <td class="darth"><?php  echo  $dayfrom .  "-" . $dayto;?></td>
+                        <td class="darth"><?php  echo  $dayfrom;?></td>
+                        <td class="darth"><?php  echo  $dayto;?></td>
+                        <td class="darth"><?php echo  $row2['st'];  ?>/<?php  echo  $rowcenar3['StatusDesc'];?></td>
+                        <td class="darth"><?php echo  $rowcenar3['Duration'];  ?></td>
+                      </tr>
+                      <?php
+                    }
+                    // leave attendance
+                    elseif ($row2['st']=="Leave"){
+                              
+                             
+                        ?>
+                              <tr>
+                                      <td class="darth"><?php  echo date("F j, Y", strtotime($dt2)); ?></td>
+                                      <td class="darth"><?php  echo  $day_desc;?></td>
+                                      <td class="darth"><?php  echo  $row['TimeFrom'] . " - " . $row['TimeTo'];?></td>
+                                      <td class="darth">Leave</td>
+                                      <td class="darth">Leave</td>
+                                      <td class="darth"><?php echo  $row2['st'];  ?></td>
+                                      <td class="darth">0</td>
+                              </tr>
+                        <?php
+                      //         while ($lsta<=$lend) {
+                      //           if ($rowcenar3['LStatus']==1 || $rowcenar3['LStatus']==2 || $rowcenar3['LStatus']==4){
+
+                      //           $day_desc=date("l", strtotime($lend));
+                      //             $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc' and SchedTime<>0");
+                      //             $row = mysqli_fetch_array($resultsched); 
+                      //             $cntsched2= mysqli_num_rows ($resultsched);
+
+                      //             if ($cntsched2>0){
+                      //              ?>
+                      <!-- //               <tr>
+                      //                 <td class="darth"><?php  echo  date("F j, Y", strtotime($lend));?></td>
+                      //                 <td class="darth"><?php  echo  $day_desc;?></td>
+                      //                 <td class="darth"><?php  echo  $row['TimeFrom'] . " - " . $row['TimeTo'];?></td>
+                      //                 <td class="darth">N/A</td>
+                      //                 <td class="darth">N/A</td>
+                      //                 <td class="darth"><?php echo  $row2['st'];  ?>/<?php  echo  $rowcenar3['StatusDesc'];?></td>
+                      //                 <td class="darth">1</td>
+                      //               </tr> -->
+                               <?php 
+                                  
+                                      
+                      //             }else{
+                      //               $dis =  "Rest Day";
+                      //                 ?>
+                      <!-- //                  <tr>
+                      //                   <td class="darth"><?php   echo  date("F j, Y", strtotime($dt2));?></td>
+                      //                   <td class="darth"><?php   echo  date("l", strtotime($dt2));?></td>
+                      //                   <td class="darth"><?php echo $dis; ?></td>
+                      //                   <td class="darth"><?php echo $dis; ?></td><td class="darth"><?php echo $dis; ?></td><td class="darth"><?php echo $dis; ?></td><td class="darth"><?php echo $dis; ?></td>
+                      //                   </tr> -->
+                                       <?php
+                      //           }
+                      //             }
+                      // ?>  
+                              
+                       <?php
+                      //       $dt2=date('Y-m-d', strtotime($dt2 . ' - 1 days'));
+                      //         $lend=date('Y-m-d', strtotime($lend . ' - 1 days'));
+                      //       if ($dt1==$lend){
+                      //         break;
+                      //         }
+                      //       }
+                             
+                      ?>  
+
+                    
+                      <?php
+                    }
+                    elseif ($row2['st']=="EO"){
+                       ?>
+                     
+                      
+                          <?php
+                              $attendancelog2 = $pdo->prepare("select * from earlyout inner join attendancelog on earlyout.LogID=attendancelog.LogID where SID = :id");
+                              $attendancelog2->bindParam(':id' , $row2['mid']);
+                              $attendancelog2->execute();
+                              $rowcenar = $attendancelog2->fetch();
+                              
+                              $day_desc=date("l", strtotime($lend));
+                                  $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc' and SchedTime<>0");
+                                  $row = mysqli_fetch_array($resultsched); 
+                                  $cntsched2= mysqli_num_rows ($resultsched);
+                              ?>
+                                <tr>
+                                 <td class="darth"><?php   echo  date("F j, Y", strtotime($dt2));?></td>      
+                                 <td class="darth"><?php   echo  date("l", strtotime($dt2));?></td>
+                                      <td class="darth"><?php  echo  $row['TimeFrom'] . " - " . $row['TimeTo'];?></td>
+                              <td class="darth"><?php echo date("h:i:s A", strtotime($rowcenar['TimeIn']));  ?></td>
+                              <td class="darth"><?php echo date("h:i:s A", strtotime($rowcenar['DateTimeInputed']));  ?></td>
+                              <td class="darth"><?php  echo  $row2['st'];?></td>
+                              <td class="darth">0</td>
+                                </tr>
+                 
+                      <?php
+                    }
+
+
+                    ?> 
+                    <?php
                     }
                   }
                   ?>

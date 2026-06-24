@@ -1,6 +1,6 @@
 <?php 
 	include 'w_conn.php';
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
      date_default_timezone_set("Asia/Manila");
 	if (isset($_SESSION['rid'])){
 			try{

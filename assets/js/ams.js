@@ -44,6 +44,59 @@ $(document).ready(function(){
 });
 
 
+
+
+  $(document).on('click', '#viewData', function(e){
+        
+
+       e.preventDefault();
+       $.ajaxSetup({
+         headers: {
+             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+         }
+     });
+
+     jQuery.ajax({
+             url:'query/ams-phpscript.php?viewall', 
+             method: 'get',
+             data:{ },
+             cache: false,
+             dataType: 'json',
+             error: function(xhr, status, error) {;
+             alert(xhr.responseText);
+             },
+             success: function(res){
+                 console.log(res);
+                var resultData=res.data;          
+                var errcode = res.errcode;
+           
+               if(errcode==0){
+                var emp = '';                      
+                        $(resultData).each(function (index, item) {                
+                              emp+="<tr>"
+                              +"<td class='idBarcode'>"+item.lname+ ", "+item.fname+ "</td>"
+                              +"<td style='text-align:left'>"+item.pos+"</td>"
+                              +"<td style='text-align:left'>"+item.employmentstatus+"</td>"
+                                +"<td style='text-align:left'>"+item.EmpLN+"</td>"
+                              +"<td class='hide_cell' style='margin-left:5%'>"
+                                         +"<button  value ='"+item.id+"' id='viewrecord' data-toggle='modal' data-target='#amsshow' class='btn btn-primary btn-sm'><i class='fa fa-eye'></i> View</button>"
+                              "</td>"
+                              emp+="</tr>";
+
+                             // +"<button  value ='"+item.id+"' id='updaterecord' class='btn btn-primary btn-sm'><i class='fa fa-pencil'></i></button>"
+                  
+                       })              
+                  $("#amstable").empty();
+                  $("#amstable").append(emp);
+                  
+               }
+               
+            }
+        });
+    });
+    
+  
+
     $(document).on('keyup', '#amssearch', function(e){
         
        var query = $(this).val();
@@ -69,27 +122,27 @@ $(document).ready(function(){
                 var errcode = res.errcode;
                 if(query===""){
                     $("#amstable").empty();
+                }else{
+                   if(errcode==0){
+                        var emp = '';                      
+                            $(resultData).each(function (index, item) {                
+                                  emp+="<tr>"
+                                  +"<td class='idBarcode'>"+item.lname+ " ,"+item.fname+ "</td>"
+                                  +"<td style='text-align:left'>"+item.pos+"</td>"
+                                  +"<td style='text-align:left'>"+item.employmentstatus+"</td>"
+                                  +"<td style='text-align:left'>"+item.EmpLN+"</td>"
+                                  +"<td style='margin-left:5%'>"
+                                             +"<button  value ='"+item.id+"' id='viewrecord' data-toggle='modal' data-target='#amsshow' class='btn btn-primary btn-sm'><i class='fa fa-eye'></i> View</button>"
+                                  "</td>"
+                                  emp+="</tr>";
+    
+                                 // +"<button  value ='"+item.id+"' id='updaterecord' class='btn btn-primary btn-sm'><i class='fa fa-pencil'></i></button>"
+                      
+                           })              
+                          $("#amstable").empty();
+                          $("#amstable").append(emp);
+                      
                    }
-                   else{
-               if(errcode==0){
-                var emp = '';                      
-                        $(resultData).each(function (index, item) {                
-                              emp+="<tr>"
-                              +"<td class='idBarcode'>"+item.lname+ " "+item.fname+ "</td>"
-                              +"<td style='text-align:left'>"+item.pos+"</td>"
-                              +"<td style='text-align:left'>"+item.employmentstatus+"</td>"
-                              +"<td style='margin-left:5%'>"
-                                         +"<button  value ='"+item.id+"' id='viewrecord' data-toggle='modal' data-target='#amsshow' class='btn btn-primary btn-sm'><i class='fa fa-eye'></i> View</button>"
-                              "</td>"
-                              emp+="</tr>";
-
-                             // +"<button  value ='"+item.id+"' id='updaterecord' class='btn btn-primary btn-sm'><i class='fa fa-pencil'></i></button>"
-                  
-                       })              
-                  $("#amstable").empty();
-                  $("#amstable").append(emp);
-                  
-               }
                }
             }
         });
@@ -171,6 +224,7 @@ $(document).ready(function(){
                      $('.alert .close').on("click", function () {
                         $(this).parent().slideUp(500, 0).slideUp(500);
                     });
+                     $('#amsid')[0].reset();
                     
                   }
                   else{              
@@ -188,6 +242,37 @@ $(document).ready(function(){
      });
     //update data
     $(document).on('click', '#update', function(e){
+        
+             var listner = 0;
+       
+        if($('#fname1').val()==""){
+            $('#lblfname1').show();
+           
+           listner=1;
+        }
+        else{
+           $('#lblfname1').hide();
+           listner=0;
+        }
+        if($('#lname1').val()==""){
+            $('#lbllname1').show();
+           listner=1;
+        } else{
+           $('#lbllname1').hide();
+           listner=0;
+        }        
+        if($('#pos1').val()=="Choose..."){
+            $('#lblpos1').show();
+           listner=1;
+        } else{
+           $('#lblpos1').hide();
+           listner=0;
+        }        
+        
+    if(listner==1)
+    {
+        return false;
+    }
        
         var id = $(this).val();
         e.preventDefault();
@@ -224,10 +309,10 @@ $(document).ready(function(){
               success: function(dataResult){
                   console.log(dataResult);
                   var dataerr=dataResult.errcode;
-                  alert(dataerr);   
+                //   alert(dataerr);   
                   if(dataerr==0){
                     $("#result1").addClass("alert alert-success offset4 span4");
-                    $("#result1").html('<button type="button" class="close" aria-label="close">×</button><strong>Success!</strong> Data was save updated!');
+                    $("#result1").html('<button type="button" class="close" aria-label="close">×</button><strong>Success!</strong> Data was save successfully!');
                     $(".alert").show();
                     
                     $(".alert").css("opacity", "100%");
@@ -244,6 +329,7 @@ $(document).ready(function(){
                           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                       }
                   });
+                     $('#amsidu')[0].reset();
              
                   jQuery.ajax({
                           url:'query/ams-phpscript.php?amssearch', 
@@ -266,9 +352,10 @@ $(document).ready(function(){
                              var emp = '';                      
                                      $(resultData).each(function (index, item) {                
                                            emp+="<tr>"
-                                           +"<td class='idBarcode'>"+item.lname+ " "+item.fname+ "</td>"
+                                           +"<td class='idBarcode'>"+item.lname+ ","+item.fname+ "</td>"
                                            +"<td style='text-align:left'>"+item.pos+"</td>"
                                            +"<td style='text-align:left'>"+item.employmentstatus+"</td>"
+                                                     +"<td style='text-align:left'>"+item.EmpLN+"</td>"
                                            +"<td style='margin-left:5%'>"
                                                       +"<button  value ='"+item.id+"' id='viewrecord' data-toggle='modal' data-target='#amsshow' class='btn btn-primary btn-sm'><i class='fa fa-eye'></i> View</button>"
                                            "</td>"

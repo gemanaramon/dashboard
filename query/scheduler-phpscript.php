@@ -1,6 +1,6 @@
 <?php 
 include 'w_conn.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
 else{ header ('location: login.php'); }
 date_default_timezone_set("Asia/Manila");
@@ -72,34 +72,34 @@ catch(PDOException $e){
 //     }
 // }
     if (isset($_GET['updateTimeNow'])){
-        $id=$_POST['id']; 
-        $timeid=$_POST['timeid'];
-        $sql = "UPDATE workdays SET SchedTime=:schedid
-        where WID=:id";      
+    $id=$_POST['id']; 
+    $timeid=$_POST['timeid'];
+    $sql = "UPDATE workdays SET SchedTime=:schedid
+     where WID=:id";      
 
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':id' , $id);
+    $stmt->bindParam(':schedid' , $timeid);
+
+    if($stmt->execute()){
+                $id=$_SESSION['id'];
+        // $ch="Updated Schedule to ".   $timeid  . " of employee " .$id;
+                $ch="Updated Schedule to ". $_POST['me'] . " of employeeid " . $id;
+
+    // insert into dars
+     
+        $sql = "INSERT INTO dars (EmpID,EmpActivity,DarDateTime) VALUES (:id,:empact,:ddt)";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':id' , $id);
-        $stmt->bindParam(':schedid' , $timeid);
-
-        if($stmt->execute()){
-                    $id=$_SESSION['id'];
-            // $ch="Updated Schedule to ".   $timeid  . " of employee " .$id;
-                    $ch="Updated Schedule to ". $_POST['me'] . " of employeeid " . $id;
-
-        // insert into dars
-        
-            $sql = "INSERT INTO dars (EmpID,EmpActivity,DarDateTime) VALUES (:id,:empact,:ddt)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindParam(':id' , $id);
-            $stmt->bindParam(':empact', $ch);
-            $stmt->bindParam(':ddt', $today);
-            $stmt->execute();
-            echo json_encode(array("errcode"=>0));
-        
-        }else{
-            echo json_encode(array("errcode"=>1));
-        }
+        $stmt->bindParam(':empact', $ch);
+        $stmt->bindParam(':ddt', $today);
+        $stmt->execute();
+        echo json_encode(array("errcode"=>0));
+       
+    }else{
+        echo json_encode(array("errcode"=>1));
     }
+}
 
    if (isset($_GET['setupdatesched'])){
     $id=$_POST['id']; 

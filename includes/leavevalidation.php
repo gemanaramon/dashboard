@@ -43,7 +43,7 @@
                                     $statement = $pdo->prepare("select * from companies where CompanyID='$_SESSION[CompID]'");
 
                                  }
-                               $statement->execute();
+                              $statement->execute(array(':name' => ""));
                               while ($row = $statement->fetch()){
                               ?>
                                  <option value="<?php echo $row['CompanyID']; ?>"><?php echo $row['CompanyDesc']; ?></option> 
@@ -70,9 +70,9 @@
                               die("ERROR: Could not connect. " . $e->getMessage());
                                  }
                            
-                              $statement = $pdo->prepare("select * from leaves");
+                                    $statement = $pdo->prepare("select * from leaves");
+                                 
                               $statement->execute();
-                              
                               while ($row = $statement->fetch()){
                               ?>
                                  <option value="<?php echo $row['LeaveID']; ?>"><?php echo $row['LeaveDesc']; ?></option> 

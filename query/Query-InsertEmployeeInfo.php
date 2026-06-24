@@ -1,6 +1,6 @@
 <?php 
 include 'w_conn.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 // $conn = new mysqli($servername, $username, $password, $db);
 // $name=$_POST['name'];
 

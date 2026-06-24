@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ 
     if(!isset($_COOKIE["WeDoID"])) {
@@ -272,10 +272,13 @@ session_start();
                   <div class="row" style="display: none;">
                     <div class="col-md-6">
                       <img src="assets/images/logo-2.png">
-                      <h3>WeDo BPO</h3>
+                      
+                      <!--<h3>WeDo BPO</h3>-->
+                      <!--<h3>WeDo Metro Inc</h3>-->
                     </div>
                     <div class="col-md-6 subtitle">
-                      <h4 class="pyrlfilt">WeDo BPO/Metro Payroll Report</h4>
+                      <!--<h4 class="pyrlfilt">WeDo BPO/Metro Payroll Report</h4>-->
+                         <h4 class="pyrlfilt">WeDo Metro Payroll Report</h4>
                       <h5 class="thisdate"> </h5>
                       <h5 class="payrolldate"> </h5>
                     </div>

@@ -1,6 +1,6 @@
 <?php 
 
-  include 'w_conn.php';session_start();
+  include 'w_conn.php';if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){
   }else{
      header ('location: login.php'); 
@@ -131,7 +131,7 @@
           $stmt->close(); // Ugaliing i-close ang statement
       }
 
-      // return ['can_login' => true];
+    //   return ['can_login' => true];
     // }
 
     //   validateUserLeave($id);

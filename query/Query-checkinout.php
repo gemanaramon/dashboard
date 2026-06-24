@@ -1,6 +1,6 @@
 <?php 
   include 'w_conn.php';
-  session_start();
+  if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
 try{
@@ -22,7 +22,7 @@ die("ERROR: Could not connect. " . $e->getMessage());
 // $if_have=$if_have_login->fetch();
 // $numberofrows=$if_have->num_rows;
 
-$result = mysqli_query($con, "Select * from attendancelog where EmpID='$id' order by LogID DESC");
+$result = mysqli_query($con, "Select * from attendancelog where EmpID='$id' order by TimeIn DESC");
 $res = mysqli_fetch_array($result); 
 $cnt= mysqli_num_rows ($result);
 

@@ -1,4 +1,4 @@
-<?php session_start();
+<?php if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
 ?>
@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
- 
+    <script src="assets/js/getlocationcoors.js" deffer></script>
     <title><?php  if ($_SESSION['CompanyName']==""){ echo "Dashboard"; } else{ echo $_SESSION['CompanyName']; } ?></title>
     <script type="text/javascript"> 
       $(document).ready(function(){
@@ -262,7 +262,6 @@
                     <?php
                     }
                     ?>
-                      <tr class="cdd-tr"><th class="det-f"><button class="btn btn-success" data-toggle="modal" data-target="#newjobd"><i class="fa fa-plus" aria-hidden="true"></i> Add Job Description</button></th></tr>
                   </thead>
                 </table>
               </div>
@@ -555,7 +554,50 @@
   <div class="col-lg-4"></div>
   </div> 
 
-  
+  <h6 class="cinfo-title d-none" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">Work Schedules</h6>
+  <hr class="cinfohr">
+  <div class="row d-none">
+
+  <div class="col-lg-12 p-info">
+  <table class="table table-responsive">
+  <thead>
+  <tr>
+  <th>Monday</th>
+  <th>Tuesday</th>
+  <th>Wednesday</th>
+  <th>Thusday</th>
+  <th>Friday</th>
+  <th>Saturday</th>
+  <th>Sunday</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+
+  <?php
+  $sqlsc="select * from workdays left join workschedule on workdays.SchedTime=workschedule.WorkSchedID where  empid='$q'";
+  $scqry=mysqli_query($con,$sqlsc);
+  $scnrow=mysqli_num_rows($scqry);
+  while ( $scres=mysqli_fetch_array($scqry)) {
+  ?>
+  <td>
+  <?php echo $scres['TimeFrom'] . "-" . $scres['TimeTo']; ?>  
+  </td>
+  <?php
+  }
+  ?>
+
+
+  <?php  
+
+
+  ?>
+
+  </tr>
+  </tbody>
+  </table>
+  </div>
+  </div>
 
 
   <div class="emp-details e201Hide" id="e201Hide1">
@@ -577,7 +619,7 @@
   </div>
   <!-- end  -->
   <div class="emp-details e201Hide">
-  <!-- <h4 class="title dropdwn-title" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">Job Description<i class="fa fa-angle-down toggle-btn"></i></h4> -->
+  <h4 class="title dropdwn-title" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">Job Description<i class="fa fa-angle-down toggle-btn"></i></h4>
   <hr>
   <div class="aaaa">
   <table class="table">
@@ -601,7 +643,7 @@
 
   <!-- end  -->
   <div id="ed-to-hide" class="emp-details ed-st e201Hide">
-  <h4 class="title dropdwn-title" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">Employment Detasdasdails<i class="fa fa-angle-down toggle-btn"></i></h4>
+  <h4 class="title dropdwn-title" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">Employment Details<i class="fa fa-angle-down toggle-btn"></i></h4>
   <hr>
   <div class="aaaa">
   <table class="table">
@@ -774,34 +816,91 @@
   </div>
   </div>
 
-  <!-- The Modal-->     
-  
+  <!-- The Modal
+  -->      <div class="modal" id="newjobd">
+  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
+
+
+  <div class="modal-header">
+
+  <button type="button" class="close" data-dismiss="modal">&times;</button>
+  </div>
+  <!-- Modal body -->
+  <div class="modal-body">
+  <form>
+  <div class="form-group">
+  <label for="email" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">Employee Job Description</label>
+  <div class="EmpListJD" id="EmpListJD" style="height: 114px;overflow-y: scroll;">
+  <?php
+  $res12=mysqli_query($con,"select * from jobdescription inner join empjobdesc on jobdescription.JD_ID=empjobdesc.JID where empjobdesc.EmpID='" . $eid . "'");
+  while ($row3=mysqli_fetch_array($res12)) {
+  ?>
+  <a  class="btn"><?php echo $row3["JDescription"]; ?> <i class="fa fa-times" id="<?php echo $row3['EJID']; ?>" aria-hidden="true"></i></a>
+  <?php
+  }
+  ?>
+
+
+  </div>
+
+  <label for="email" style="color:<?php echo  $_SESSION['CompanyColor']; ?>;">List of Job Description</label>
+  <input type="text" style="display: inline-block;width: 90%;" placeholder="Search Job Description" name="sjdesc" class="form-control txtsjdesc">
+  <div class="ListJD" id="ListJD" style="height: 114px;overflow-y: scroll;">
+  <?php
+  $res13=mysqli_query($con,"select * from jobdescription order by JDescription asc");
+  while ($row=mysqli_fetch_array($res13)) {
+  ?>
+  <a  class="btn"><?php echo $row[1]; ?> <i class="fa fa-check-circle" id="<?php echo $row[0]; ?>" aria-hidden="true"></i></a>
+  <?php
+  }
+  ?>
+
+
+  </div>
+
+  <?php if ($_SESSION['UserType']!=3){
+  ?>
+  <input type="text" style="display: inline-block;width: 90%;" placeholder="New Job Description" name="newjd" class="form-control txtnewjd"><button type="button" id="addnewJD" class="btn btn-success" style="margin-top: -5px;">+</button>
+  <?php } ?>
+  </div>
+  <!--   <button type="submit" class="btn btn-success">Apply Changes</button> -->
+  </form>
+  </div>
+
+  <!-- Modal footer -->
+  <div class="modal-footer">
+
+  </div>
+
+  </div>
+  </div>
+  </div>
 
   <!-- The Modal -->
   <div class="modal" id="modalWarning">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
+  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
 
-        <!-- Modal Header --> 
-        <div class="modal-header" style="padding: 7px 8px;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
+  <!-- Modal Header --> 
+  <div class="modal-header" style="padding: 7px 8px;">
+  <button type="button" class="close" data-dismiss="modal">&times;</button>
+  </div>
 
-      <!-- Modal body -->
-        <div class="modal-body">
-          <div class="alert alert-danger">
+  <!-- Modal body -->
+  <div class="modal-body">
+  <div class="alert alert-danger">
 
-          </div>
-        </div>
+  </div>
+  </div>
 
-      <!-- Modal footer -->
+  <!-- Modal footer -->
 
 
-      </div>
-    </div>
+  </div>
+  </div>
   </div>
   <!-- modal end -->  
 
   </body>
 </html>
-<script src="assets/js/script-e201.js"></script>

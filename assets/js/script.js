@@ -29,14 +29,13 @@ $(document).ready(function(){
   startTime();
 });
 $(document).ready(function(){
-
+    
+    
   function go2() { $('.flash').delay(100).fadeOut().fadeIn('slow') }
 
   setInterval(function () {
     go2();
     },500);
-
-
   // startTime();
   $(".collapsed").click(function(){
     if ($(this).children().hasClass("glyphicon-align-justify")){

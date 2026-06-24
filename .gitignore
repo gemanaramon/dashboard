@@ -1,0 +1,4 @@
+# PHP / server runtime logs (must never be committed — can grow to hundreds of MB)
+error_log
+**/error_log
+*.log

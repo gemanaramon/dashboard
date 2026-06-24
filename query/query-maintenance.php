@@ -1,5 +1,5 @@
 <?php
-	session_start();
+	if (session_status() === PHP_SESSION_NONE) { session_start(); }
 	if (isset($_GET['empidchanged'])){
 				include 'w_conn.php';
 		  		$sql=mysqli_query($con, "select * from empdetails where EmpCompID='".  $_POST['compid'] ."'");
@@ -71,7 +71,7 @@
 		    $stmt->execute();
 	}
 	if (isset($_GET['otfsm'])){
-		session_start();
+		if (session_status() === PHP_SESSION_NONE) { session_start(); }
 		include 'w_conn.php';
 		try{
 		$pdo = new PDO("mysql:host=$servername;dbname=$db", $username,$password);

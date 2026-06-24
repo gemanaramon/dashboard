@@ -195,7 +195,7 @@ $(document).ready(function(){
            
                 
         }
-        });       
+    });       
     });
         $(document).on('click', '#newschedreg', function(e){
                     e.preventDefault();
@@ -242,12 +242,10 @@ $(document).ready(function(){
     $(document).on('click', '#save', function(e){
         // validation for empty element
         var listner = 0;
-        if($('#employee').val()==0){$('#lblemployee').show();listner=1;}else{$('#lblemployee').hide();}
+        if($('#employee').val()==0){$('#lblemployee').show();listner=1;}else{$('#lblemployee').hide(); }
         if($('#dfrom').val()==0){$('#lbldfrom').show();listner=1;}else{$('#lbldfrom').hide();}
-        if($('#dto').val()==0){$('#lbldto').show();listner=1;}else{$('#lbldto').hide();}
-
-
-        if($('#Monday').val()==1){$('#lblmonday').show();listner=1; }else{$('#lblmonday').hide(); }
+        if($('#dto').val()==0){$('#lbldto').show();listner=1;}else{$('#lbldto').hide(); }
+        if($('#Monday').val()==1){$('#lblmonday').show();listner=1;}else{$('#lblmonday').hide(); }
         if($('#Tuesday').val()==1){$('#lbltuesday').show(); listner=1;}else{$('#lbltuesday').hide(); }
         if($('#Wednesday').val()==1){$('#lblwednesday').show(); listner=1;}else{$('#lblwednesday').hide(); }
         if($('#Thursday').val()==1){$('#lblthursday').show(); listner=1;}else{$('#lblthursday').hide(); }

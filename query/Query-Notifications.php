@@ -1,5 +1,5 @@
  <?php
-      // session_start();
+       if (session_status() === PHP_SESSION_NONE) { session_start(); }
         if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
         else{ header ('location: login.php'); }
           include 'w_conn.php';
@@ -76,7 +76,7 @@
                     hleaves as a 
                     INNER JOIN employees as b ON a.EmpID=b.EmpID 
                     INNER JOIN empdetails as d ON b.EmpID=d.EmpID 
-                    INNER JOIN status as c ON a.LStatus=c.StatusID where  a.LStatus=2 or (a.LStatus=1 and a.EmpSID=:id) and a.LDateTimeUpdated between :dt1 and :dt2
+                    INNER JOIN status as c ON a.LStatus=c.StatusID where   a.LStatus=2 or (a.LStatus=1 and a.EmpSID=:id) and a.LDateTimeUpdated between :dt1 and :dt2
                   
                    UNION ALL 
 

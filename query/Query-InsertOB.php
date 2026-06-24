@@ -1,6 +1,6 @@
 <?php 
   include 'w_conn.php';
-  session_start();
+  if (session_status() === PHP_SESSION_NONE) { session_start(); }
   if (isset($_SESSION['id']) && $_SESSION['id']!="0"){}
   else{ header ('location: login.php'); }
    date_default_timezone_set("Asia/Manila");
@@ -10,24 +10,22 @@
     }catch(PDOException $e){
         die("ERROR: Could not connect. " . $e->getMessage());
     }
-
- ################################################
-   $datenow = date("Y-m-d");
-   $datenow1 = date("Y-m-d H:i");
-   $timenow = strtotime($datenow1);
-   $startTime = strtotime($datenow ." 08:00");
-   $id=$_SESSION['id'];
-   if($id=="WeDoinc-012"){
-   }else{
-    if($timenow > $startTime){
-        echo 4;
-        return;
-  }
-   }
- ################################################
     
     try{
-       
+         ################################################
+           $datenow = date("Y-m-d");
+           $datenow1 = date("Y-m-d H:i");
+           $timenow = strtotime($datenow1);
+           $startTime = strtotime($datenow ." 8:30:00");
+           $id=$_SESSION['id'];
+           if($id=="WeDoinc-012"){
+           }else{
+            if($timenow > $startTime){
+                echo 4;
+                return;
+          }
+           }
+         ################################################
         $id=$_SESSION['id'];
         $isid=$_SESSION['EmpISID'];
         $statid=1;
@@ -73,71 +71,63 @@
         }
 
         //holiday not file
-        {
-            $cmpnyID=$_SESSION['CompID'];
-            $stment=$pdo->prepare("select * from holidays where HCompID=:cmpid and Hdate=:hdte");
-            $stment->bindParam(':cmpid', $cmpnyID);
-            $stment->bindParam(':hdte', $dtfrom);
-            $stment->execute();
-            $countholiday = $stment->rowCount();
-            if ($countholiday>0){
-                echo 5;
-                return;
-            }
+        $cmpnyID=$_SESSION['CompID'];
+        $stment=$pdo->prepare("select * from holidays where HCompID=:cmpid and Hdate=:hdte");
+        $stment->bindParam(':cmpid', $cmpnyID);
+        $stment->bindParam(':hdte', $dtfrom);
+        $stment->execute();
+        $countholiday = $stment->rowCount();
+        if ($countholiday>0){
+            echo 5;
+            return;
         }
     
-        //if employee have leave , cant file ob
-        {
-
-            $dtfromloop=$dtfrom;
-            $cntload=0;
-            
-            while($dtfromloop<=$dttoo){
-                $slscts=$pdo->prepare("select * from hleaves where EmpID=:idn and LStart>=:dtstart and LEnd>=:dtstart");
-                $slscts->bindParam(':idn' , $id);
-                $slscts->bindParam(':dtstart', $dtfromloop);
-                $slscts->execute();
-                $cntload = $slscts->rowCount();
-                if ($cntload==1){
-                break 1;
-                }
-                $dtfromloop= date('Y-m-d', strtotime($dtfromloop  . ' +1 days'));
+        //if employee leave cant file    
+        $dtfromloop=$dtfrom;
+        $cntload=0;
+        
+        while($dtfromloop<=$dttoo){
+            $slscts=$pdo->prepare("select * from hleaves where EmpID=:idn and LStart>=:dtstart and LEnd>=:dtstart");
+            $slscts->bindParam(':idn' , $id);
+            $slscts->bindParam(':dtstart', $dtfromloop);
+            $slscts->execute();
+            $cntload = $slscts->rowCount();
+            if ($cntload==1){
+              break 1;
             }
-            if ($cntload>0){
-                echo 6;
+            $dtfromloop= date('Y-m-d', strtotime($dtfromloop  . ' +1 days'));
+        }
+        if ($cntload>0){
+            echo 6;
+            return;
+        }
+    
+        $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc'");
+        $rowsc = mysqli_fetch_array($resultsched);
+        $nmrows=mysqli_num_rows($resultsched);
+        
+        if ($dtfrom==$dttoo){
+            if ($nmrows==0){
+                //no schedule
+                echo 2;
                 return;
             }
-        }
+            else{
+                $filetimefrom =  date("H:i", strtotime($_POST['timefrom']));  
+                $filetimeto =  date("H:i", strtotime($_POST['timeto']));
+                $dbtfrom =  date("H:i", strtotime($rowsc['TimeFrom']));
+                $dbtto =  date("H:i", strtotime($rowsc['TimeTo']));
 
-        //schedule checker
-        {
-            $resultsched = mysqli_query($con, "Select * from workdays INNER JOIN workschedule ON workdays.SchedTime=workschedule.WorkSchedID where workdays.empid='$id' and workdays.Day_s='$day_desc'");
-            $rowsc = mysqli_fetch_array($resultsched);
-            $nmrows=mysqli_num_rows($resultsched);
-            
-            if ($dtfrom==$dttoo){
-                if ($nmrows==0){
-                    //no schedule
-                    echo 2;
-                    return;
+                if (($filetimefrom >= $dbtfrom && $filetimefrom < $dbtto) && ($filetimeto > $dbtfrom && $filetimeto <= $dbtto)){
+                    //invalid time   && ($_POST['timefrom'] <= $rowsc['TimeTo'] && $_POST['timeto'] <= $rowsc['TimeTo']) &&  $_POST['timefrom'] >= $rowsc['TimeFrom']
                 }
                 else{
-                    $filetimefrom =  date("H:i", strtotime($_POST['timefrom']));  
-                    $filetimeto =  date("H:i", strtotime($_POST['timeto']));
-                    $dbtfrom =  date("H:i", strtotime($rowsc['TimeFrom']));
-                    $dbtto =  date("H:i", strtotime($rowsc['TimeTo']));
-
-                    if (($filetimefrom >= $dbtfrom && $filetimefrom < $dbtto) && ($filetimeto > $dbtfrom && $filetimeto <= $dbtto)){
-                        //invalid time   && ($_POST['timefrom'] <= $rowsc['TimeTo'] && $_POST['timeto'] <= $rowsc['TimeTo']) &&  $_POST['timefrom'] >= $rowsc['TimeFrom']
-                    }
-                    else{
-                        echo 3;
-                        return;
-                    }
+                    echo 3;
+                    return;
                 }
             }
         }
-        
+
         $sql2="select * from obvalidation where compid=:id";
         $stmt = $pdo->prepare($sql2);
         $stmt->bindParam(':id' , $_SESSION['CompID']);

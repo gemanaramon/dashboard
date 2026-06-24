@@ -1,296 +1,290 @@
-$(document).ready(function(){      
-function fnctshow(){
-  var c = document.getElementsByClassName("bsc-hide");
-  var d = document.getElementsByClassName("bsc-hide1");
-  var e = document.getElementsByClassName("bsc-hide2");
+      
+        function fnctshow(){
+         var c = document.getElementsByClassName("bsc-hide");
+         var d = document.getElementsByClassName("bsc-hide1");
+         var e = document.getElementsByClassName("bsc-hide2");
 
-    if (c[0].style.display === "none") {
-      c[0].style.display = "table-row";
-    } else {
-      c[0].style.display = "none";
-    }
-    if (d[0].style.display === "none") {
-      d[0].style.display = "table-row";
-    } else {
-      d[0].style.display = "none";
-    }
-    if (e[0].style.display === "none") {
-      e[0].style.display = "table-row";
-    } else {
-      e[0].style.display = "none";
-    }
-  
-}
+           if (c[0].style.display === "none") {
+              c[0].style.display = "table-row";
+            } else {
+              c[0].style.display = "none";
+            }
+            if (d[0].style.display === "none") {
+              d[0].style.display = "table-row";
+            } else {
+              d[0].style.display = "none";
+            }
+            if (e[0].style.display === "none") {
+              e[0].style.display = "table-row";
+            } else {
+              e[0].style.display = "none";
+            }
+         
+        }
+$(document).ready(function(){
+          // display message
+        setInterval(function() {
+               
+                                        var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#com-messages").empty();
+                                    document.getElementById("com-messages").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-LoadMessages.php?lde201", true);
+                                    xmlhttp.send();
+        }, 1000); 
 
-// display message
-setInterval(function() {
-    
-                            var xmlhttp = new XMLHttpRequest();
-                    xmlhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        $("#com-messages").empty();
-                        document.getElementById("com-messages").innerHTML = this.responseText;
-                    }
-                    };
-                        xmlhttp.open("GET", "query/Query-LoadMessages.php?lde201", true);
-                        xmlhttp.send();
-}, 1000); 
+           $(document).on("click", ".btnyespass", function(){
+           
+              var empidd = $(this).attr("id");
+                     $.ajax({
+                                  url:'query/query-resetpassword.php', 
+                                  data:{data : empidd},
+                                  type:'POST',
+                                                                       
+                                   success:function(data){
+                                        $('#modalWarning').modal('toggle');
+                             $('.mdlsc').modal('toggle');
+                                        $('#modalWarning .alert').html("Succesfully Updated !"); 
+                                  }
+                                    
+                            });
+           });
 
-  $(document).on("click", ".btnyespass", function(){
-  
-    var empidd = $(this).attr("id");
-            $.ajax({
-                        url:'query/query-resetpassword.php', 
-                        data:{data : empidd},
-                        type:'POST',
-                                                              
-                          success:function(data){
-                              $('#modalWarning').modal('toggle');
-                    $('.mdlsc').modal('toggle');
-                              $('#modalWarning .alert').html("Succesfully Updated !"); 
-                        }
-                          
-                  });
-  });
+      $("#btnsend").click(function(){
+           var ms = $("#mssg").val();
+                  if (ms.trim()==""){
+                      $('#modalWarning').modal('toggle');
+                      $('#modalWarning .alert').html("Please Input Message First !"); 
 
-  $("#btnsend").click(function(){
-        var ms = $("#mssg").val();
-              if (ms.trim()==""){
-                  $('#modalWarning').modal('toggle');
+                  }
+                    else{
+                    var msg = ms.trim();
+                     $.ajax({
+                                  url:'query/query-NewMessage.php', 
+                                  data:{data : msg},
+                                  type:'POST',
+                                                                       
+                                   success:function(data){
+                                       
+                                         $("#mssg").val("");
+                                        
+                                        var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#com-messages").empty();
+                                    document.getElementById("com-messages").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-LoadMessages.php?lde201", true);
+                                    xmlhttp.send();
+                                    
+                                   }
+                            });
+                  }
+      });
+     $('#mssg').keyup(function(e){
+          if(e.keyCode == 13)
+          {
+                var ms = $("#mssg").val();
+                  if (ms.trim()==""){
+                            $('#modalWarning').modal('toggle');
                   $('#modalWarning .alert').html("Please Input Message First !"); 
-
-              }
-                else{
-                var msg = ms.trim();
-                  $.ajax({
-                              url:'query/query-NewMessage.php', 
-                              data:{data : msg},
-                              type:'POST',
-                                                                    
-                                success:function(data){
-                                    
-                                      $("#mssg").val("");
-                                    
-                                    var xmlhttp = new XMLHttpRequest();
-                            xmlhttp.onreadystatechange = function() {
-                            if (this.readyState == 4 && this.status == 200) {
-                                $("#com-messages").empty();
-                                document.getElementById("com-messages").innerHTML = this.responseText;
-                            }
-                            };
-                                xmlhttp.open("GET", "query/Query-LoadMessages.php?lde201", true);
-                                xmlhttp.send();
-                                
+                  }
+                    else{
+                    var msg = ms.trim();
+                     $.ajax({
+                                  url:'query/query-NewMessage.php', 
+                                  data:{data : msg},
+                                  type:'POST',
+                                                                       
+                                   success:function(data){
+                                       
+                                         $("#mssg").val("");
+                                        
+                                        var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#com-messages").empty();
+                                    document.getElementById("com-messages").innerHTML = this.responseText;
                                 }
-                        });
-              }
-  });
-
-  $('#mssg').keyup(function(e){
-      if(e.keyCode == 13)
-      {
-            var ms = $("#mssg").val();
-              if (ms.trim()==""){
-                        $('#modalWarning').modal('toggle');
-              $('#modalWarning .alert').html("Please Input Message First !"); 
-              }
-                else{
-                var msg = ms.trim();
-                  $.ajax({
-                              url:'query/query-NewMessage.php', 
-                              data:{data : msg},
-                              type:'POST',
-                                                                    
-                                success:function(data){
+                                };
+                                    xmlhttp.open("GET", "query/Query-LoadMessages.php?lde201", true);
+                                    xmlhttp.send();
                                     
-                                      $("#mssg").val("");
-                                    
-                                    var xmlhttp = new XMLHttpRequest();
-                            xmlhttp.onreadystatechange = function() {
-                            if (this.readyState == 4 && this.status == 200) {
-                                $("#com-messages").empty();
-                                document.getElementById("com-messages").innerHTML = this.responseText;
-                            }
-                            };
-                                xmlhttp.open("GET", "query/Query-LoadMessages.php?lde201", true);
-                                xmlhttp.send();
-                                
-                                }
-                        });
-              }
-      }
-  });
+                                   }
+                            });
+                  }
+          }
+     });
 
-  $('.search-box').on("keyup input", function(){
+    $('.search-box').on("keyup input", function(){
+ 
+        /* Get input value on change */
+        var inputVal = $(this).val();
+        var resultDropdown = $(".dv-livesearch");
+        if(inputVal.length){
 
-      /* Get input value on change */
-      var inputVal = $(this).val();
-      var resultDropdown = $(".dv-livesearch");
-      if(inputVal.length){
+            $.get("query/Query-LiveSearch.php", {term: inputVal}).done(function(data){
+                // Display the returned data in browser
+                   // alert("data1");
+                resultDropdown.html(data);
 
-          $.get("query/Query-LiveSearch.php", {term: inputVal}).done(function(data){
-              // Display the returned data in browser
-                  // alert("data1");
-              resultDropdown.html(data);
-
-          });
-      } else{
-          resultDropdown.empty();
-              
-      }
-  });
+            });
+        } else{
+            resultDropdown.empty();
+               
+        }
+    });
     
     // Set search input value on click of result item
-  $(document).on("click", ".dv-livesearch a", function(){
-    
-        var idname = $(this).attr('id');    
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-        $("#e201").empty();
-        document.getElementById("e201").innerHTML = this.responseText;
-    }
-  };
-        xmlhttp.open("GET", "query/Query-e201.php?q=" + idname, true);
-        xmlhttp.send();
-        $(this).parents(".wd-search").find('input[type="text"]').val($(this).text());
-        $(this).parent(".dv-livesearch").empty(); 
-        $(".search-box").val(""); 
-        $(".search-box").attr("placeholder", "Search");        
-  });   
-
-
-      $(document).on("click", ".ListJD .fa-check-circle", function(e){
-        // alert("afasf");
-        // return;
-        var jdid = $(this).attr("id");
-        var empid = $("#empID_Background").text();
-        // alert(empid);
-        // return;
-        e.preventDefault();
-          $.ajax({
-                  url:'query/Query-InsertDeleteJJD.php?insert',
-                  type:'post',
-                  data:{JobId : jdid , EmIDJD : empid},
-                    success:function(response){  
-                        // alert(response);
-                        //  return;
-                     
-                    if (response==1){
-                        $('#modalWarning').modal('toggle');
-                        $('#modalWarning .alert').html("Job Description Added"); 
-                    }else{
-                          var xmlhttp = new XMLHttpRequest();
-                          xmlhttp.onreadystatechange = function() {
-                          if (this.readyState == 4 && this.status == 200) {
-                              $("#EmpListJD").empty();
-                              document.getElementById("EmpListJD").innerHTML = this.responseText;
-                          }
-                          };
-                              // xmlhttp.open("GET", "query/Query-SearchJobDesc.php?delete=" + empid, true);
-                              // xmlhttp.send();
-                            var xmlhttp = new XMLHttpRequest();
-                          xmlhttp.onreadystatechange = function() {
-                          if (this.readyState == 4 && this.status == 200) {
-                              $("#jdview").empty();
-                              document.getElementById("jdview").innerHTML = this.responseText;
-                          }
-                          };
-                          xmlhttp.open("GET", "query/Query-SearchJobDesc.php?jd=" + empid, true);
-                          xmlhttp.send();
-        
-                  }
-                  
-                }
-              });
-    
+    $(document).on("click", ".dv-livesearch a", function(){
       
-          $('#e201 [data-toggle="tooltip"]').tooltip(); 
-     
-          $(document).on("click", "#addnewJD", function(){
-
-            if ($(".txtnewjd").val()==""){
-                $('#modalWarning').modal('toggle');
-                $('#modalWarning .alert').html("Please Input Data in Job Description"); 
-            }
-            else{
-              var jd=$(".txtnewjd").val();
-
-                $.ajax({
-                          url:'query/Query-InsertDeleteJJD.php?insertnewjd',
-                          type:'post',
-                          data:{JobId : jd},
-                            success:function(response){ 
-                              // display all job description
-                              var xmlhttp = new XMLHttpRequest();
-                              xmlhttp.onreadystatechange = function() {
-                              if (this.readyState == 4 && this.status == 200) {
-                                  $("#ListJD").empty();
-                                  document.getElementById("ListJD").innerHTML = this.responseText;
-                              }
-                              };
-                                  xmlhttp.open("GET", "query/Query-SearchJobDesc.php?displayjd=", true);
-                                  xmlhttp.send();
-                              $(".txtnewjd").val(" ");
-                            }
-              });             
-            }
-        });
-
-
-        $(document).on("keyup", ".txtsjdesc", function(){
-            var jd = $(this).val();
-            var jd1 = $.trim(jd)
-                $("#ListJD").empty();
-              $.ajax({
-                          url:'query/Query-SearchJobDesc.php?srchjd',
-                          type:'post',
-                          data:{JobId : jd1},
-                          success:function(response){ 
-                              // display all job description
-                              $("#ListJD").append(response);
-                            }
-              });      
-        });
-
-        $(document).on("click", ".EmpListJD .fa-times", function(){
-          // alert(0);
-          // return;
+          var idname = $(this).attr('id');    
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          $("#e201").empty();
+          document.getElementById("e201").innerHTML = this.responseText;
+      }
+    };
+          xmlhttp.open("GET", "query/Query-e201.php?q=" + idname, true);
+          xmlhttp.send();
+          $(this).parents(".wd-search").find('input[type="text"]').val($(this).text());
+          $(this).parent(".dv-livesearch").empty(); 
+          $(".search-box").val(""); 
+          $(".search-box").attr("placeholder", "Search");        
+    });   
+});
+    $(document).ready(function(){
+        $(document).on("click", ".ListJD .fa-check-circle", function(){
           var jdid = $(this).attr("id");
-          var empid = $("#empID_Background").text();
-          alert(jdid + " " + empid );
-          $.ajax({
-                          url:'query/Query-InsertDeleteJJD.php?delete',
-                          type:'post',
-                          data:{JobId : jdid},
-                          success:function(response){  
-                              var xmlhttp = new XMLHttpRequest();
-                              xmlhttp.onreadystatechange = function() {
-                              if (this.readyState == 4 && this.status == 200) {
-                                  $("#EmpListJD").empty();
-                                  document.getElementById("EmpListJD").innerHTML = this.responseText;
-                              }
-                              };
-                                  // xmlhttp.open("GET", "query/Query-SearchJobDesc.php?delete=" + empid, true);
-                                  // xmlhttp.send();
+          var empid = $(".empidjd").html();
+          
+          // Query-SearchJobDesc.php
 
-                                xmlhttp.open("GET", "query/Query-SearchJobDesc.php?delete=" + jdid, true);
-                                  xmlhttp.send();
-                              var xmlhttp = new XMLHttpRequest();
-                              xmlhttp.onreadystatechange = function() {
-                              if (this.readyState == 4 && this.status == 200) {
-                                  $("#jdview").empty();
-                                  document.getElementById("jdview").innerHTML = this.responseText;
-                              }
-                              };
-                                  xmlhttp.open("GET", "query/Query-SearchJobDesc.php?jd=" + empid, true);
-                                  xmlhttp.send();    
-                
+           $.ajax({
+                            url:'query/Query-InsertDeleteJJD.php?insert',
+                            type:'post',
+                            data:{JobId : jdid , EmIDJD : empid},
+                             success:function(response){  
+                              if (response==2){
+                                  $('#modalWarning').modal('toggle');
+                                  $('#modalWarning .alert').html("You have Already this Job Description"); 
+                              }else{
+                                var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#EmpListJD").empty();
+                                    document.getElementById("EmpListJD").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-SearchJobDesc.php?delete=" + empid, true);
+                                    xmlhttp.send();
+                                 var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#jdview").empty();
+                                    document.getElementById("jdview").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-SearchJobDesc.php?jd=" + empid, true);
+                                    xmlhttp.send();
+                  
+                            }
+                            
                           }
-                });
+                        });
         });
+        
+          $(document).ready(function(){
+            $('#e201 [data-toggle="tooltip"]').tooltip(); 
+          });
 
-  });
+          $("#addnewJD").click(function(){
+             if ($(".txtnewjd").val()==""){
+                  $('#modalWarning').modal('toggle');
+                  $('#modalWarning .alert').html("Please Input Data in Job Description"); 
+             }
+             else{
+                var jd=$(".txtnewjd").val();
+
+                 $.ajax({
+                            url:'query/Query-InsertDeleteJJD.php?insertnewjd',
+                            type:'post',
+                            data:{JobId : jd},
+                             success:function(response){ 
+                                // display all job description
+                                var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#ListJD").empty();
+                                    document.getElementById("ListJD").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-SearchJobDesc.php?displayjd=", true);
+                                    xmlhttp.send();
+                                $(".txtnewjd").val(" ");
+                             }
+                });             
+             }
+          });
+ 
+
+          $(document).on("keyup", ".txtsjdesc", function(){
+              var jd = $(this).val();
+              var jd1 = $.trim(jd)
+                 $("#ListJD").empty();
+               $.ajax({
+                            url:'query/Query-SearchJobDesc.php?srchjd',
+                            type:'post',
+                            data:{JobId : jd1},
+                            success:function(response){ 
+                                // display all job description
+                                $("#ListJD").append(response);
+                             }
+                });      
+          });
+
+          $(document).on("click", ".EmpListJD .fa-times", function(){
+            var jdid = $(this).attr("id");
+            var empid = $(".empidjd").html();
+            $.ajax({
+                            url:'query/Query-InsertDeleteJJD.php?delete',
+                            type:'post',
+                            data:{JobId : jdid},
+                            success:function(response){  
+                                var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#EmpListJD").empty();
+                                    document.getElementById("EmpListJD").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-SearchJobDesc.php?delete=" + empid, true);
+                                    xmlhttp.send();
+
+                                 xmlhttp.open("GET", "query/Query-SearchJobDesc.php?delete=" + empid, true);
+                                    xmlhttp.send();
+                                 var xmlhttp = new XMLHttpRequest();
+                                xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    $("#jdview").empty();
+                                    document.getElementById("jdview").innerHTML = this.responseText;
+                                }
+                                };
+                                    xmlhttp.open("GET", "query/Query-SearchJobDesc.php?jd=" + empid, true);
+                                    xmlhttp.send();    
+                  
+                            }
+                  });
+          });
+
+    });
+
+           
 
   function printthisDiv(){
         try {
@@ -432,4 +426,3 @@ setInterval(function() {
     c.style.marginLeft = "0px";
 
 }
-});

@@ -15,7 +15,7 @@ $(document).ready(function(){
         success: function(res){
             var resultData=res.errcode;
             if(resultData=='1'){
-                // $("#alassave").hide(); 
+                $("#alassave").hide(); 
             }
         }
     });
