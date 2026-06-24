@@ -1657,7 +1657,7 @@ $today = date("Y-m-d H:i:s");
 									}
 
 									
-							if($SalaryLoan==1){
+							if($SalaryLoan=1){
 								getloan($pdo);
 								//get silloan if any
 								$sl=$sil;
