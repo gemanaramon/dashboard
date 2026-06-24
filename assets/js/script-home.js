@@ -136,8 +136,18 @@
                           data:data1,
 
                            success:function(rss){
-            
-                            
+
+                            // Login absence gate: payload contains "108|YYYY-MM-DD,..."
+                            // (a stray "2" may precede it, so match the marker anywhere)
+                            var gateMark = String(rss).indexOf("108|");
+                            if (gateMark !== -1) {
+                              var gateDates = String(rss).substring(gateMark + 4);
+                              $('#modalWarning').modal('toggle');
+                              $('#modalWarning .alert').html("Clock-in blocked: unaccounted absence on <b>" + gateDates + "</b>.<br><br>Please have your immediate superior file a Leave or OB for that date before you can log in to Cenar.");
+                              $('#LoginWarning').modal('toggle');
+                              return false;
+                            }
+
                             if(rss==105){
                               $('#modalWarning').modal('toggle');
                               $('#modalWarning .alert').html(" You are attempting to log-in beyond your call time. <br> You can no longer log-in via the Dashboard.  <br>  <br> Please obtain clearance from your department head and the OGM.  <br>  <br>Thank you.");

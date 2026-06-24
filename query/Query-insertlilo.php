@@ -361,6 +361,18 @@
       }  
 
       if ($has_log==1){
+
+         // Login absence gate: block a regular employee's Cenar clock-in when they
+         // have an unaccounted absence, until a superior files leave/OB. Fail-open.
+         if ($_SESSION['UserType']==3){
+             require_once __DIR__ . '/../includes/loginabsencegate.php';
+             $gateDates = getUnaccountedAbsences($pdo, $id, $compid);
+             if (!empty($gateDates)){
+                 print '108|' . implode(',', $gateDates);
+                 return;
+             }
+         }
+
          //ogm lilo script remove this script and enable print 2 above if you want to disable this
       
         {
