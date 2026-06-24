@@ -55,7 +55,7 @@
       $lfdate = new DateTime($_POST['lfdates']);
 
       $dteDiff  = $dteStart->diff($dteEnd); 
-      $numdays = ($dteDiff->format("%D")) + 1;
+      $numdays = ($dteDiff->format("%a")) + 1;
       $ltype = $_POST['leavetype'];
 
       if($_POST['leavetype']==22){

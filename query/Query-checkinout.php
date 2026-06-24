@@ -34,7 +34,7 @@ if ($cnt==0)
 
 else
   {
-      if(($cnt>0) & ($res['TimeOut']==NULL))
+      if(($cnt>0) && ($res['TimeOut']==NULL))
         {
           $has_log=2;
         }

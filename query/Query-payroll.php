@@ -450,7 +450,7 @@ $today = date("Y-m-d H:i:s");
 																								$liloAfter= strtotime($timeout)- strtotime($fromwcs); 																							
 																							}	
 				
-																							$liloAfter	 = $liloAfter / 60 /60;
+																							$liloAfter	 = $liloAfter / 60 ;
 				
 																							if($liloAfter > 600){
 																								$liloAfter = $liloAfter-60;
@@ -625,7 +625,7 @@ $today = date("Y-m-d H:i:s");
 																								$liloBefore= strtotime($timeout)- strtotime($fromwcs); 																							
 																							}	
 				
-																							$liloBefore	 = $liloBefore / 60 /60;
+																							$liloBefore	 = $liloBefore / 60 ;
 				
 																							if($liloBefore > 600){
 																								$liloBefore = $liloBefore -60 ;
@@ -779,7 +779,7 @@ $today = date("Y-m-d H:i:s");
 																								$liloAfter= strtotime($timeout)- strtotime($fromwcs); 																							
 																							}	
 				
-																							$liloAfter	 = $liloAfter / 60 /60;
+																							$liloAfter	 = $liloAfter / 60 ;
 				
 																							if($liloAfter > 600){
 																								$liloAfter = $liloAfter-60;
@@ -1082,7 +1082,7 @@ $today = date("Y-m-d H:i:s");
 																							$sumfinal2 = ($sumhr2 * 60) + $summin2 + ($sumsec2 /60);
 		
 																							//#sumup
-																							$sumfinal=$sumfinal2+$sumfinal2;
+																							$sumfinal=$sumfinal1+$sumfinal2;
 																						}
 		
 																						elseif(($obstart  >= $timein) and (($obstart <= $timeout) and ($obend >=$timeout))){
@@ -1657,7 +1657,7 @@ $today = date("Y-m-d H:i:s");
 									}
 
 									
-							if($SalaryLoan=1){
+							if($SalaryLoan==1){
 								getloan($pdo);
 								//get silloan if any
 								$sl=$sil;

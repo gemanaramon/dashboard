@@ -103,13 +103,13 @@ try{
           $isholiday = $valrow['IsHoliday'];
           $istardy = $valrow['IsTardy'];
 
-            if (($otstart < $otend) and $isbefore == 1 && $otInterval > $noafter ){
-              echo "Maximum Is After day reach";//max is before days count
+            if (($otstart < $otend) and $isbefore == 1 && $otInterval > $nobefore ){
+              echo "Maximum days before reached";//max days-before count
               return;
             }
                 
-            if (($otstart > $otend) and $isafter == 1 && $otInterval >  $nobefore) {
-              echo "Maximum Is  Before day reach" . $otInterval . ">" . $noafter; //max is after days count
+            if (($otstart > $otend) and $isafter == 1 && $otInterval >  $noafter) {
+              echo "Maximum days after reached" . $otInterval . ">" . $noafter; //max days-after count
               return;
             }      
           }else{
@@ -157,11 +157,11 @@ try{
         $cntload=0;
         while($dtfromloop<=$dttoo){
             
-            $slscts=$pdo->prepare("select * from hleaves where EmpID=:idn and LStart>=:dtstart and LEnd>=:dtstart");
+            $slscts=$pdo->prepare("select * from hleaves where EmpID=:idn and LStart<=:dtstart and LEnd>=:dtstart");
             $slscts->bindParam(':idn' , $id);
             $slscts->bindParam(':dtstart', $dtfromloop);
             $slscts->execute();
-            // $cntload = $slscts->rowCount();
+            $cntload = $slscts->rowCount();
             if ($cntload==1){
               break 1;
             }
@@ -235,7 +235,7 @@ try{
       }
       $ordinaryday=1;
       
-      if($ordinaryday=1){
+      if($ordinaryday==1){
       
             if($FDF >= $SF and $FDT <= $ST){
               echo "Filing not allowed within your respective work Schedule.";

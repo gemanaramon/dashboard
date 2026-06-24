@@ -61,7 +61,7 @@
         $reslilo = mysqli_fetch_array($resultlilo); 
         $cntlilo= mysqli_num_rows ($resultlilo);
 
-        if(($cntlilo>0) & ($reslilo['TimeOut']==NULL)){
+        if(($cntlilo>0) && ($reslilo['TimeOut']==NULL)){
           $otvalid=1;
         }else{
           $sql = "UPDATE otattendancelog set Status=6 where OTLOGID=:idot";
@@ -192,7 +192,7 @@
       if ($cntlilo==0){ 
           $has_log = 1;
       }else{
-        if(($cntlilo>0) & ($reslilo['TimeOut']==NULL)) {   
+        if(($cntlilo>0) && ($reslilo['TimeOut']==NULL)) {   
           //initialized data from login
           $lid=$reslilo['LogID'];
           $timin=$reslilo['TimeIn'];
@@ -231,11 +231,11 @@
 
           //user ruling
           if ($hrsSum >= 6 and $hrsSum <=11){
-            $minhrs=660 - $hrsSum;
+            $minhrs=660 - ($hrsSum*60);
           }elseif ($hrsSum >= 6 and $hrsSum > 11){
-            $minhrs=660 - $hrsSum;
+            $minhrs=660 - ($hrsSum*60);
           }else{
-            $minhrs=600 - $hrsSum;
+            $minhrs=600 - ($hrsSum*60);
           }
                      
           if($timenow > $tswto ){

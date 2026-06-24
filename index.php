@@ -503,7 +503,7 @@
           <div class="modal-body">
             <div class="dv-q">
                 <div class="lg-question">
-                    <h3 style="color: red;">You are about to login. asdasdasd?</h3>
+                    <h3 style="color: red;">You are about to login. Continue?</h3>
                     <h4><i class="fa fa-exclamation-triangle" style="color:#e3c80b;" aria-hidden="true"></i></h4>
                 </div>
                 <div class="lg-buttons">

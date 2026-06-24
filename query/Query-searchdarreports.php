@@ -122,7 +122,7 @@
           if (isset($_GET['srcheo'])){
               $id=$_POST['Eid'];
               $dtf=$_POST['dtfrom'];
-              $dtt=date($_POST['dtto'], strtotime('+1 days'));
+              $dtt=date('Y-m-d', strtotime($_POST['dtto'] . ' +1 day'));
               
               if ($id=="all"){
                   $resultdata = ("SELECT employees.EmpID as Employees_ID,
@@ -203,7 +203,7 @@
             if (isset($_GET['srchalsv'])){
               $id=$_POST['Eid'];
               $dtf=$_POST['dtfrom'];
-              $dtt=date($_POST['dtto'], strtotime('+1 days'));
+              $dtt=date('Y-m-d', strtotime($_POST['dtto'] . ' +1 day'));
                   if ($id=="all"){
                      $resultdata = (" SELECT employees.EmpID as Employee_ID,employees.EmpLN as LastName,employees.EmpFN as FirstName, employees.EmpMN as MiddleName,hleavesbd.LFDate as DateFiled,hleavesbd.LStart as Start_Date,hleavesbd.LEnd as End_Date,leaves.LeaveDesc as Leave_Type,hleavesbd.LPurpose as Purpose,
                       hleavesbd.LDuration as Duration,status.StatusDesc as Status,hleavesbd.LISReason as IS_Reason,hleavesbd.LUpdate AS IS_Update_Date,hleavesbd.LHRReason as HR_Reason,
@@ -311,7 +311,7 @@
              if (isset($_GET['srchobret'])){
                   $id=$_POST['Eid'];
                   $dtf=$_POST['dtfrom'];
-                  $dtt=date($_POST['dtto'], strtotime('+1 days'));
+                  $dtt=date('Y-m-d', strtotime($_POST['dtto'] . ' +1 day'));
                   if ($id=="all"){
                      
                      if ($_SESSION['UserType']==1 &&  $_SESSION['id']=="WeDoInc-003"){
@@ -500,7 +500,7 @@
              if (isset($_GET['srchovertimt'])){
                                $id=$_POST['Eid'];
                                 $dtf=$_POST['dtfrom'];
-                                $dtt=date($_POST['dtto'], strtotime('+1 days'));
+                                $dtt=date('Y-m-d', strtotime($_POST['dtto'] . ' +1 day'));
                                        if ($id=="all"){
                                           $resultdata =(" SELECT b.EmpID as Employees_ID,
                                           b.EmpFN as FirstName,
