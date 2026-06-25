@@ -51,7 +51,7 @@ if (!function_exists('getUnaccountedAbsences')) {
             );
             $holSt = $pdo->prepare("SELECT 1 FROM holidays WHERE Hdate = :d AND HCompID = :cmp LIMIT 1");
             $attSt = $pdo->prepare("SELECT 1 FROM attendancelog WHERE EmpID = :id AND WSFrom = :d LIMIT 1");
-            $lvSt  = $pdo->prepare("SELECT 1 FROM hleavesbd WHERE EmpID = :id AND :d BETWEEN LStart AND LEnd AND LStatus IN (1,2,4,9) LIMIT 1");
+            $lvSt  = $pdo->prepare("SELECT 1 FROM hleavesbd WHERE EmpID = :id AND :d BETWEEN LStart AND LEnd AND LStatus IN (1,2,4,8,9) LIMIT 1");
             $obSt  = $pdo->prepare("SELECT 1 FROM obshbd   WHERE EmpID = :id AND :d BETWEEN OBDateFrom AND OBDateTo AND OBStatus IN (1,2,4) LIMIT 1");
 
             // True only for a scheduled, non-holiday work day for this employee.

@@ -147,7 +147,7 @@
 
     // if leave date is already filled
     {
-      $statement = $pdo->prepare(" SELECT * FROM hleaves WHERE EmpID=:id AND ((LStart BETWEEN :dts AND :dte) OR (LEnd BETWEEN :dts AND :dte)) AND (LStatus=1 OR LStatus=2 OR LStatus=4 OR LStatus=9)");
+      $statement = $pdo->prepare(" SELECT * FROM hleaves WHERE EmpID=:id AND ((LStart BETWEEN :dts AND :dte) OR (LEnd BETWEEN :dts AND :dte)) AND (LStatus=1 OR LStatus=2 OR LStatus=4 OR LStatus=8 OR LStatus=9)");
       $statement->bindParam(':id' , $id);
       $statement->bindParam(':dts' , $_POST['lstarts']);
       $statement->bindParam(':dte' , $_POST['lenddate']);
@@ -276,25 +276,6 @@
       }
     }
 
-    {//get the leave credit (15 or 10)
-          $varTH=0;
-          $varCT=0;
-        
-          $getTH = "select * from credit where EmpID = :id";
-          $stmtTH = $pdo->prepare($getTH);
-          $stmtTH->bindParam(':id',$id );
-          $stmtTH->execute();
-          $crdetailTH = $stmtTH->fetch();
-          $crcntTH = $stmtTH->rowCount();
-
-          if ($crcntTH > 0) {
-            // if( $crdetailTH['CTH']==15){
-                $varTH= $crdetailTH['CTH'];
-                $varCT= $crdetailTH['CT'];
-            // }
-          }    
-    }
-
     // --- START TRANSACTION ---
     try {
       $pdo->beginTransaction();
@@ -351,15 +332,6 @@
           }
 
           if($shouldInsert){
-            //   $sqlbd = "INSERT INTO hleavesbd (FID,EmpID,EmpSID,LType,LFDate,LStart,LEnd,LPurpose,LDuration,LStatus,LInputDate,Lpaid,LDateTimeUpdated) VALUES (:fidsl,:id,:is,:ltype,:lfdate,:lstart,:lend,:LPurpose,:lduration,:LStatus,:DTin,:lpay,:ldupdated)";
-            //   $stmtbd = $pdo->prepare($sqlbd);
-            //   $stmtbd->execute([
-            //       ':fidsl' => $fkeyid, ':id' => $id, ':is' => $isid, ':ltype' => $_POST['leavetype'],
-            //       ':lfdate' => $today, ':lstart' => $dtstartleave, ':lend' => $dtstartleave,
-            //       ':LPurpose' => $streason, ':lduration' => $drt, ':LStatus' => $statid,
-            //       ':DTin' => $today2, ':lpay' => $_POST['leavepay'], ':ldupdated' => $today2
-            //   ]);
-            
               $sqlbd = "INSERT INTO hleavesbd (FID,EmpID,EmpSID,LType,LFDate,LStart,LEnd,LPurpose,LDuration,LStatus,LInputDate,Lpaid,LDateTimeUpdated,am_pm) VALUES (:fidsl,:id,:is,:ltype,:lfdate,:lstart,:lend,:LPurpose,:lduration,:LStatus,:DTin,:lpay,:ldupdated,:am_pm)";
               $stmtbd = $pdo->prepare($sqlbd);
               $stmtbd->execute([
