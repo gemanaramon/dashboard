@@ -311,12 +311,18 @@
                                 }
 
                                 while ($DayDur >= 0) {
+                                    $dayWeight = 1; // day-weight for the on-the-spot accounting (overridden below)
                                     // 1. Determine the status base sa leave type at empleyado
                                     if ($isSpecialEmployee && $leaveType == 24) {
                                         // SPECIAL CASE: Para sa Emergency Leave ni WeDoinc-0145:
-                                        // Ibabangga ang (Nagamit Na + Bagong Nilalakad) laban sa threshold na 4 days ($emergencyTH)
-                                        if (($totalApprovedCount + $localCount) < $emergencyTH) {
-                                            $statusFiD = 4; // Pasok sa 4 days limit -> With Pay (Hindi babawasan ang CT sa database!)
+                                        // Weight each day by its actual duration (half-day = 0.5) so the 4-day
+                                        // on-the-spot limit is measured in days, consistent with the baseline.
+                                        $wStmt = $pdo->prepare("SELECT LDuration FROM hleavesbd WHERE FID=:idd AND LStart=:dtstart");
+                                        $wStmt->execute([':idd' => $leaveId, ':dtstart' => $datestart]);
+                                        $dayMins = (float)$wStmt->fetchColumn();
+                                        $dayWeight = $dayMins > 0 ? ($dayMins / 600) : 1.0;
+                                        if (($totalApprovedCount + $localCount + $dayWeight) <= $emergencyTH) {
+                                            $statusFiD = 4; // Pasok sa 4-day limit -> With Pay (Hindi babawasan ang CT sa database!)
                                         } else {
                                             $statusFiD = 8; // Lumampas na sa limit -> Approved Without Pay (excused)
                                         }
@@ -347,7 +353,7 @@
 
                                     if ($stmt->rowCount() > 0) {
                                         if ($statusFiD == 4) {
-                                            $localCount++; 
+                                            $localCount += ($isSpecialEmployee && $leaveType == 24) ? $dayWeight : 1;
                                         }
                                     }
 
