@@ -311,6 +311,7 @@
           $leave_type_ampm = $_POST['half_day_type']; 
       }
 
+      $bdInserted = 0; // count breakdown rows actually written (rest days / holidays are skipped)
       while ($dtstartleave <= $dtendleave) {
           $shouldInsert = false;
           
@@ -341,6 +342,7 @@
                   ':DTin' => $today2, ':lpay' => $_POST['leavepay'], ':ldupdated' => $today2,':am_pm' => $leave_type_ampm
               ]);
               $ida = $pdo->lastInsertId();
+              $bdInserted++;
 
               // Payroll check
               $sqlst = "SELECT * FROM payrol WHERE (:dts BETWEEN PYDateFrom AND PYDateTo)";
@@ -369,6 +371,15 @@
               }
           }
           $dtstartleave = date ("Y-m-d", strtotime($dtstartleave. "+1 day"));
+      }
+
+      // No schedulable workday in the selected range (all rest days / holidays):
+      // there is nothing to approve and the orphan master would never show in the
+      // history (it INNER JOINs hleavesbd). Reject instead of saving an empty leave.
+      if ($bdInserted == 0) {
+          $pdo->rollBack();
+          echo "The selected date(s) fall on your rest day or a holiday. There is no working day to apply leave for.";
+          return;
       }
 
       // Insert into dars (log against the actual filer; note when filed on behalf)

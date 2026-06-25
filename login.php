@@ -67,219 +67,55 @@
     <title>WeDo | Unified Dashboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="icon" type="image/png" href="assets/images/logos/wedo-favicon.png">
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <!-- WeDo design system (token-driven theme) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/wedo-theme.css">
+
+    <!-- Functional scripts (unchanged) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="assets/js/logintime.js"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
-    <style>
-        :root {
-            --primary-red: #ff4d4d;
-            --accent-glow: rgba(255, 77, 77, 0.3);
-            --glass: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Animated Mesh Gradient Background */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            background-image:
-                radial-gradient(at 0% 0%, rgba(220, 53, 69, 0.15) 0, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(22, 33, 62, 1) 0, transparent 50%);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        /* Glassmorphism Container with Micro-interaction */
-        .login-container {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 28px;
-            padding: 50px 40px;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .login-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-
-        .bn-logo {
-            width: 120px;
-            margin-bottom: 35px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
-        }
-
-        h4 { font-weight: 600; font-size: 1.5rem; letter-spacing: -1px; }
-        .subtitle { color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-bottom: 35px; }
-
-        /* Floating Input Style */
-        .form-control {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: #fff !important;
-            padding: 25px 18px;
-            font-size: 0.95rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .form-control::placeholder { color: rgba(255, 255, 255, 0.3); }
-
-        .form-control:focus {
-            background: rgba(0, 0, 0, 0.4);
-            border-color: var(--primary-red);
-            box-shadow: 0 0 15px var(--accent-glow);
-            transform: scale(1.02);
-        }
-
-        .btnsubmit {
-            background: var(--primary-red);
-            border: none;
-            border-radius: 14px;
-            padding: 16px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
-            transition: all 0.3s ease;
-            margin-top: 15px;
-        }
-
-        .btnsubmit:hover {
-            background: #ff3333;
-            box-shadow: 0 15px 30px rgba(220, 53, 69, 0.5);
-            transform: translateY(-2px);
-        }
-
-        /* Clock Styling */
-        .tmdate-display {
-            position: absolute;
-            bottom: 40px;
-            right: 50px;
-            text-align: right;
-            border-left: 2px solid var(--primary-red);
-            padding-left: 20px;
-        }
-
-        #hr-mn { font-size: 3rem; font-weight: 600; line-height: 1; margin: 0; }
-        #dtnow { font-size: 0.9rem; color: var(--primary-red); text-transform: uppercase; letter-spacing: 2px; }
-        #sec { font-size: 1rem; opacity: 0.6; }
-
-        .lg-warning {
-            background: #dc3545;
-            color: white;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-            display: none;
-            animation: shake 0.4s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-    </style>
 </head>
 <body onload="startTime()">
 
-    <div class="login-container text-center">
-        <img src="assets/images/logos/wedo-logo.png" class="bn-logo" alt="Logo">
+    <div class="wd-login">
+        <div class="wd-login__card">
+            <img src="assets/images/logos/wedo-logo.png" class="wd-login__brand" alt="WeDo BPO Inc." style="height:62px;width:auto;margin:0 auto 18px;display:block">
+            <h2>Sign in</h2>
+            <p class="wd-login__sub">Secure access for WeDo BPO personnel</p>
 
-        <div class="lg-form text-left">
-            <h6 class="lg-warning" id="error-msg">Incorrect credentials</h6>
-            <h4>Sign In</h4>
-             <p class="subtitle">Secure access for WeDo BPO Personnel</p>
+            <h6 class="lg-warning" id="error-msg" style="display:none;background:#dc3545;color:#fff;padding:11px;border-radius:12px;font-size:13px;margin:0 0 16px">Incorrect credentials</h6>
 
-            <!--<form class="loginform">-->
-            <!--    <div class="form-group">-->
-            <!--        <input type="text" class="form-control" name="uname" id="uname" placeholder="Username" autocomplete="off">-->
-            <!--    </div>-->
+            <form class="loginform">
+                <div class="wd-field" style="text-align:left">
+                    <input class="wd-input" type="text" name="uname" id="uname" placeholder="Username" autocomplete="off">
+                </div>
+                <div class="wd-field" style="text-align:left;margin-bottom:8px">
+                    <input class="wd-input" type="password" name="pass" id="pass" placeholder="Password">
+                </div>
+                <label class="wd-login__chk"><input type="checkbox" id="showPass" onclick="togglePass()"> Show password</label>
 
-            <!--    <div class="form-group mb-4">-->
-            <!--        <input type="password" id="pass" class="form-control" name="pass" placeholder="Password">-->
-            <!--        <div class="custom-control custom-checkbox mt-3">-->
-            <!--            <input type="checkbox" class="custom-control-input" id="showPass" onclick="togglePass()">-->
-            <!--            <label class="custom-control-label text-white-50 small" for="showPass" style="cursor:pointer">Show Password</label>-->
-            <!--        </div>-->
-            <!--    </div>-->
-
-            <!--    <button type="button" class="btn btn-danger btn-block btnsubmit">Authenticate</button>-->
-            <!--</form>-->
-                <form class="loginform">
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="uname" id="uname" placeholder="Username" autocomplete="off">
-                    </div>
-            
-                    <div class="form-group mb-4">
-                        <input type="password" id="pass" class="form-control" name="pass" placeholder="Password">
-                        <div class="custom-control custom-checkbox mt-3">
-                            <input type="checkbox" class="custom-control-input" id="showPass" onclick="togglePass()">
-                            <label class="custom-control-label text-white-50 small" for="showPass" style="cursor:pointer">Show Password</label>
-                        </div>
-                    </div>
-            
-                <div class="form-group mb-4">
+                <div class="wd-field" style="margin-bottom:18px">
                     <div class="cf-turnstile" data-sitekey="0x4AAAAAACayjoaxKu_lYec-"></div>
                 </div>
-            
-                <button type="button" class="btn btn-danger btn-block btnsubmit">Authenticate</button>
+
+                <button type="button" class="wd-btn wd-btn--primary btnsubmit" style="width:100%;justify-content:center">Sign in</button>
             </form>
+        </div>
+
+        <div class="wd-clock">
+            <div class="wd-clock__date" id="dtnow">Loading…</div>
+            <div class="wd-clock__time" id="hr-mn">00:00</div>
+            <div class="wd-clock__sec" id="sec">:00 AM</div>
         </div>
     </div>
 
-    <div class="tmdate-display d-none d-lg-block">
-        <h5 id="dtnow">Loading...</h5>
-        <h2 id="hr-mn">00:00</h2>
-        <span id="sec">00</span>
-    </div>
-
-  
     <script>
-        // Real-time Clock Logic
-        function startTime() {
-            const today = new Date();
-            let h = today.getHours();
-            let m = today.getMinutes();
-            let s = today.getSeconds();
-            const ampm = h >= 12 ? 'PM' : 'AM';
-
-            h = h % 12 || 12;
-            m = m < 10 ? "0" + m : m;
-            s = s < 10 ? "0" + s : s;
-
-            document.getElementById('hr-mn').innerHTML = h + ":" + m;
-            document.getElementById('sec').innerHTML = ":" + s + " " + ampm;
-
-            const options = { month: 'short', day: 'numeric', year: 'numeric' };
-            document.getElementById('dtnow').innerHTML = today.toLocaleDateString('en-US', options);
-
-            setTimeout(startTime, 1000);
-        }
-
-        // Toggle Password
+        // Toggle password visibility (kept from original)
         function togglePass() {
-            const x = document.getElementById("pass");
+            var x = document.getElementById("pass");
             x.type = x.type === "password" ? "text" : "password";
         }
     </script>

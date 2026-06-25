@@ -105,8 +105,37 @@ if (isset($_GET['updateann'])){
            $stmt = $pdo->prepare($sql);
            $stmt->bindParam(':id' ,$_GET['updateann']);
            $stmt->bindParam(':announ' ,$_POST['announ']);
-           $stmt->execute(); 
+           $stmt->execute();
            header("location: corner");
+}
+
+/* Opening the Corner marks every announcement this user hasn't seen yet as
+   seen, which clears the unseen-announcement badge in the sidebar. Runs only
+   on a normal page load (the handlers above exit on AJAX/redirect). */
+if (isset($_SESSION['id']) && $_SESSION['id'] != "0") {
+    try {
+        include 'w_conn.php';
+        $seenPdo = new PDO("mysql:host=$servername;dbname=$db", $username, $password);
+        $seenPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        date_default_timezone_set("Asia/Manila");
+        $seenNow = date("Y-m-d H:i:s"); // datetime column: 24h, no AM/PM
+        // recent announcements this user has not seen yet (same 30-day window
+        // the sidebar badge counts, so opening the Corner clears the badge)
+        $unseen = $seenPdo->prepare(
+            "SELECT a.aid FROM announcements a
+             LEFT JOIN annseen s ON s.aid = a.aid AND s.EmpID = :id
+             WHERE s.aid IS NULL AND a.ADate >= (NOW() - INTERVAL 30 DAY)");
+        $unseen->execute([':id' => $_SESSION['id']]);
+        $unseenAids = $unseen->fetchAll(PDO::FETCH_COLUMN);
+        if ($unseenAids) {
+            $markSeen = $seenPdo->prepare(
+                "INSERT INTO annseen (aid, EmpID, FSeenDate, LSeenDate, Status)
+                 VALUES (:aid, :id, :sd, :ld, 1)");
+            foreach ($unseenAids as $aid) {
+                $markSeen->execute([':aid' => $aid, ':id' => $_SESSION['id'], ':sd' => $seenNow, ':ld' => $seenNow]);
+            }
+        }
+    } catch (Exception $e) { /* non-fatal: badge simply persists until next view */ }
 }
 ?>
 <!DOCTYPE html>

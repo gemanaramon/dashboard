@@ -363,42 +363,14 @@ try{
                 return;
             }
          
-      }else{  
-      // $consDuration = $interval;  
-        //validate duration
-        if ( $interval >=1 )  {
-          if ( $schedcat == 1 ){
-                if ( $interval >= 6 && $interval <= 10)
-                {
-                  $consDuration = 10-1;
-                }
-                elseif ( $interval >= 6 && $interval > 10)
-                {
-                  $consDuration = $interval - 1 ;
-                }
-                else 
-                {
-                  $consDuration = 5;
-                }
-              }else{
-                if ( $interval >=5 && $interval <= 8 )
-                {
-                  $consDuration = 8 -1;
-                }
-                elseif ( $interval >=5 && $interval > 8 )
-                {
-                  $consDuration = $interval -1;
-                }
-                else 
-                {
-                  $consDuration = 4;
-                }
-              }
-          }else{
-              // echo $interval;
-              echo "Minimum Overtime 1 hr. ";
-                return;
-            }
+      }else{
+        // Ordinary-day (after-shift) OT is paid by ACTUAL filed hours, no block crediting.
+        if ( $interval >=1 ) {
+          $consDuration = $interval;
+        } else {
+          echo "Minimum Overtime 1 hr. ";
+          return;
+        }
       }
    }
     
