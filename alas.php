@@ -182,6 +182,15 @@
                                         $statement->bindParam(':id', $id);
                                         $statement->execute();
                                         $row = $statement->fetch();
+
+                                        // Direct reports of the logged-in user (for filing leave on their behalf)
+                                        $reportsStmt = $pdo->prepare("SELECT em.EmpID, em.EmpLN, em.EmpFN, em.EmpMN
+                                            FROM empdetails e
+                                            INNER JOIN employees em ON e.EmpID = em.EmpID
+                                            WHERE e.EmpISID = :sid AND e.EmpCompID = :cid
+                                            ORDER BY em.EmpLN ASC");
+                                        $reportsStmt->execute([':sid' => $id, ':cid' => $_SESSION['CompID']]);
+                                        $reports = $reportsStmt->fetchAll();
                                     ?>
 
                                     <!-- Modal body -->
@@ -189,24 +198,36 @@
                                         <form id="alas_data" action="">
                                             <div class="row">
                                                 <div class="col-lg-6">
+                                                    <input type="hidden" id="alas_owner_id" value="<?php echo $_SESSION['id']; ?>">
                                                     <div class="form-group">
                                                         <label>Personnel Name:</label>
-                                                        <input type="text" disabled class="form-control"
-                                                            value="<?php echo $row['EmpLN'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN'] ?>">
+                                                        <?php if (count($reports) > 0): ?>
+                                                            <select class="form-control" id="target_empid" name="target_empid">
+                                                                <option value="<?php echo $_SESSION['id']; ?>"><?php echo $row['EmpLN'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN']; ?> (Myself)</option>
+                                                                <?php foreach ($reports as $rep): ?>
+                                                                    <option value="<?php echo htmlspecialchars($rep['EmpID']); ?>"><?php echo htmlspecialchars($rep['EmpLN'] . ' ' . $rep['EmpFN'] . ' ' . $rep['EmpMN']); ?></option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                            <small class="text-muted">Select a team member to file a leave on their behalf.</small>
+                                                        <?php else: ?>
+                                                            <input type="text" disabled class="form-control"
+                                                                value="<?php echo $row['EmpLN'] . ' ' . $row['EmpFN'] . ' ' . $row['EmpMN'] ?>">
+                                                            <input type="hidden" name="target_empid" value="<?php echo $_SESSION['id']; ?>">
+                                                        <?php endif; ?>
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Company Name:</label>
-                                                        <input type="text" disabled class="form-control"
+                                                        <input type="text" id="f_company" disabled class="form-control"
                                                             value="<?php echo $row['CompanyDesc'] ?>">
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Department:</label>
-                                                        <input type="text" disabled class="form-control"
+                                                        <input type="text" id="f_dept" disabled class="form-control"
                                                             value="<?php echo $row['DepartmentDesc'] ?>">
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Designation:</label>
-                                                        <input type="text" disabled class="form-control"
+                                                        <input type="text" id="f_designation" disabled class="form-control"
                                                             value="<?php echo $row['PositionDesc'] ?>">
                                                     </div>
                                                     <div class="form-group d-none">

@@ -20,14 +20,35 @@
       }
     }
     
-     //admin time validation
-  {   
+    // Determine the subject employee. By default the filer files for themselves;
+    // an immediate superior may file on behalf of a direct report.
+    {
+      $loggedInId = $_SESSION['id'];
+      $targetId   = (isset($_POST['target_empid']) && $_POST['target_empid'] !== '') ? $_POST['target_empid'] : $loggedInId;
+      $onBehalf   = ($targetId !== $loggedInId);
+      $targetSuperiorId = $_SESSION['EmpISID'];
+
+      if ($onBehalf) {
+          // Authorize: the logged-in user must be the immediate superior of the target.
+          $authStmt = $pdo->prepare("SELECT EmpISID FROM empdetails WHERE EmpID = :tid");
+          $authStmt->execute([':tid' => $targetId]);
+          $authRow = $authStmt->fetch();
+          if (!$authRow || $authRow['EmpISID'] !== $loggedInId) {
+              echo "You are not authorized to file a leave for this employee.";
+              return;
+          }
+          $targetSuperiorId = $authRow['EmpISID'];
+      }
+    }
+
+     //admin time validation (on-behalf filing is exempt from the 8:30 AM cutoff)
+  {
      $datenow = date("Y-m-d");
      $datenow1 = date("Y-m-d H:i");
      $timenow = strtotime($datenow1);
      $startTime = strtotime($datenow ." 8:30:00");
      $id=$_SESSION['id'];
-     if($id=="WeDoinc-012"){
+     if($id=="WeDoinc-012" || $onBehalf){
      }else{
          if($timenow > $startTime){
             echo "The leave application must be completed on or before 8:30 AM.";
@@ -39,9 +60,9 @@
     #declaration
     {
       global $ifPayroll;
-      $companyid=$_SESSION['CompID']; 
-      $id=$_SESSION['id'];
-      $isid=$_SESSION['EmpISID'];
+      $companyid=$_SESSION['CompID'];
+      $id=$targetId;
+      $isid=$targetSuperiorId;
       $statid=1;
       $statiddiss=3;
       $today =date("Y-m-d"); 
@@ -244,7 +265,8 @@
       }else {
         // Vacation Leave specific logic
         if ($valid['lid']==22){
-          $limit = ($_SESSION['UserType']==3) ? (($_SESSION['id']=='WeDoinc-0010' || $_SESSION['id']=='WeDoinc-009') ? 10 : 5) : 15;
+          $subjectRole = $EmpRow['EmpRoleID'];
+          $limit = ($subjectRole==3) ? (($id=='WeDoinc-0010' || $id=='WeDoinc-009') ? 10 : 5) : 15;
           if ($WDaysBL < $limit){ echo "Notice period insufficient ($limit days required)."; return; }
         }
         if ($vl_before==1){
@@ -377,9 +399,11 @@
           $dtstartleave = date ("Y-m-d", strtotime($dtstartleave. "+1 day"));
       }
 
-      // Insert into dars
-      $stmtDar = $pdo->prepare("INSERT INTO dars (EmpID,EmpActivity,DarDateTime) VALUES (:id,'Applied Leave',:tdy)");
-      $stmtDar->execute([':id' => $id, ':tdy' => $today2]);
+      // Insert into dars (log against the actual filer; note when filed on behalf)
+      $darActor    = $loggedInId;
+      $darActivity = $onBehalf ? ('Filed Leave for ' . $id) : 'Applied Leave';
+      $stmtDar = $pdo->prepare("INSERT INTO dars (EmpID,EmpActivity,DarDateTime) VALUES (:id,:act,:tdy)");
+      $stmtDar->execute([':id' => $darActor, ':act' => $darActivity, ':tdy' => $today2]);
 
       $pdo->commit();
       echo 1;
