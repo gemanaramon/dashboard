@@ -150,25 +150,26 @@ try{
           }
       }
       
-      //if employee's on leave cant file 
+      //if employee's on leave cant file
       {
         $dtfromloop=$_POST['datefrom'];
         $dttoo=$_POST['dateto'];
-        $cntload=0;
+        $onLeave=0;
         while($dtfromloop<=$dttoo){
-            
-            $slscts=$pdo->prepare("select * from hleaves where EmpID=:idn and LStart>=:dtstart and LEnd>=:dtstart");
+
+            // A leave breakdown row covering this date (active statuses only) blocks OT filing.
+            $slscts=$pdo->prepare("select 1 from hleavesbd where EmpID=:idn and :dtstart between LStart and LEnd and LStatus in (1,2,4,8,9) limit 1");
             $slscts->bindParam(':idn' , $id);
             $slscts->bindParam(':dtstart', $dtfromloop);
             $slscts->execute();
-            // $cntload = $slscts->rowCount();
-            if ($cntload==1){
-              break 1;
+            if ($slscts->rowCount() > 0){
+              $onLeave=1;
+              break;
             }
-            
+
             $dtfromloop= date('Y-m-d', strtotime($dtfromloop  . ' +1 days'));
         }
-        if ($cntload>0){
+        if ($onLeave>0){
             echo "OT filing not allowed during Leave! ";
             return;
         }
@@ -199,16 +200,13 @@ try{
    
   //get work schedule
   
-    $sql="SELECT * from workdays INNER JOIN 
-    workschedule ON workdays.SchedTime=workschedule.WorkSchedID 
+    $sql="SELECT * from workdays INNER JOIN
+    workschedule ON workdays.SchedTime=workschedule.WorkSchedID
     inner join schedeffectivity as c on workdays.EFID=c.efids
-    where (workdays.empid='$id') and (workdays.Day_s='$day2')
-    and ('$ddfrom' >= dfrom) and ('$ddfrom' <= dto) and workschedule.WorkSchedID <> 0";  
-        // $stmt->bindParam(':id' ,$id);
-    // $stmt->bindParam(':day' ,$day2); 
+    where (workdays.empid=:id) and (workdays.Day_s=:day2)
+    and (:ddfrom1 >= dfrom) and (:ddfrom2 <= dto) and workschedule.WorkSchedID <> 0";
     $stmt = $pdo->prepare($sql);
-
-    $stmt->execute();
+    $stmt->execute([':id' => $id, ':day2' => $day2, ':ddfrom1' => $ddfrom, ':ddfrom2' => $ddfrom]);
     $row = $stmt->fetch();
     $cntload1 = $stmt->rowCount(); 
 
@@ -513,11 +511,12 @@ $sql = "INSERT INTO otattendancelog (EmpID,EmpISID,TimeIn,TimeOut,DateFiling,Tim
       $id=$_SESSION['id'];
                       $ch="Applied OT";
                 // insert into dars
-                    $sql = "INSERT INTO dars (EmpID,EmpActivity) VALUES (:id,:empact)";
+                    $sql = "INSERT INTO dars (EmpID,EmpActivity,DarDateTime) VALUES (:id,:empact,:ddt)";
                    $stmt = $pdo->prepare($sql);
                    $stmt->bindParam(':id' , $id);
                    $stmt->bindParam(':empact', $ch);
-                   $stmt->execute(); 
+                   $stmt->bindParam(':ddt', $today2);
+                   $stmt->execute();
   echo "Application succesfully save! ";                  
                    } catch (Exception $e) {
   echo 'Caught exception: ',  $e->getMessage(), "\n";
