@@ -328,6 +328,7 @@
                                                         $cdPerMonth   = 0;
                                                         $cdPerDay     = 0;
                                                         $creditEarned = 0;
+                                                        $emergencyRemaining = null; // only set for the special on-the-spot employee
                                                         if ($detailscnt == 1) {
                                                             if ($details['EmpStatID'] != 1) {
                                                                 $creditEarned = "Non Regular employee don't have credits";
@@ -411,29 +412,26 @@
                                                                                 $diff2       = date_diff($gnOfdJan, $gnOfdCur);
                                                                                 $gnOfdJanCur = (int)$diff2->format("%r%a");
 
-                                                                                // 1. Alamin ang kabuuang bawas sa credit mula sa database ($useCredit)
+                                                                                // Earning credits already used (deducted) so far. Emergency (LType 24)
+                                                                                // never deducts from credit.CT, so CTH - CT reflects only non-emergency use.
                                                                                 $useCredit = $crh - $crth;
 
-                                                                                // 2. LOGIC NG "ON-THE-SPOT 4 CREDIT" AT APPROVED LEAVES:
-                                                                                // Kung mas malaki ang bawas sa credit ($useCredit) kumpara sa totoong aprubadong leave ($hrApprovedLeaves),
-                                                                                // ang ibig sabihin, ang sumobra o natira ay ibinawas/pumasok na doon sa on-the-spot 4 credits.
-                                                                                $usedOnTheSpot = $useCredit - $hrApprovedLeaves;
-
-                                                                                // Guard rails para hindi mag-negative kung wala pang nagagamit sa on-the-spot 4 credits
-                                                                                if ($usedOnTheSpot < 0) {
-                                                                                    $usedOnTheSpot = 0;
-                                                                                }
-
-                                                                                // 3. PINAL NA KALKULASYON:
-                                                                                // (Kalkulado kada araw) - (Tunay na HR Leaves) + (4 On-the-spot Credits) - (Kung magkano ang nabawas na sa on-the-spot)
+                                                                                // EARNING balance = exactly what HR uses to pay a non-emergency leave:
+                                                                                // accrued-to-date minus used. This mirrors $varCT in
+                                                                                // query/Query-UpdateApp.php so the form never shows more payable days
+                                                                                // than HR will actually approve.
                                                                                 $onTheSpotCredit = 4;
-                                                                                $creditEarned = (($cdPerDay * ($gnOfdJanCur + 1 )) - $hrApprovedLeaves) + $onTheSpotCredit - $useCredit;
-                                                                                // 1.8 -
-                                                                                
-
-                                                                                // Siguraduhing hindi maging negative ang pinal na resulta
+                                                                                $creditEarned = ($cdPerDay * $gnOfdJanCur) - $useCredit;
                                                                                 if ($creditEarned < 0) {
                                                                                     $creditEarned = 0;
+                                                                                }
+
+                                                                                // The 4 flat Emergency (on-the-spot) credits are a SEPARATE pool, usable
+                                                                                // only for Emergency leave and never deducted from the earning balance.
+                                                                                // Show how many of the 4 remain (emergency days already taken this year).
+                                                                                $emergencyRemaining = $onTheSpotCredit - $hrApprovedLeaves;
+                                                                                if ($emergencyRemaining < 0) {
+                                                                                    $emergencyRemaining = 0;
                                                                                 }
 
                                                                             } else {
@@ -451,7 +449,7 @@
                                                     }?>
                                                     <div class="form-group"
                                                         style="border: 1px solid red;background-color: #bc0c0c;padding: 5px;border-radius: 10px;color: #fff;">
-                                                        <label>Leave Credits:</label>
+                                                        <label>Leave Credits<?php echo ($emergencyRemaining !== null) ? ' (earned)' : ''; ?>:</label>
 
                                                         <?php
 
@@ -466,6 +464,13 @@
                                                         <input name="lcredit" type="text" id="lcredit"
                                                             style="color:red;" readonly="readonly"
                                                             value="<?php echo htmlspecialchars($displayValue); ?>" class="form-control">
+
+                                                        <?php if ($emergencyRemaining !== null): ?>
+                                                            <label style="margin-top:8px;">Emergency (on-the-spot):</label>
+                                                            <input type="text" readonly="readonly" style="color:red;"
+                                                                value="<?php echo htmlspecialchars(number_format((float) $emergencyRemaining, 2, '.', '') . ' / 4'); ?>"
+                                                                class="form-control">
+                                                        <?php endif; ?>
 
                                                     </div>
                                                     <div class="form-group">
